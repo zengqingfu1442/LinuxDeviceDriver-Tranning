@@ -1,0 +1,1191 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="zh-CN" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>02_V4L2驱动程序框架 &#8212; Linux设备驱动开发教程中心</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/topbar.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom-theme.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../../_static/translations.js"></script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'zh/13_V4L2/02_1';</script>
+    <link rel="icon" href="../../_static/favicon.png"/>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="03_从0编写一个虚拟摄像头驱动" href="03_1.html" />
+    <link rel="prev" title="01_V4L2应用程序开发" href="01_1.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="zh-CN"/>
+    <meta name="docbuild:last-update" content="2024 年 08 月 08 日"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+
+  <div class="bd-header-announcement container-fluid bd-header-announcement">
+    <div class="bd-header-announcement__content">📢📢📢 欢迎来到百问网Linux设备驱动开发教程中心文档站点！！！技术交流社区：https://forums.100ask.net</div>
+  </div>
+
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Linux设备驱动开发教程中心</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">1.课程介绍</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../03_LCD/index.html">3.LCD显示子系统</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/01_1.html">01_单片机_Linux下不同接口的LCD硬件操作原理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/02_1.html">02_Framebuffer驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/03.html">03_编程_写出框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/04.html">04_最简单的LCD驱动_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/05.html">05_上机实验_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/06_1.html">结合APP分析LCD驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/07_1.html">07_硬件_8080接口LCD时序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/08_1.html">08_硬件_TFT-RGB接口LCD时序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/09_1.html">09_硬件_IMX6ULL的LCD控制器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/10_1.html">10_分析内核自带的LCD驱动程序_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/11_1.html">11_编程_LCD驱动程序框架_使用设备树</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/12_1.html">12_编程_配置引脚_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/13_1.html">13_编程_配置时钟_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/14_1.html">14_编程_ 配置LCD控制器之获得LCD参数_ 基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/15_1.html">15_编程_配置LCD控制器之寄存器操作_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/16.html">16_上机实验_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/17_1.html">17_单Buffer的缺点与改进方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/18.html">18_编写使用多buffer的应用程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../04_I2C/index.html">4.I2C子系统</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/01.html">01_I2C视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/02_1.html">02_I2C协议</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/03.html">03_SMBus协议</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/04.html">04_I2C系统的重要结构体</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/05.html">05_无需编写驱动直接访问设备_I2C-Tools介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/06.html">06_编写APP直接访问EEPROM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/07.html">07_通用驱动i2c-dev分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/08_1.html">08_I2C系统驱动程序模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/09.html">09_编写设备驱动之i2c_driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/10.html">10_编写设备驱动之i2c_client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/11.html">11_I2C_Adapter驱动框架讲解与编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/12_1.html">12_完善虚拟的I2C_Adapter驱动并模拟EEPROM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/13_1.html">13_使用GPIO模拟I2C的驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/14.html">14_使用GPIO操作I2C设备_IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/15_1.html">15_具体芯片的I2C_Adapter驱动分析</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../05_Input/index.html">5.Input输入子系统</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/01.html">01_Input子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/02.html">02_先学习输入系统应用编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_1.html">DRV_01_Input子系统框架详解</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_2.html">DRV_02_编写input_dev驱动框架解</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_3.html">DRV_03_ 编写最简单的触摸屏驱动程序_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_4.html">DRV_04_GPIO按键驱动分析与使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_5.html">DRV_05_I2C接口触摸屏驱动分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_6.html">DRV_06_UInput分析_用户态创建input_dev</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../06_Pinctrl/index.html">6.Pinctrl子系统</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/01.html">01_Pinctrl子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/03_1.html">02_Pinctrl子系统使用示例_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/03_2.html">03_Pinctrl子系统使用示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/04_1.html">04_Pinctrl子系统主要数据结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/05_1.html">05_Pincontroller构造过程情景分析_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/06_1.html">06_client端使用pinctrl过程的情景分析_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/07_1.html">07_编写虚拟的Pinctrl驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/08_1.html">08_调试虚拟的Pinctrl驱动程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../07_GPIO/index.html">7.GPIO子系统</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/01_1.html">01_GPIO子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/05_1.html">02_GPIO子系统层次与数据结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/06_1.html">03_IMX6ULL的GPIO驱动源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/07_1.html">04_编写一个虚拟GPIO控制器的驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/08_1.html">05_调试与使用虚拟的GPIO控制器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/09_1.html">06_GPIO子系统与Pinctrl子系统的交互</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/10_1.html">07_编程_GPIO使用Pinctrl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/11_1.html">08_GPIO子系统的sysfs接口</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../08_Interrupt/index.html">8.Interrupt子系统</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/08_1.html">01_中断相关的其他驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/09_1.html">02_中断的硬件框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/10_1.html">03_GIC介绍与编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/11_1.html">04_异常向量表的安装与调用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/12_1.html">05_GIC驱动程序对中断的处理流程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/13_1.html">06_GIC驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/14_1.html">07_两类中断控制器处理流程_链式和层级</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/15_1.html">08_链式中断控制器驱动程序编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/16_1.html">09_legacy方式代码的上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/17_1.html">10_链式中断控制器驱动程序编写_linear方式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/18_1.html">11_层级中断控制器驱动程序编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/19_1.html">12_层级中断控制器驱动程序上机实验</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../09_UART/index.html">9.UART子系统</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/01_1.html">01_UART子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/02_1.html">02_硬件知识_UART硬件介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/03_1.html">03_TTY体系中设备节点的差别</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/04_1.html">04_TTY驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/05_1.html">05_在STM32MP157上做串口实验的准备工作</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/05_2.html">06_Linux串口应用编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/07_1.html">07_字符设备驱动程序的另一种注册方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/08_1.html">08_UART驱动情景分析_注册</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/09_1.html">09_UART驱动情景分析_open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/10_1.html">10_UART驱动情景分析_read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/11_1.html">11_UART驱动情景分析_write</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/12_1.html">12_UART驱动调试方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/13_1.html">13_编写虚拟UART驱动程序_框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/14_1.html">14_编写虚拟UART驱动程序_实现uart_ops</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/15_1.html">15_编写虚拟UART驱动程序_实现数据传输</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/16_1.html">16_编写虚拟UART驱动程序_调试</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/17_1.html">17_printk执行过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/18_1.html">18_console驱动注册过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/19_1.html">19_编写console驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/20_1.html">20_early_printk和earlycon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/21_1.html">21_RS485简单讲解</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../10_PCI_PCIe/index.html">10.PCI_PCIe子系统</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/01_1.html">01_从软件开发角度看待PCI和PCIe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/02_1.html">02_PCI设备的访问方法_非桥设备(type0)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/03_1.html">03_PCI设备的访问方法_桥设备(type1)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/04_1.html">04_从软件角度看PCIe设备的硬件结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/05_1.html">05_PCIe设备的配置过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/06_1.html">06_PCIe路由方式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/07_1.html">07_PCI驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/08_1.html">08_RK3399_PCIe芯片手册解读</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/09_1.html">09_RK3399_PCIe_Host驱动分析_地址映射</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/10_1.html">10_RK3399_PCIe_Host驱动分析_设备枚举</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/11_1.html">11_INTx_MSI_MSIX三种中断机制分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/12_1.html">12_INTx中断机制源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/13_1.html">13_GICv3_LPI机制</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/14_1.html">14_MSI_MSI-X中断之体验与使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/15_1.html">15_MSI_MSI-X中断之源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/16_1.html">16_怎么编写PCIe设备驱动程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../11_SPI/index.html">11.SPI子系统</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/01_1.html">01_SPI视频概述</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/02_1.html">02_SPI协议介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/03_1.html">03_SPI总线设备驱动模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/04_1.html">04_SPI设备树处理过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/05_1.html">05_spidev的使用(SPI用户态API)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/06_1.html">06_使用spidev操作SPI_DAC模块</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/07_1.html">07_SPI_DAC模块上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/08_1.html">08_SPI_OLED模块操作方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/09_1.html">09_使用spidev操作SPI_OLED模块</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/10_1.html">10_OLED模块上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/11_1.html">11_编写SPI设备驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/12_1.html">12_编写SPI_DAC模块驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/13_1.html">13_编写DAC驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/14_1.html">14_编写SPI_OLED模块驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/15_1.html">15_编写OLED驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/16_1.html">16_使用Framebuffer改造OLED驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/17_1.html">17_OLED_Framebuffer驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/18_1.html">18_SPI_Master驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/19_1.html">19_编写SPI_Master驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/20_1.html">20_使用老方法编写的SPI_Master驱动程序上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/21_1.html">21_编写SPI_Master驱动程序_新方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/22_1.html">22_使用新方法编写的SPI_Master驱动程序上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/23_1.html">23_SPI_Slave_Mode驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/24_1.html">24_SPI_Slave_Mode驱动程序源码解读</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/25_1.html">临时笔记</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../12_USB/index.html">12.USB子系统</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-10"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/01_1.html">01_USB视频介绍及资料下载</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/02_1.html">02_USB系统硬件框架和软件框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/03_1.html">03_软件工程师眼里的USB电气信号</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/04_1.html">04_USB协议层数据格式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/05_1.html">05_USB描述符</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/06_1.html">06_libusb的使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/07_1.html">07_使用libusb读取鼠标数据</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/08_1.html">08_USB设备驱动模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/09_1.html">09_编写USB鼠标驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/10_1.html">10_OTG硬件检测电路</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/11_1.html">11_Gadget驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/12_1.html">12_Gadget应用实例之zero</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/13_1.html">13_Gadget应用实例之serial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/14_1.html">14_configfs的使用与内部机制</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/15_1.html">15_Gadget应用实例之adb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/16_1.html">tmp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/17_1.html">Gadget驱动程序框架</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">13.V4L2子系统</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="01_1.html">01_V4L2应用程序开发</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">02_V4L2驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="03_1.html">03_从0编写一个虚拟摄像头驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="04_1.html">04_USB摄像头驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05_1.html">05_MIPI摄像头驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="06_1.html">06_V4L2视频介绍及资料下载/笔记</a></li>
+<li class="toctree-l2"><a class="reference internal" href="07_1.html">tmp_摄像头控制接口</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/100askTeam/LinuxDeviceDriver-Tranning" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="源码库"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="下载此页面">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/zh/13_V4L2/02_1.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="下载源文件"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="列印成 PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="全屏模式"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="搜索" aria-label="搜索" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>02_V4L2驱动程序框架</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> 目录 </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">1. 整体框架</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">1.1 V4L2驱动程序注册流程</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ioctl">1.2 ioctl调用流程分析</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">1.2.1 两类ioctl</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">1.2.2 调用流程</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#buffer">1.3 buffer的内核实现</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#videobuffer2">1.3.1 videobuffer2缓冲区结构体</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#videobuffer23ops">1.3.2 videobuffer2的3个ops</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#vb2-buf-ops">1.3.3 vb2_buf_ops</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#vb2-mem-ops">1.3.4 vb2_mem_ops</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#vb2-ops">1.3.5 vb2_ops</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">1.3.6 videobuffer2情景分析</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="v4l2">
+<h1>02_V4L2驱动程序框架<a class="headerlink" href="#v4l2" title="此标题的永久链接">#</a></h1>
+<p>参考资料：</p>
+<ul class="simple">
+<li><p>深入理解linux内核v4l2框架之videobuf2：https://blog.csdn.net/yyjsword/article/details/9243717</p></li>
+<li><p>V4L2框架-videobuf2：https://blog.csdn.net/u013904227/article/details/81054611</p></li>
+</ul>
+<section id="id1">
+<h2>1. 整体框架<a class="headerlink" href="#id1" title="此标题的永久链接">#</a></h2>
+<ul class="simple">
+<li><p>字符设备驱动程序的核心是：file_operations结构体</p></li>
+<li><p>V4L2设备驱动程序的核心是：video_device结构体，它里面有2大成员</p>
+<ul>
+<li><p>v4l2_file_operations结构体：实现具体的open/read/write/ioctl/mmap操作</p></li>
+<li><p>v4l2_ioctl_ops结构体：v4l2_file_operations结构体一般使用video_ioctl2函数，它要调用v4l2_ioctl_ops结构体</p></li>
+</ul>
+</li>
+</ul>
+<p><img alt="image-20230802131727705" src="../../_images/21_v4l2_framework.png" /></p>
+<section id="id2">
+<h3>1.1 V4L2驱动程序注册流程<a class="headerlink" href="#id2" title="此标题的永久链接">#</a></h3>
+<p>参考<code class="docutils literal notranslate"><span class="pre">drivers\media\usb\airspy\airspy.c</span></code>：</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>static<span class="w"> </span>struct<span class="w"> </span>video_device<span class="w"> </span><span class="nv">airspy_template</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span>
+<span class="w">	</span>.name<span class="w">                     </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;AirSpy SDR&quot;</span>,
+<span class="w">	</span>.release<span class="w">                  </span><span class="o">=</span><span class="w"> </span>video_device_release_empty,
+<span class="w">	</span>.fops<span class="w">                     </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>airspy_fops,
+<span class="w">	</span>.ioctl_ops<span class="w">                </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>airspy_ioctl_ops,
+<span class="o">}</span><span class="p">;</span>
+
+//<span class="w"> </span>分配/设置video_device结构体
+s-&gt;vdev<span class="w"> </span><span class="o">=</span><span class="w"> </span>airspy_template<span class="p">;</span>
+
+//<span class="w"> </span>初始化一个v4l2_device结构体<span class="o">(</span>起辅助作用<span class="o">)</span>
+/*<span class="w"> </span>Register<span class="w"> </span>the<span class="w"> </span>v4l2_device<span class="w"> </span>structure<span class="w"> </span>*/
+s-&gt;v4l2_dev.release<span class="w"> </span><span class="o">=</span><span class="w"> </span>airspy_video_release<span class="p">;</span>
+<span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>v4l2_device_register<span class="o">(</span><span class="p">&amp;</span>intf-&gt;dev,<span class="w"> </span><span class="p">&amp;</span>s-&gt;v4l2_dev<span class="o">)</span><span class="p">;</span>
+
+//<span class="w"> </span>video_device和4l2_device建立联系
+s-&gt;vdev.v4l2_dev<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>s-&gt;v4l2_dev<span class="p">;</span>
+
+//<span class="w"> </span>注册video_device结构体
+<span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>video_register_device<span class="o">(</span><span class="p">&amp;</span>s-&gt;vdev,<span class="w"> </span>VFL_TYPE_SDR,<span class="w"> </span>-1<span class="o">)</span><span class="p">;</span>
+<span class="w">		</span>__video_register_device
+<span class="w">			</span>//<span class="w"> </span>根据次设备号把video_device结构体放入数组
+<span class="w">			</span>video_device<span class="o">[</span>vdev-&gt;minor<span class="o">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>vdev<span class="p">;</span>
+<span class="w">			</span>
+<span class="w">			</span>//<span class="w"> </span>注册字符设备驱动程序
+<span class="w">			</span>vdev-&gt;cdev-&gt;ops<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>v4l2_fops<span class="p">;</span>
+<span class="w">			</span>vdev-&gt;cdev-&gt;owner<span class="w"> </span><span class="o">=</span><span class="w"> </span>owner<span class="p">;</span>
+<span class="w">			</span><span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>cdev_add<span class="o">(</span>vdev-&gt;cdev,<span class="w"> </span>MKDEV<span class="o">(</span>VIDEO_MAJOR,<span class="w"> </span>vdev-&gt;minor<span class="o">)</span>,<span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="p">;</span>
+</pre></div>
+</div>
+</section>
+<section id="ioctl">
+<h3>1.2 ioctl调用流程分析<a class="headerlink" href="#ioctl" title="此标题的永久链接">#</a></h3>
+<section id="id3">
+<h4>1.2.1 两类ioctl<a class="headerlink" href="#id3" title="此标题的永久链接">#</a></h4>
+<p>底层驱动程序提供了很多ioctl的处理函数，比如：</p>
+<p><img alt="image-20230802171650240" src="../../_images/23_std_ioctls.png" /></p>
+<p>这些ioctl被分为2类：</p>
+<ul class="simple">
+<li><p>INFO_FL_STD：标准的，无需特殊的代码来处理，APP的调用可以直达这些处理函数</p></li>
+<li><p>INFO_FL_FUNC：这类ioctl需要特殊处理，比如对于<code class="docutils literal notranslate"><span class="pre">VIDIOC_ENUM_FMT</span></code>，它需要根据设备的类型分别枚举：
+<img alt="image-20230802182129884" src="../../_images/26_func_ioctl_example.png" /></p></li>
+</ul>
+<p>简单地说，这2类ioctl的差别在于：</p>
+<ul class="simple">
+<li><p>INFO_FL_STD：APP发出的ioctl直接调用底层的video_device-&gt;ioctl_ops-&gt;xxxx(….)</p></li>
+<li><p>INFO_FL_FUNC：APP发出的ioctl，交给<code class="docutils literal notranslate"><span class="pre">drivers\media\v4l2-core\v4l2-ioctl.c</span></code>，它先进行一些特殊处理后，再调用底层的video_device-&gt;ioctl_ops-&gt;xxxx(….)</p></li>
+</ul>
+<p>怎么区分这些ioctl呢？<code class="docutils literal notranslate"><span class="pre">drivers\media\v4l2-core\v4l2-ioctl.c</span></code>中有个数组：</p>
+<p><img alt="image-20230802182925664" src="../../_images/27_v4l2_ioctls.png" /></p>
+<p>这个数组里，每一项都表示一个ioctl：</p>
+<ul class="simple">
+<li><p>使用<code class="docutils literal notranslate"><span class="pre">IOCTL_INFO_FNC</span></code>定义的数组项，表示它是<code class="docutils literal notranslate"><span class="pre">INFO_FL_FUNC</span></code>类型的
+<img alt="image-20230802183344592" src="../../_images/24_ioctl_func.png" /></p></li>
+<li><p>使用<code class="docutils literal notranslate"><span class="pre">IOCTL_INFO_STD</span></code>定义的数组项，表示它是<code class="docutils literal notranslate"><span class="pre">INFO_FL_STD</span></code>类型的
+<img alt="image-20230802183251984" src="../../_images/25_v4l2_ioctls_offset.png" /></p></li>
+</ul>
+</section>
+<section id="id4">
+<h4>1.2.2 调用流程<a class="headerlink" href="#id4" title="此标题的永久链接">#</a></h4>
+<p>APP调用摄像头的ioctl，流程为：</p>
+<p><img alt="image-20230802170836061" src="../../_images/22_ioctl_detail.png" /></p>
+</section>
+</section>
+<section id="buffer">
+<h3>1.3 buffer的内核实现<a class="headerlink" href="#buffer" title="此标题的永久链接">#</a></h3>
+<p>APP操作buffer的示意图如下：</p>
+<p><img alt="image-20230617171816630" src="../../_images/05_buffers.png" /></p>
+<p>驱动程序中如何管理这些buffer呢？</p>
+<section id="videobuffer2">
+<h4>1.3.1 videobuffer2缓冲区结构体<a class="headerlink" href="#videobuffer2" title="此标题的永久链接">#</a></h4>
+<p><img alt="image-20230810163245420" src="../../_images/29_videobuffer2_struct.png" /></p>
+<p>分配流程：</p>
+<ul class="simple">
+<li><p>驱动程序初始化时，就构造了vb2_queue，这是”buffer的队列”，一开始里面没有”buffer”</p></li>
+<li><p>APP调用ioctl VIDIOC_REQBUFS向驱动申请N个buffer</p></li>
+<li><p>驱动程序分配n(n&lt;=N)个vb2_buffer结构体，然后</p>
+<ul>
+<li><p>对于普通摄像头，还分配一个vb2_plane结构体、vb2_vmalloc_buf结构体，最后分配存数据的buffer</p></li>
+<li><p>对于多平面摄像头，给每个vb2_buffer分配多个”vb2_plane结构体、vb2_vmalloc_buf结构体、存数据的buffer”</p></li>
+</ul>
+</li>
+</ul>
+<p>入队列流程：</p>
+<ul class="simple">
+<li><p>APP调用ioctl VIDIOC_QBUF</p></li>
+<li><p>驱动程序根据其index找到vb2_buffer</p></li>
+<li><p>把这个vb2_buffer放入链表vb2_queue.queued_list</p></li>
+</ul>
+<p>硬件驱动接收到数据后，比如URB传输完成后：</p>
+<ul class="simple">
+<li><p>从链表vb2_queue.queued_list找到(但是不移除)vb2_buffer</p></li>
+<li><p>把硬件数据存入vb2_buffer</p></li>
+<li><p>把vb2_buffer放入链表vb2_queue.done_list</p></li>
+</ul>
+<p>出队列流程：</p>
+<ul class="simple">
+<li><p>APP调用ioctl VIDIOC_DQBUF</p></li>
+<li><p>驱动程序从链表vb2_queue.done_list取出并移除第1个vb2_buffer</p></li>
+<li><p>驱动程序也把这个vb2_buffer从链表vb2_queue.queued_list移除</p></li>
+</ul>
+</section>
+<section id="videobuffer23ops">
+<h4>1.3.2 videobuffer2的3个ops<a class="headerlink" href="#videobuffer23ops" title="此标题的永久链接">#</a></h4>
+<p>V4L2中使用vb2_queue来管理缓冲区，里面有3个操作结构体：</p>
+<p><img alt="image-20230816154549808" src="../../_images/30_vb2_queue_ops.png" /></p>
+<p>这3个操作结构体的作用为：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">const</span> <span class="pre">struct</span> <span class="pre">vb2_buf_ops</span> <span class="pre">*buf_ops</span></code>：在用户空间、内核空间之间传递buffer信息，通过下面几个宏来调用
+<img alt="image-20230826003824317" src="../../_images/35_call_buf_ops.png" /></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">const</span> <span class="pre">struct</span> <span class="pre">vb2_mem_ops</span> <span class="pre">*mem_ops</span></code>：分配内存用的回调函数，通过下面几个宏来调用
+<img alt="image-20230826004001342" src="../../_images/36_call_mem_ops.png" /></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">const</span> <span class="pre">struct</span> <span class="pre">vb2_ops</span> <span class="pre">*ops</span></code>：硬件相关的回调函数，通过下面几个宏来调用
+<img alt="image-20230816184848876" src="../../_images/32_call_vbs_ops.png" /></p></li>
+</ul>
+<p>这3个ops的层次图如下：</p>
+<p><img alt="image-20230826003154388" src="../../_images/37_three_ops.png" /></p>
+<p>完整的注册流程(参考<code class="docutils literal notranslate"><span class="pre">drivers\media\usb\airspy\airspy.c</span></code>)：</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>static<span class="w"> </span>struct<span class="w"> </span>video_device<span class="w"> </span><span class="nv">airspy_template</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span>
+<span class="w">	</span>.name<span class="w">                     </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;AirSpy SDR&quot;</span>,
+<span class="w">	</span>.release<span class="w">                  </span><span class="o">=</span><span class="w"> </span>video_device_release_empty,
+<span class="w">	</span>.fops<span class="w">                     </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>airspy_fops,
+<span class="w">	</span>.ioctl_ops<span class="w">                </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>airspy_ioctl_ops,
+<span class="o">}</span><span class="p">;</span>
+
+/*<span class="w"> </span>构造一个vb2_queue<span class="w"> </span>*/
+<span class="w">	</span>/*<span class="w"> </span>Init<span class="w"> </span>videobuf2<span class="w"> </span>queue<span class="w"> </span>structure<span class="w"> </span>*/
+<span class="w">	</span>s-&gt;vb_queue.type<span class="w"> </span><span class="o">=</span><span class="w"> </span>V4L2_BUF_TYPE_SDR_CAPTURE<span class="p">;</span>
+<span class="w">	</span>s-&gt;vb_queue.io_modes<span class="w"> </span><span class="o">=</span><span class="w"> </span>VB2_MMAP<span class="w"> </span><span class="p">|</span><span class="w"> </span>VB2_USERPTR<span class="w"> </span><span class="p">|</span><span class="w"> </span>VB2_READ<span class="p">;</span>
+<span class="w">	</span>s-&gt;vb_queue.drv_priv<span class="w"> </span><span class="o">=</span><span class="w"> </span>s<span class="p">;</span>
+<span class="w">	</span>s-&gt;vb_queue.buf_struct_size<span class="w"> </span><span class="o">=</span><span class="w"> </span>sizeof<span class="o">(</span>struct<span class="w"> </span>airspy_frame_buf<span class="o">)</span><span class="p">;</span>
+<span class="w">	</span>s-&gt;vb_queue.ops<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>airspy_vb2_ops<span class="p">;</span><span class="w">          </span>//<span class="w"> </span>vb2_ops,<span class="w"> </span>硬件相关的操作函数
+<span class="w">	</span>s-&gt;vb_queue.mem_ops<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>vb2_vmalloc_memops<span class="p">;</span><span class="w">  </span>//<span class="w"> </span>vb2_mem_ops,<span class="w"> </span>辅助结构体,用于mem<span class="w"> </span>ops<span class="o">(</span>alloc、mmap<span class="o">)</span>
+<span class="w">	</span>s-&gt;vb_queue.timestamp_flags<span class="w"> </span><span class="o">=</span><span class="w"> </span>V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC<span class="p">;</span>
+<span class="w">	</span><span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>vb2_queue_init<span class="o">(</span><span class="p">&amp;</span>s-&gt;vb_queue<span class="o">)</span><span class="p">;</span>
+<span class="w">				</span>q-&gt;buf_ops<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>v4l2_buf_ops<span class="p">;</span><span class="w">    </span>//<span class="w"> </span>vb2_buf_ops,<span class="w"> </span>用于APP和驱动传递参数
+
+//<span class="w"> </span>分配/设置video_device结构体
+s-&gt;vdev<span class="w"> </span><span class="o">=</span><span class="w"> </span>airspy_template<span class="p">;</span>
+s-&gt;vdev.queue<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>s-&gt;vb_queue<span class="p">;</span><span class="w">    </span>//<span class="w"> </span>指向前面构造的vb2_queue
+
+//<span class="w"> </span>初始化一个v4l2_device结构体<span class="o">(</span>起辅助作用<span class="o">)</span>
+/*<span class="w"> </span>Register<span class="w"> </span>the<span class="w"> </span>v4l2_device<span class="w"> </span>structure<span class="w"> </span>*/
+s-&gt;v4l2_dev.release<span class="w"> </span><span class="o">=</span><span class="w"> </span>airspy_video_release<span class="p">;</span>
+<span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>v4l2_device_register<span class="o">(</span><span class="p">&amp;</span>intf-&gt;dev,<span class="w"> </span><span class="p">&amp;</span>s-&gt;v4l2_dev<span class="o">)</span><span class="p">;</span>
+
+//<span class="w"> </span>video_device和4l2_device建立联系
+s-&gt;vdev.v4l2_dev<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>s-&gt;v4l2_dev<span class="p">;</span>
+
+//<span class="w"> </span>注册video_device结构体
+<span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>video_register_device<span class="o">(</span><span class="p">&amp;</span>s-&gt;vdev,<span class="w"> </span>VFL_TYPE_SDR,<span class="w"> </span>-1<span class="o">)</span><span class="p">;</span>
+<span class="w">		</span>__video_register_device
+<span class="w">			</span>//<span class="w"> </span>根据次设备号把video_device结构体放入数组
+<span class="w">			</span>video_device<span class="o">[</span>vdev-&gt;minor<span class="o">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>vdev<span class="p">;</span>
+<span class="w">			</span>
+<span class="w">			</span>//<span class="w"> </span>注册字符设备驱动程序
+<span class="w">			</span>vdev-&gt;cdev-&gt;ops<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>v4l2_fops<span class="p">;</span>
+<span class="w">			</span>vdev-&gt;cdev-&gt;owner<span class="w"> </span><span class="o">=</span><span class="w"> </span>owner<span class="p">;</span>
+<span class="w">			</span><span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>cdev_add<span class="o">(</span>vdev-&gt;cdev,<span class="w"> </span>MKDEV<span class="o">(</span>VIDEO_MAJOR,<span class="w"> </span>vdev-&gt;minor<span class="o">)</span>,<span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="p">;</span>
+</pre></div>
+</div>
+</section>
+<section id="vb2-buf-ops">
+<h4>1.3.3 vb2_buf_ops<a class="headerlink" href="#vb2-buf-ops" title="此标题的永久链接">#</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">vb2_buf_ops</span></code>示例如下：</p>
+<p><img alt="image-20230818151510055" src="../../_images/34_vb2_buf_ops_example.png" /></p>
+<p>原型如下：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">vb2_buf_ops</span><span class="w"> </span><span class="p">{</span>
+<span class="w">	</span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">verify_planes_array</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">vb2_buffer</span><span class="w"> </span><span class="o">*</span><span class="n">vb</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">pb</span><span class="p">);</span>
+<span class="w">	</span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fill_user_buffer</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">vb2_buffer</span><span class="w"> </span><span class="o">*</span><span class="n">vb</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">pb</span><span class="p">);</span>
+<span class="w">	</span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fill_vb2_buffer</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">vb2_buffer</span><span class="w"> </span><span class="o">*</span><span class="n">vb</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">pb</span><span class="p">,</span>
+<span class="w">				</span><span class="k">struct</span><span class="w"> </span><span class="nc">vb2_plane</span><span class="w"> </span><span class="o">*</span><span class="n">planes</span><span class="p">);</span>
+<span class="w">	</span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">copy_timestamp</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">vb2_buffer</span><span class="w"> </span><span class="o">*</span><span class="n">vb</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">pb</span><span class="p">);</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>各成员的作用为：</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>vb2_buf_ops结构体成员</p></th>
+<th class="head"><p>作用</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>verify_planes_array</p></td>
+<td><p>APP调用ioctl VIDIOC_DQBUF时，在驱动内部会调用此函数，用来验证这个buffer含有足够多的plane。</p></td>
+</tr>
+<tr class="row-odd"><td><p>fill_user_buffer</p></td>
+<td><p>使用驱动的vb2_buffer结构体来填充一个v4l2_buffer结构体，用来给用户空间提供更多信息。APP调用ioctl VIDIOC_QUERYBUF、VIDIOC_PREPARE_BUF、VIDIOC_QBUF、VIDIOC_DQBUF时，都会传入一个v4l2_buffer结构体。</p></td>
+</tr>
+<tr class="row-even"><td><p>fill_vb2_buffer</p></td>
+<td><p>APP调用ioctl VIDIOC_QBUF时，传入一个v4l2_buffer结构体，驱动里会用它来填充vb2_buffer结构体。</p></td>
+</tr>
+<tr class="row-odd"><td><p>copy_timestamp</p></td>
+<td><p>APP调用ioctl VIDIOC_QBUF时，传入一个v4l2_buffer结构体，用户程序可以在它的timestamp里记下时间。驱动程序可以调用此函数把timestamp写入vb2_buffer.timestamp里。</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="vb2-mem-ops">
+<h4>1.3.4 vb2_mem_ops<a class="headerlink" href="#vb2-mem-ops" title="此标题的永久链接">#</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">vb2_mem_ops</span></code>示例如下：</p>
+<p><img alt="image-20230817162952015" src="../../_images/33_vb2_mem_ops_example.png" /></p>
+<p>原型如下：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">vb2_mem_ops</span><span class="w"> </span><span class="p">{</span>
+<span class="w">	</span><span class="kt">void</span><span class="w">		</span><span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="n">alloc</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">attrs</span><span class="p">,</span>
+<span class="w">				  </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">size</span><span class="p">,</span>
+<span class="w">				  </span><span class="k">enum</span><span class="w"> </span><span class="n">dma_data_direction</span><span class="w"> </span><span class="n">dma_dir</span><span class="p">,</span>
+<span class="w">				  </span><span class="n">gfp_t</span><span class="w"> </span><span class="n">gfp_flags</span><span class="p">);</span>
+<span class="w">	</span><span class="kt">void</span><span class="w">		</span><span class="p">(</span><span class="o">*</span><span class="n">put</span><span class="p">)(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">buf_priv</span><span class="p">);</span>
+<span class="w">	</span><span class="k">struct</span><span class="w"> </span><span class="nc">dma_buf</span><span class="w"> </span><span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="n">get_dmabuf</span><span class="p">)(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">buf_priv</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">flags</span><span class="p">);</span>
+
+<span class="w">	</span><span class="kt">void</span><span class="w">		</span><span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="n">get_userptr</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">vaddr</span><span class="p">,</span>
+<span class="w">					</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">size</span><span class="p">,</span>
+<span class="w">					</span><span class="k">enum</span><span class="w"> </span><span class="n">dma_data_direction</span><span class="w"> </span><span class="n">dma_dir</span><span class="p">);</span>
+<span class="w">	</span><span class="kt">void</span><span class="w">		</span><span class="p">(</span><span class="o">*</span><span class="n">put_userptr</span><span class="p">)(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">buf_priv</span><span class="p">);</span>
+
+<span class="w">	</span><span class="kt">void</span><span class="w">		</span><span class="p">(</span><span class="o">*</span><span class="n">prepare</span><span class="p">)(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">buf_priv</span><span class="p">);</span>
+<span class="w">	</span><span class="kt">void</span><span class="w">		</span><span class="p">(</span><span class="o">*</span><span class="n">finish</span><span class="p">)(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">buf_priv</span><span class="p">);</span>
+
+<span class="w">	</span><span class="kt">void</span><span class="w">		</span><span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="n">attach_dmabuf</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span>
+<span class="w">					  </span><span class="k">struct</span><span class="w"> </span><span class="nc">dma_buf</span><span class="w"> </span><span class="o">*</span><span class="n">dbuf</span><span class="p">,</span>
+<span class="w">					  </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">size</span><span class="p">,</span>
+<span class="w">					  </span><span class="k">enum</span><span class="w"> </span><span class="n">dma_data_direction</span><span class="w"> </span><span class="n">dma_dir</span><span class="p">);</span>
+<span class="w">	</span><span class="kt">void</span><span class="w">		</span><span class="p">(</span><span class="o">*</span><span class="n">detach_dmabuf</span><span class="p">)(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">buf_priv</span><span class="p">);</span>
+<span class="w">	</span><span class="kt">int</span><span class="w">		</span><span class="p">(</span><span class="o">*</span><span class="n">map_dmabuf</span><span class="p">)(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">buf_priv</span><span class="p">);</span>
+<span class="w">	</span><span class="kt">void</span><span class="w">		</span><span class="p">(</span><span class="o">*</span><span class="n">unmap_dmabuf</span><span class="p">)(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">buf_priv</span><span class="p">);</span>
+
+<span class="w">	</span><span class="kt">void</span><span class="w">		</span><span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="n">vaddr</span><span class="p">)(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">buf_priv</span><span class="p">);</span>
+<span class="w">	</span><span class="kt">void</span><span class="w">		</span><span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="n">cookie</span><span class="p">)(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">buf_priv</span><span class="p">);</span>
+
+<span class="w">	</span><span class="kt">unsigned</span><span class="w"> </span><span class="nf">int</span><span class="w">	</span><span class="p">(</span><span class="o">*</span><span class="n">num_users</span><span class="p">)(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">buf_priv</span><span class="p">);</span>
+
+<span class="w">	</span><span class="kt">int</span><span class="w">		</span><span class="p">(</span><span class="o">*</span><span class="n">mmap</span><span class="p">)(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">buf_priv</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">vm_area_struct</span><span class="w"> </span><span class="o">*</span><span class="n">vma</span><span class="p">);</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>各成员的作用为：</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>vb2_mem_ops结构体成员</p></th>
+<th class="head"><p>作用</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>alloc</p></td>
+<td><p>分配真正用于存储视频数据的buffer，可能还分配私有数据</p></td>
+</tr>
+<tr class="row-odd"><td><p>put</p></td>
+<td><p>通知分配器：这块buffer不再使用了。通常会释放内存。</p></td>
+</tr>
+<tr class="row-even"><td><p>get_dmabuf</p></td>
+<td><p>获得DMA BUF给底层驱动使用</p></td>
+</tr>
+<tr class="row-odd"><td><p>get_userptr</p></td>
+<td><p>如果存储视频数据的buffer是userptr（由APP提供），那么APP调用ioctl VIDIOC_QBUF时，需要传入APP的buffer指针。驱动程序内部通过此函数把用户空间的buffer映射到内核空间。</p></td>
+</tr>
+<tr class="row-even"><td><p>put_userptr</p></td>
+<td><p>通知分配器：这块USERPTR缓冲区不再使用</p></td>
+</tr>
+<tr class="row-odd"><td><p>attach_dmabuf</p></td>
+<td><p>如果存储视频数据的buffer是DMA Buf，那么在把这个buffer放入队列前会调用此函数：记录这个DMA Buf。</p></td>
+</tr>
+<tr class="row-even"><td><p>detach_dmabuf</p></td>
+<td><p>不再使用这个DMA Buf时，做些清理工作（比如在attach_dmabuf里分配了数据，就在这里释放掉）</p></td>
+</tr>
+<tr class="row-odd"><td><p>map_dmabuf</p></td>
+<td><p>把DMA Buf映射到内核空间</p></td>
+</tr>
+<tr class="row-even"><td><p>unmap_dmabuf</p></td>
+<td><p>map_dmabuf的反操作</p></td>
+</tr>
+<tr class="row-odd"><td><p>prepare</p></td>
+<td><p>每当buffer被从用户空间传递到驱动时，此函数被调用，可以用来做某些同步操作。可选。</p></td>
+</tr>
+<tr class="row-even"><td><p>finish</p></td>
+<td><p>每当buffer被从驱动传递到用户空间时，此函数被调用，可以用来做某些同步操作。可选。</p></td>
+</tr>
+<tr class="row-odd"><td><p>vaddr</p></td>
+<td><p>返回这块内存的内核空间地址</p></td>
+</tr>
+<tr class="row-even"><td><p>cookie</p></td>
+<td><p>没什么用</p></td>
+</tr>
+<tr class="row-odd"><td><p>num_users</p></td>
+<td><p>返回这块内存的引用计数</p></td>
+</tr>
+<tr class="row-even"><td><p>mmap</p></td>
+<td><p>把这块内存，映射到用户空间</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="vb2-ops">
+<h4>1.3.5 vb2_ops<a class="headerlink" href="#vb2-ops" title="此标题的永久链接">#</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">vb2_ops</span></code>示例如下：</p>
+<p><img alt="image-20230816171236918" src="../../_images/31_vbs_ops_example.png" /></p>
+<p>原型如下：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">vb2_ops</span><span class="w"> </span><span class="p">{</span>
+<span class="w">	</span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">queue_setup</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">vb2_queue</span><span class="w"> </span><span class="o">*</span><span class="n">q</span><span class="p">,</span>
+<span class="w">			   </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">num_buffers</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">num_planes</span><span class="p">,</span>
+<span class="w">			   </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">sizes</span><span class="p">[],</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">alloc_devs</span><span class="p">[]);</span>
+
+<span class="w">	</span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">wait_prepare</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">vb2_queue</span><span class="w"> </span><span class="o">*</span><span class="n">q</span><span class="p">);</span>
+<span class="w">	</span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">wait_finish</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">vb2_queue</span><span class="w"> </span><span class="o">*</span><span class="n">q</span><span class="p">);</span>
+
+<span class="w">	</span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">buf_init</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">vb2_buffer</span><span class="w"> </span><span class="o">*</span><span class="n">vb</span><span class="p">);</span>
+<span class="w">	</span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">buf_prepare</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">vb2_buffer</span><span class="w"> </span><span class="o">*</span><span class="n">vb</span><span class="p">);</span>
+<span class="w">	</span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">buf_finish</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">vb2_buffer</span><span class="w"> </span><span class="o">*</span><span class="n">vb</span><span class="p">);</span>
+<span class="w">	</span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">buf_cleanup</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">vb2_buffer</span><span class="w"> </span><span class="o">*</span><span class="n">vb</span><span class="p">);</span>
+
+<span class="w">	</span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">start_streaming</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">vb2_queue</span><span class="w"> </span><span class="o">*</span><span class="n">q</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">count</span><span class="p">);</span>
+<span class="w">	</span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">stop_streaming</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">vb2_queue</span><span class="w"> </span><span class="o">*</span><span class="n">q</span><span class="p">);</span>
+
+<span class="w">	</span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">buf_queue</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">vb2_buffer</span><span class="w"> </span><span class="o">*</span><span class="n">vb</span><span class="p">);</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>各成员的作用为：</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>vb2_ops结构体成员</p></th>
+<th class="head"><p>作用</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>queue_setup</p></td>
+<td><p>APP调用ioctl VIDIOC_REQBUFS或VIDIOC_CREATE_BUFS时，<br />驱动程序在分配内存之前，会调用此函数。<br />作用：通过它来询问硬件驱动”你需要多少个buffer？每个buffer需要多少个plane？”<br />这个函数被调用2次：第1次用来表明驱动程序对buffer的需求，但是不一定能全部分配这些buffer，当分配出buffer后，再调用第2次以验证”这些buffer是否足够”。</p></td>
+</tr>
+<tr class="row-odd"><td><p>wait_prepare</p></td>
+<td><p>释放驱动自己的互斥锁</p></td>
+</tr>
+<tr class="row-even"><td><p>wait_finish</p></td>
+<td><p>申请驱动自己的互斥锁</p></td>
+</tr>
+<tr class="row-odd"><td><p>buf_init</p></td>
+<td><p>分配vb2_buffer及它内部存储数据的buffer后，使用buf_init进行驱动相关的初始化</p></td>
+</tr>
+<tr class="row-even"><td><p>buf_prepare</p></td>
+<td><p>APP调用ioctl VIDIOC_QBUF或VIDIOC_PREPARE_BUF时，驱动程序会在执行硬件操作前，调用此函数进行必要的初始化。</p></td>
+</tr>
+<tr class="row-odd"><td><p>buf_finish</p></td>
+<td><p>APP调用ioctl VIDIOC_DQBUF后，在驱动程序返回用户空间之前，会调用此函数，可以在这个函数里修改buffer。或者驱动程序内部停止或暂停streaming时，也会调用此函数。</p></td>
+</tr>
+<tr class="row-even"><td><p>buf_cleanup</p></td>
+<td><p>在buffer被释放前调用，驱动程序在这个函数里执行额外的清除工作。</p></td>
+</tr>
+<tr class="row-odd"><td><p>start_streaming</p></td>
+<td><p>驱动相关的”启动streaming”函数</p></td>
+</tr>
+<tr class="row-even"><td><p>stop_streaming</p></td>
+<td><p>驱动相关的”停止streaming”函数</p></td>
+</tr>
+<tr class="row-odd"><td><p>buf_queue</p></td>
+<td><p>把buffer传送给驱动，驱动获得数据、填充好buffer后会调用vb2_buffer_done函数返还buffer。</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id5">
+<h4>1.3.6 videobuffer2情景分析<a class="headerlink" href="#id5" title="此标题的永久链接">#</a></h4>
+<p>情景分析1：申请buffer</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">APP</span><span class="w"> </span><span class="n">ioctl</span><span class="w"> </span><span class="n">VIDIOC_REQBUFS</span>
+<span class="o">------------------------------</span>
+<span class="w">	</span><span class="n">v4l_reqbufs</span><span class="w"> </span><span class="c1">// v4l2-ioctl.c</span>
+<span class="w">    	</span><span class="n">ops</span><span class="o">-&gt;</span><span class="n">vidioc_reqbufs</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">fh</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">);</span>
+<span class="w">			</span><span class="n">vb2_ioctl_reqbufs</span><span class="w"> </span><span class="c1">// videobuf2-v4l2.c</span>
+<span class="w">    			</span><span class="n">vb2_core_reqbufs</span><span class="w"> </span>
+<span class="w">                    </span><span class="cm">/*</span>
+<span class="cm">                     * Ask the driver how many buffers and planes per buffer it requires.</span>
+<span class="cm">                     * Driver also sets the size and allocator context for each plane.</span>
+<span class="cm">                     */</span>
+<span class="w">                    </span><span class="cm">/* 调用硬件相关的vb2_ops.queue_setup，确认需要多少个buffer、每个buffer里有多少个plane */</span>
+<span class="w">                    </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">call_qop</span><span class="p">(</span><span class="n">q</span><span class="p">,</span><span class="w"> </span><span class="n">queue_setup</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">num_buffers</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">num_planes</span><span class="p">,</span>
+<span class="w">                               </span><span class="n">plane_sizes</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="o">-&gt;</span><span class="n">alloc_devs</span><span class="p">);</span>
+
+
+<span class="w">                    </span><span class="cm">/* Finally, allocate buffers and video memory */</span><span class="w">					</span>
+<span class="w">                    </span><span class="n">allocated_buffers</span><span class="w"> </span><span class="o">=</span>
+<span class="w">                        </span><span class="n">__vb2_queue_alloc</span><span class="p">(</span><span class="n">q</span><span class="p">,</span><span class="w"> </span><span class="n">memory</span><span class="p">,</span><span class="w"> </span><span class="n">num_buffers</span><span class="p">,</span><span class="w"> </span><span class="n">num_planes</span><span class="p">,</span><span class="w"> </span><span class="n">plane_sizes</span><span class="p">);</span>
+<span class="w">							</span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">__vb2_buf_mem_alloc</span><span class="p">(</span><span class="n">vb</span><span class="p">);</span>
+<span class="w">										</span><span class="c1">// 调用vb2_mem_ops.alloc分配内存</span>
+<span class="w">                                        </span><span class="n">mem_priv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">call_ptr_memop</span><span class="p">(</span><span class="n">vb</span><span class="p">,</span><span class="w"> </span><span class="n">alloc</span><span class="p">,</span>
+<span class="w">                                            </span><span class="n">q</span><span class="o">-&gt;</span><span class="n">alloc_devs</span><span class="p">[</span><span class="n">plane</span><span class="p">]</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">q</span><span class="o">-&gt;</span><span class="n">dev</span><span class="p">,</span>
+<span class="w">                                            </span><span class="n">q</span><span class="o">-&gt;</span><span class="n">dma_attrs</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">,</span><span class="w"> </span><span class="n">dma_dir</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="o">-&gt;</span><span class="n">gfp_flags</span><span class="p">);</span>
+
+<span class="w">					</span><span class="cm">/* 驱动想得到M个buffer，但是可能只分配了N个buffer，可以吗？问驱动</span>
+<span class="cm">					 * 再次调用硬件相关的vb2_ops.queue_setup，确认已经分配的buffer个数、每个buffer的plane个数是否符合硬件需求</span>
+<span class="cm">					 */</span>
+<span class="w">                    </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">call_qop</span><span class="p">(</span><span class="n">q</span><span class="p">,</span><span class="w"> </span><span class="n">queue_setup</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">num_buffers</span><span class="p">,</span>
+<span class="w">                               </span><span class="o">&amp;</span><span class="n">num_planes</span><span class="p">,</span><span class="w"> </span><span class="n">plane_sizes</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="o">-&gt;</span><span class="n">alloc_devs</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>情景分析2：把buffer放入队列</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">APP</span><span class="w"> </span><span class="n">ioctl</span><span class="w"> </span><span class="n">VIDIOC_QBUF</span>
+<span class="o">------------------------------</span>
+<span class="w">	</span><span class="n">v4l_qbuf</span><span class="w"> </span><span class="c1">// v4l2-ioctl.c</span>
+<span class="w">    	</span><span class="n">ops</span><span class="o">-&gt;</span><span class="n">vidioc_qbuf</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">fh</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">);</span>
+<span class="w">			</span><span class="n">vb2_ioctl_qbuf</span><span class="w"> </span><span class="c1">// videobuf2-v4l2.c</span>
+<span class="w">                </span><span class="nf">vb2_qbuf</span><span class="p">(</span><span class="n">vdev</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">);</span><span class="w">  </span><span class="c1">// videobuf2-v4l2.c</span>
+<span class="w">					</span><span class="n">vb2_core_qbuf</span><span class="p">(</span><span class="n">q</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="o">-&gt;</span><span class="n">index</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">);</span><span class="w"> </span><span class="c1">// videobuf2-core.c</span>
+<span class="w">						</span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">__buf_prepare</span><span class="p">(</span><span class="n">vb</span><span class="p">,</span><span class="w"> </span><span class="n">pb</span><span class="p">);</span>
+<span class="w">								</span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">__qbuf_mmap</span><span class="p">(</span><span class="n">vb</span><span class="p">,</span><span class="w"> </span><span class="n">pb</span><span class="p">);</span><span class="w">  </span><span class="c1">// videobuf2-core.c</span>
+
+<span class="w">                                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pb</span><span class="p">)</span><span class="w"> </span><span class="c1">// 调用vb2_buf_ops.fill_vb2_buffer, 使用APP传入的v4l2_buffer来设置驱动的vb2_buffer</span>
+<span class="w">                                            </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">call_bufop</span><span class="p">(</span><span class="n">vb</span><span class="o">-&gt;</span><span class="n">vb2_queue</span><span class="p">,</span><span class="w"> </span><span class="n">fill_vb2_buffer</span><span class="p">,</span>
+<span class="w">                                                     </span><span class="n">vb</span><span class="p">,</span><span class="w"> </span><span class="n">pb</span><span class="p">,</span><span class="w"> </span><span class="n">vb</span><span class="o">-&gt;</span><span class="n">planes</span><span class="p">);</span>
+<span class="w">										</span><span class="c1">// 硬件相关的vb2_ops.buf_prepare, 对buffer做些准备工作</span>
+<span class="w">                                        </span><span class="k">return</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">call_vb_qop</span><span class="p">(</span><span class="n">vb</span><span class="p">,</span><span class="w"> </span><span class="n">buf_prepare</span><span class="p">,</span><span class="w"> </span><span class="n">vb</span><span class="p">);</span>
+<span class="w">						</span><span class="c1">// 把buffer放入空闲链表</span>
+<span class="w">						</span><span class="n">list_add_tail</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vb</span><span class="o">-&gt;</span><span class="n">queued_entry</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">q</span><span class="o">-&gt;</span><span class="n">queued_list</span><span class="p">);</span>
+
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pb</span><span class="p">)</span><span class="w"> </span><span class="c1">// 调用vb2_buf_ops.copy_timestamp, 使用APP传入的v4l2_buffer来设置驱动的vb2_buffer</span>
+<span class="w">                            </span><span class="n">call_void_bufop</span><span class="p">(</span><span class="n">q</span><span class="p">,</span><span class="w"> </span><span class="n">copy_timestamp</span><span class="p">,</span><span class="w"> </span><span class="n">vb</span><span class="p">,</span><span class="w"> </span><span class="n">pb</span><span class="p">);</span>
+
+<span class="w">                        </span><span class="cm">/*</span>
+<span class="cm">                         * If already streaming, give the buffer to driver for processing.</span>
+<span class="cm">                         * If not, the buffer will be given to driver on next streamon.</span>
+<span class="cm">                         */</span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">q</span><span class="o">-&gt;</span><span class="n">start_streaming_called</span><span class="p">)</span>
+<span class="w">                            </span><span class="n">__enqueue_in_driver</span><span class="p">(</span><span class="n">vb</span><span class="p">);</span>
+<span class="w">                                    </span><span class="cm">/* sync buffers */</span>
+<span class="w">                                    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">plane</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">plane</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">vb</span><span class="o">-&gt;</span><span class="n">num_planes</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">plane</span><span class="p">)</span>
+<span class="w">                                        </span><span class="c1">// 调用vb2_mem_ops.prepare做准备</span>
+<span class="w">                                        </span><span class="n">call_void_memop</span><span class="p">(</span><span class="n">vb</span><span class="p">,</span><span class="w"> </span><span class="n">prepare</span><span class="p">,</span><span class="w"> </span><span class="n">vb</span><span class="o">-&gt;</span><span class="n">planes</span><span class="p">[</span><span class="n">plane</span><span class="p">].</span><span class="n">mem_priv</span><span class="p">);</span><span class="w"> </span>
+
+<span class="w">									</span><span class="c1">// 调用硬件相关的vb2_ops.buf_queue把buffer传送给驱动</span>
+<span class="w">                                    </span><span class="n">call_void_vb_qop</span><span class="p">(</span><span class="n">vb</span><span class="p">,</span><span class="w"> </span><span class="n">buf_queue</span><span class="p">,</span><span class="w"> </span><span class="n">vb</span><span class="p">);</span>
+
+<span class="w">                        </span><span class="cm">/* Fill buffer information for the userspace */</span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pb</span><span class="p">)</span><span class="w"> </span><span class="c1">// 调用vb2_buf_ops.fill_user_buffer, 使用驱动的vb2_buffer为APP设置v4l2_buffer</span>
+<span class="w">                            </span><span class="n">call_void_bufop</span><span class="p">(</span><span class="n">q</span><span class="p">,</span><span class="w"> </span><span class="n">fill_user_buffer</span><span class="p">,</span><span class="w"> </span><span class="n">vb</span><span class="p">,</span><span class="w"> </span><span class="n">pb</span><span class="p">);</span>
+
+<span class="w">                        </span><span class="cm">/*</span>
+<span class="cm">                         * If streamon has been called, and we haven&#39;t yet called</span>
+<span class="cm">                         * start_streaming() since not enough buffers were queued, and</span>
+<span class="cm">                         * we now have reached the minimum number of queued buffers,</span>
+<span class="cm">                         * then we can finally call start_streaming().</span>
+<span class="cm">                         */</span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">q</span><span class="o">-&gt;</span><span class="n">streaming</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">q</span><span class="o">-&gt;</span><span class="n">start_streaming_called</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">                            </span><span class="n">q</span><span class="o">-&gt;</span><span class="n">queued_count</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">q</span><span class="o">-&gt;</span><span class="n">min_buffers_needed</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                            </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vb2_start_streaming</span><span class="p">(</span><span class="n">q</span><span class="p">);</span>
+<span class="w">                                        </span><span class="cm">/*</span>
+<span class="cm">                                         * If any buffers were queued before streamon,</span>
+<span class="cm">                                         * we can now pass them to driver for processing.</span>
+<span class="cm">                                         */</span>
+<span class="w">                                        </span><span class="n">list_for_each_entry</span><span class="p">(</span><span class="n">vb</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">q</span><span class="o">-&gt;</span><span class="n">queued_list</span><span class="p">,</span><span class="w"> </span><span class="n">queued_entry</span><span class="p">)</span>
+<span class="w">                                            </span><span class="n">__enqueue_in_driver</span><span class="p">(</span><span class="n">vb</span><span class="p">);</span>
+<span class="w">                                                    </span><span class="cm">/* sync buffers */</span>
+<span class="w">                                                    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">plane</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">plane</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">vb</span><span class="o">-&gt;</span><span class="n">num_planes</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">plane</span><span class="p">)</span>
+<span class="w">                                                        </span><span class="c1">// 调用vb2_mem_ops.prepare做准备</span>
+<span class="w">                                                        </span><span class="n">call_void_memop</span><span class="p">(</span><span class="n">vb</span><span class="p">,</span><span class="w"> </span><span class="n">prepare</span><span class="p">,</span><span class="w"> </span><span class="n">vb</span><span class="o">-&gt;</span><span class="n">planes</span><span class="p">[</span><span class="n">plane</span><span class="p">].</span><span class="n">mem_priv</span><span class="p">);</span>
+<span class="w">													</span><span class="c1">// 调用硬件相关的vb2_ops.buf_queue把buffer传送给驱动</span>
+<span class="w">                                                    </span><span class="n">call_void_vb_qop</span><span class="p">(</span><span class="n">vb</span><span class="p">,</span><span class="w"> </span><span class="n">buf_queue</span><span class="p">,</span><span class="w"> </span><span class="n">vb</span><span class="p">);</span>
+
+<span class="w">                                        </span><span class="cm">/* Tell the driver to start streaming */</span>
+<span class="w">                                        </span><span class="n">q</span><span class="o">-&gt;</span><span class="n">start_streaming_called</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">                            			</span><span class="c1">// 调用硬件相关的vb2_ops.start_streaming启动硬件传输</span>
+<span class="w">                                        </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">call_qop</span><span class="p">(</span><span class="n">q</span><span class="p">,</span><span class="w"> </span><span class="n">start_streaming</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="p">,</span>
+<span class="w">                                                   </span><span class="n">atomic_read</span><span class="p">(</span><span class="o">&amp;</span><span class="n">q</span><span class="o">-&gt;</span><span class="n">owned_by_drv_count</span><span class="p">));</span>
+
+
+</pre></div>
+</div>
+<p>情景分析3：把buffer取出队列</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>APP<span class="w"> </span>ioctl<span class="w"> </span>VIDIOC_DQBUF
+------------------------------
+<span class="w">	</span>v4l_dqbuf<span class="w"> </span>//<span class="w"> </span>v4l2-ioctl.c
+<span class="w">    	</span>ops-&gt;vidioc_dqbuf<span class="o">(</span>file,<span class="w"> </span>fh,<span class="w"> </span>p<span class="o">)</span><span class="p">;</span>
+<span class="w">			</span>vb2_ioctl_dqbuf<span class="w"> </span>//<span class="w"> </span>videobuf2-v4l2.c
+<span class="w">				</span>vb2_dqbuf<span class="o">(</span>vdev-&gt;queue,<span class="w"> </span>p,<span class="w"> </span>file-&gt;f_flags<span class="w"> </span><span class="p">&amp;</span><span class="w"> </span>O_NONBLOCK<span class="o">)</span><span class="p">;</span>
+<span class="w">					</span><span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>vb2_core_dqbuf<span class="o">(</span>q,<span class="w"> </span>NULL,<span class="w"> </span>b,<span class="w"> </span>nonblocking<span class="o">)</span><span class="p">;</span>
+<span class="w">                            </span><span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>__vb2_get_done_vb<span class="o">(</span>q,<span class="w"> </span><span class="p">&amp;</span>vb,<span class="w"> </span>pb,<span class="w"> </span>nonblocking<span class="o">)</span><span class="p">;</span>
+<span class="w">                                    </span><span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>__vb2_wait_for_done_vb<span class="o">(</span>q,<span class="w"> </span>nonblocking<span class="o">)</span><span class="p">;</span>
+<span class="w">                                            </span>call_void_qop<span class="o">(</span>q,<span class="w"> </span>wait_prepare,<span class="w"> </span>q<span class="o">)</span><span class="p">;</span>
+<span class="w">                                            </span>wait_event_interruptible
+<span class="w">                                            </span>call_void_qop<span class="o">(</span>q,<span class="w"> </span>wait_finish,<span class="w"> </span>q<span class="o">)</span><span class="p">;</span>
+<span class="w">                                    </span>*vb<span class="w"> </span><span class="o">=</span><span class="w"> </span>list_first_entry<span class="o">(</span><span class="p">&amp;</span>q-&gt;done_list,<span class="w"> </span>struct<span class="w"> </span>vb2_buffer,<span class="w"> </span>done_entry<span class="o">)</span><span class="p">;</span>
+<span class="w">                                    </span><span class="k">if</span><span class="w"> </span><span class="o">(</span>pb<span class="o">)</span>
+<span class="w">                                        </span><span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>call_bufop<span class="o">(</span>q,<span class="w"> </span>verify_planes_array,<span class="w"> </span>*vb,<span class="w"> </span>pb<span class="o">)</span><span class="p">;</span>
+<span class="w">                                                    </span>__verify_planes_array_core
+<span class="w">                                                        </span>__verify_planes_array<span class="o">(</span>vb,<span class="w"> </span>pb<span class="o">)</span><span class="p">;</span>
+<span class="w">                                    </span><span class="k">if</span><span class="w"> </span><span class="o">(</span>!ret<span class="o">)</span>
+<span class="w">                                        </span>list_del<span class="o">(</span><span class="p">&amp;</span><span class="o">(</span>*vb<span class="o">)</span>-&gt;done_entry<span class="o">)</span><span class="p">;</span><span class="w">			</span>
+<span class="w">                            </span>call_void_vb_qop<span class="o">(</span>vb,<span class="w"> </span>buf_finish,<span class="w"> </span>vb<span class="o">)</span><span class="p">;</span>
+
+<span class="w">                            </span>/*<span class="w"> </span>go<span class="w"> </span>back<span class="w"> </span>to<span class="w"> </span>dequeued<span class="w"> </span>state<span class="w"> </span>*/
+<span class="w">                            </span>__vb2_dqbuf<span class="o">(</span>vb<span class="o">)</span><span class="p">;</span>
+<span class="w">                                </span>call_void_memop<span class="o">(</span>vb,<span class="w"> </span>unmap_dmabuf,<span class="w"> </span>vb-&gt;planes<span class="o">[</span>i<span class="o">]</span>.mem_priv<span class="o">)</span><span class="p">;</span>
+<span class="w">                                    </span>vb2_vmalloc_unmap_dmabuf
+<span class="w">                                        </span>dma_buf_vunmap<span class="o">(</span>buf-&gt;dbuf,<span class="w"> </span>buf-&gt;vaddr<span class="o">)</span><span class="p">;</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="01_1.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">上一页</p>
+        <p class="prev-next-title">01_V4L2应用程序开发</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="03_1.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">下一页</p>
+        <p class="prev-next-title">03_从0编写一个虚拟摄像头驱动</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 目录
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">1. 整体框架</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">1.1 V4L2驱动程序注册流程</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ioctl">1.2 ioctl调用流程分析</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">1.2.1 两类ioctl</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">1.2.2 调用流程</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#buffer">1.3 buffer的内核实现</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#videobuffer2">1.3.1 videobuffer2缓冲区结构体</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#videobuffer23ops">1.3.2 videobuffer2的3个ops</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#vb2-buf-ops">1.3.3 vb2_buf_ops</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#vb2-mem-ops">1.3.4 vb2_mem_ops</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#vb2-ops">1.3.5 vb2_ops</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">1.3.6 videobuffer2情景分析</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+作者： 100ask_Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2019-2024 深圳百问网科技有限公司.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  最后更新于 2024 年 08 月 08 日.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,1205 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="zh-CN" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>11_Gadget驱动程序框架 &#8212; Linux设备驱动开发教程中心</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/topbar.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom-theme.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../../_static/translations.js"></script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'zh/12_USB/11_1';</script>
+    <link rel="icon" href="../../_static/favicon.png"/>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="12_Gadget应用实例之zero" href="12_1.html" />
+    <link rel="prev" title="10_OTG硬件检测电路" href="10_1.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="zh-CN"/>
+    <meta name="docbuild:last-update" content="2024 年 08 月 08 日"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+
+  <div class="bd-header-announcement container-fluid bd-header-announcement">
+    <div class="bd-header-announcement__content">📢📢📢 欢迎来到百问网Linux设备驱动开发教程中心文档站点！！！技术交流社区：https://forums.100ask.net</div>
+  </div>
+
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Linux设备驱动开发教程中心</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">1.课程介绍</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../03_LCD/index.html">3.LCD显示子系统</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/01_1.html">01_单片机_Linux下不同接口的LCD硬件操作原理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/02_1.html">02_Framebuffer驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/03.html">03_编程_写出框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/04.html">04_最简单的LCD驱动_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/05.html">05_上机实验_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/06_1.html">结合APP分析LCD驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/07_1.html">07_硬件_8080接口LCD时序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/08_1.html">08_硬件_TFT-RGB接口LCD时序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/09_1.html">09_硬件_IMX6ULL的LCD控制器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/10_1.html">10_分析内核自带的LCD驱动程序_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/11_1.html">11_编程_LCD驱动程序框架_使用设备树</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/12_1.html">12_编程_配置引脚_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/13_1.html">13_编程_配置时钟_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/14_1.html">14_编程_ 配置LCD控制器之获得LCD参数_ 基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/15_1.html">15_编程_配置LCD控制器之寄存器操作_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/16.html">16_上机实验_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/17_1.html">17_单Buffer的缺点与改进方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/18.html">18_编写使用多buffer的应用程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../04_I2C/index.html">4.I2C子系统</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/01.html">01_I2C视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/02_1.html">02_I2C协议</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/03.html">03_SMBus协议</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/04.html">04_I2C系统的重要结构体</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/05.html">05_无需编写驱动直接访问设备_I2C-Tools介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/06.html">06_编写APP直接访问EEPROM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/07.html">07_通用驱动i2c-dev分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/08_1.html">08_I2C系统驱动程序模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/09.html">09_编写设备驱动之i2c_driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/10.html">10_编写设备驱动之i2c_client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/11.html">11_I2C_Adapter驱动框架讲解与编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/12_1.html">12_完善虚拟的I2C_Adapter驱动并模拟EEPROM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/13_1.html">13_使用GPIO模拟I2C的驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/14.html">14_使用GPIO操作I2C设备_IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/15_1.html">15_具体芯片的I2C_Adapter驱动分析</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../05_Input/index.html">5.Input输入子系统</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/01.html">01_Input子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/02.html">02_先学习输入系统应用编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_1.html">DRV_01_Input子系统框架详解</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_2.html">DRV_02_编写input_dev驱动框架解</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_3.html">DRV_03_ 编写最简单的触摸屏驱动程序_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_4.html">DRV_04_GPIO按键驱动分析与使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_5.html">DRV_05_I2C接口触摸屏驱动分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_6.html">DRV_06_UInput分析_用户态创建input_dev</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../06_Pinctrl/index.html">6.Pinctrl子系统</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/01.html">01_Pinctrl子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/03_1.html">02_Pinctrl子系统使用示例_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/03_2.html">03_Pinctrl子系统使用示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/04_1.html">04_Pinctrl子系统主要数据结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/05_1.html">05_Pincontroller构造过程情景分析_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/06_1.html">06_client端使用pinctrl过程的情景分析_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/07_1.html">07_编写虚拟的Pinctrl驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/08_1.html">08_调试虚拟的Pinctrl驱动程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../07_GPIO/index.html">7.GPIO子系统</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/01_1.html">01_GPIO子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/05_1.html">02_GPIO子系统层次与数据结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/06_1.html">03_IMX6ULL的GPIO驱动源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/07_1.html">04_编写一个虚拟GPIO控制器的驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/08_1.html">05_调试与使用虚拟的GPIO控制器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/09_1.html">06_GPIO子系统与Pinctrl子系统的交互</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/10_1.html">07_编程_GPIO使用Pinctrl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/11_1.html">08_GPIO子系统的sysfs接口</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../08_Interrupt/index.html">8.Interrupt子系统</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/08_1.html">01_中断相关的其他驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/09_1.html">02_中断的硬件框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/10_1.html">03_GIC介绍与编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/11_1.html">04_异常向量表的安装与调用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/12_1.html">05_GIC驱动程序对中断的处理流程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/13_1.html">06_GIC驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/14_1.html">07_两类中断控制器处理流程_链式和层级</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/15_1.html">08_链式中断控制器驱动程序编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/16_1.html">09_legacy方式代码的上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/17_1.html">10_链式中断控制器驱动程序编写_linear方式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/18_1.html">11_层级中断控制器驱动程序编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/19_1.html">12_层级中断控制器驱动程序上机实验</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../09_UART/index.html">9.UART子系统</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/01_1.html">01_UART子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/02_1.html">02_硬件知识_UART硬件介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/03_1.html">03_TTY体系中设备节点的差别</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/04_1.html">04_TTY驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/05_1.html">05_在STM32MP157上做串口实验的准备工作</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/05_2.html">06_Linux串口应用编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/07_1.html">07_字符设备驱动程序的另一种注册方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/08_1.html">08_UART驱动情景分析_注册</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/09_1.html">09_UART驱动情景分析_open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/10_1.html">10_UART驱动情景分析_read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/11_1.html">11_UART驱动情景分析_write</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/12_1.html">12_UART驱动调试方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/13_1.html">13_编写虚拟UART驱动程序_框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/14_1.html">14_编写虚拟UART驱动程序_实现uart_ops</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/15_1.html">15_编写虚拟UART驱动程序_实现数据传输</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/16_1.html">16_编写虚拟UART驱动程序_调试</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/17_1.html">17_printk执行过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/18_1.html">18_console驱动注册过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/19_1.html">19_编写console驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/20_1.html">20_early_printk和earlycon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/21_1.html">21_RS485简单讲解</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../10_PCI_PCIe/index.html">10.PCI_PCIe子系统</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/01_1.html">01_从软件开发角度看待PCI和PCIe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/02_1.html">02_PCI设备的访问方法_非桥设备(type0)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/03_1.html">03_PCI设备的访问方法_桥设备(type1)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/04_1.html">04_从软件角度看PCIe设备的硬件结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/05_1.html">05_PCIe设备的配置过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/06_1.html">06_PCIe路由方式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/07_1.html">07_PCI驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/08_1.html">08_RK3399_PCIe芯片手册解读</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/09_1.html">09_RK3399_PCIe_Host驱动分析_地址映射</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/10_1.html">10_RK3399_PCIe_Host驱动分析_设备枚举</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/11_1.html">11_INTx_MSI_MSIX三种中断机制分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/12_1.html">12_INTx中断机制源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/13_1.html">13_GICv3_LPI机制</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/14_1.html">14_MSI_MSI-X中断之体验与使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/15_1.html">15_MSI_MSI-X中断之源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/16_1.html">16_怎么编写PCIe设备驱动程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../11_SPI/index.html">11.SPI子系统</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/01_1.html">01_SPI视频概述</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/02_1.html">02_SPI协议介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/03_1.html">03_SPI总线设备驱动模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/04_1.html">04_SPI设备树处理过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/05_1.html">05_spidev的使用(SPI用户态API)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/06_1.html">06_使用spidev操作SPI_DAC模块</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/07_1.html">07_SPI_DAC模块上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/08_1.html">08_SPI_OLED模块操作方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/09_1.html">09_使用spidev操作SPI_OLED模块</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/10_1.html">10_OLED模块上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/11_1.html">11_编写SPI设备驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/12_1.html">12_编写SPI_DAC模块驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/13_1.html">13_编写DAC驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/14_1.html">14_编写SPI_OLED模块驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/15_1.html">15_编写OLED驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/16_1.html">16_使用Framebuffer改造OLED驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/17_1.html">17_OLED_Framebuffer驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/18_1.html">18_SPI_Master驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/19_1.html">19_编写SPI_Master驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/20_1.html">20_使用老方法编写的SPI_Master驱动程序上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/21_1.html">21_编写SPI_Master驱动程序_新方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/22_1.html">22_使用新方法编写的SPI_Master驱动程序上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/23_1.html">23_SPI_Slave_Mode驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/24_1.html">24_SPI_Slave_Mode驱动程序源码解读</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/25_1.html">临时笔记</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">12.USB子系统</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-10"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="01_1.html">01_USB视频介绍及资料下载</a></li>
+<li class="toctree-l2"><a class="reference internal" href="02_1.html">02_USB系统硬件框架和软件框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="03_1.html">03_软件工程师眼里的USB电气信号</a></li>
+<li class="toctree-l2"><a class="reference internal" href="04_1.html">04_USB协议层数据格式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05_1.html">05_USB描述符</a></li>
+<li class="toctree-l2"><a class="reference internal" href="06_1.html">06_libusb的使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="07_1.html">07_使用libusb读取鼠标数据</a></li>
+<li class="toctree-l2"><a class="reference internal" href="08_1.html">08_USB设备驱动模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="09_1.html">09_编写USB鼠标驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="10_1.html">10_OTG硬件检测电路</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">11_Gadget驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="12_1.html">12_Gadget应用实例之zero</a></li>
+<li class="toctree-l2"><a class="reference internal" href="13_1.html">13_Gadget应用实例之serial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="14_1.html">14_configfs的使用与内部机制</a></li>
+<li class="toctree-l2"><a class="reference internal" href="15_1.html">15_Gadget应用实例之adb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="16_1.html">tmp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="17_1.html">Gadget驱动程序框架</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../13_V4L2/index.html">13.V4L2子系统</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/01_1.html">01_V4L2应用程序开发</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/02_1.html">02_V4L2驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/03_1.html">03_从0编写一个虚拟摄像头驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/04_1.html">04_USB摄像头驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/05_1.html">05_MIPI摄像头驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/06_1.html">06_V4L2视频介绍及资料下载/笔记</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/07_1.html">tmp_摄像头控制接口</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/100askTeam/LinuxDeviceDriver-Tranning" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="源码库"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="下载此页面">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/zh/12_USB/11_1.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="下载源文件"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="列印成 PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="全屏模式"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="搜索" aria-label="搜索" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>11_Gadget驱动程序框架</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> 目录 </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">1. 怎样理解Gadget框架</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">2. 从硬件软件角度理解Gadget框架</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#udc">2.1 底层硬件操作_UDC驱动</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">2.2 上层软件操作</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">3. 从构造描述符的角度理解Gadget框架</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">4. 从获取描述符的角度理解Gadget框架</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#imx6ull">4.1 IMX6ULL的核心函数</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#stm32mp157">4.2 STM32MP157的核心函数</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">4.3 如何处理控制传输</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">5. 从数据传输的角度理解Gadget框架</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">5.1 使用流程</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#endpoint">5.2 endpoint是核心</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">5.3 回调函数</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">5.3.1 IMX6ULL</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">5.3.2 STM32MP157</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-loopback">5.4 f_loopback分析</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">5.4.1 Gadget接收数据</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">5.4.2 Gadget回环数据</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-sourcesink">5.5 f_sourcesink分析</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#hostgadget">5.5.1 Host写Gadget</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">5.5.2 Host读Gadget</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="gadget">
+<h1>11_Gadget驱动程序框架<a class="headerlink" href="#gadget" title="此标题的永久链接">#</a></h1>
+<p>参考资料：</p>
+<ul class="simple">
+<li><p>Linux下USB gadget设备详解：https://www.docin.com/p-1852320293.html</p></li>
+<li><p>Linux usb gadget框架概述：https://blog.csdn.net/daocaokafei/article/details/114114824</p></li>
+<li><p>USB设备驱动程序-USB Gadget Driver(二)：https://blog.csdn.net/chenzhen1080/article/details/53742924</p></li>
+<li><p>usb gadge驱动设计之我是zero：https://www.bbsmax.com/A/Ae5RvbwM5Q/</p></li>
+<li><p>Linux-USB驱动笔记（四）–USB整体框架: https://qingmu.blog.csdn.net/article/details/119979199</p></li>
+<li><p>USB gadget设备驱动解析:  https://www.likecs.com/show-843861.html</p></li>
+<li><p>调试软件：USB view 、bushound 、及一些硬件USB信号分析仪</p></li>
+<li><p>可以用<a class="reference external" href="https://so.csdn.net/so/search?q=wireshark&amp;amp;spm=1001.2101.3001.7020">wireshark</a>+usbmon捕捉usb协议数据包。</p></li>
+</ul>
+<section id="id1">
+<h2>1. 怎样理解Gadget框架<a class="headerlink" href="#id1" title="此标题的永久链接">#</a></h2>
+<p>USB协议是主从结构：</p>
+<p><img alt="image-20221230155834010" src="../../_images/86_host_device.png" /></p>
+<p>我们编写USB设备驱动程序时，主要是：</p>
+<ul class="simple">
+<li><p>读取设备的各类描述符，比如endpoint描述符，得到端点号</p></li>
+<li><p>使用底层USB Host Controller驱动程序提供的API函数，从endpoint上读写数据</p></li>
+</ul>
+<p>那么要基于Gadget驱动框架模拟一个USB设备时，endpoint的数据传输能力是底层的USB Device Controller驱动提供的，我们要做的就是：</p>
+<ul class="simple">
+<li><p>提供各类设备描述符</p></li>
+<li><p>使用底层USB Device Controller驱动程序提供的API函数，从endpoint得到数据、反馈数据</p></li>
+</ul>
+<p>Gadget的含义是”小器件”，在Linux的USB系统中，它表示”usb device”。Gadget驱动程序，就是用来模拟USB Device。对于真实的USB Device，它有两大要素：</p>
+<ul class="simple">
+<li><p>怎么表示自己？</p>
+<ul>
+<li><p>每个USB Device都有1个设备描述符</p></li>
+<li><p>都1个或多个配置描述符</p></li>
+<li><p>每个配置描述符里面有1个或多个接口描述符</p></li>
+<li><p>每个接口描述符里面有0个多个端点描述符</p></li>
+</ul>
+</li>
+<li><p>怎么进行数据传输？</p>
+<ul>
+<li><p>通过端点进行传输</p></li>
+<li><p>有端点的操作函数
+<img alt="image-20221229150339542" src="../../_images/82_usb_ep_ops.png" /></p></li>
+</ul>
+</li>
+</ul>
+<p>在学习过程中，记住这几个要点非常有帮助：</p>
+<ul class="simple">
+<li><p>各类描述符的构造</p></li>
+<li><p>USB Host获得Gadget各类描述符的过程</p></li>
+<li><p>数据传输的流程</p></li>
+</ul>
+</section>
+<section id="id2">
+<h2>2. 从硬件软件角度理解Gadget框架<a class="headerlink" href="#id2" title="此标题的永久链接">#</a></h2>
+<p>USB传输的核心是endpoint，使用endpoint可以收发数据。在endpoint之上，就可以模拟USB串口、USB触碰屏、USB摄像头。基于这个角度，Gadget框架可以分为两层：</p>
+<ul class="simple">
+<li><p>底层endpoint操作</p></li>
+<li><p>上层模拟各类USB设备</p></li>
+</ul>
+<p><img alt="image-20221230140638763" src="../../_images/83_soft_hard.png" /></p>
+<section id="udc">
+<h3>2.1 底层硬件操作_UDC驱动<a class="headerlink" href="#udc" title="此标题的永久链接">#</a></h3>
+<p>对于底层endpoint的代码，需要从UDC驱动开始分析：</p>
+<ul>
+<li><p>IMX6ULL的代码：<code class="docutils literal notranslate"><span class="pre">Linux-4.9.88\drivers\usb\chipidea\ci_hdrc_imx.c</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">ci_hdrc_imx_probe</span>
+<span class="w">    </span><span class="n">ci_hdrc_add_device</span>
+<span class="w">    	</span><span class="n">pdev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">platform_device_alloc</span><span class="p">(</span><span class="s">&quot;ci_hdrc&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">id</span><span class="p">);</span>
+
+
+<span class="c1">// Linux-4.9.88\drivers\usb\chipidea\core.c</span>
+<span class="k">static</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">platform_driver</span><span class="w"> </span><span class="n">ci_hdrc_driver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">	</span><span class="p">.</span><span class="n">probe</span><span class="w">	</span><span class="o">=</span><span class="w"> </span><span class="n">ci_hdrc_probe</span><span class="p">,</span>
+<span class="w">	</span><span class="p">.</span><span class="n">remove</span><span class="w">	</span><span class="o">=</span><span class="w"> </span><span class="n">ci_hdrc_remove</span><span class="p">,</span>
+<span class="w">	</span><span class="p">.</span><span class="n">driver</span><span class="w">	</span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">		</span><span class="p">.</span><span class="n">name</span><span class="w">	</span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ci_hdrc&quot;</span><span class="p">,</span>
+<span class="w">		</span><span class="p">.</span><span class="n">pm</span><span class="w">	</span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ci_pm_ops</span><span class="p">,</span>
+<span class="w">	</span><span class="p">},</span>
+<span class="p">};</span>
+
+<span class="n">ci_hdrc_probe</span>
+<span class="w">    	</span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ci_hdrc_gadget_init</span><span class="p">(</span><span class="n">ci</span><span class="p">);</span>
+<span class="w">		    	</span><span class="n">udc_start</span><span class="w">    		</span>
+</pre></div>
+</div>
+<p><img alt="image-20221230141432777" src="../../_images/84_imx6ull_udc.png" /></p>
+</li>
+<li><p>STM32MP157的代码：<code class="docutils literal notranslate"><span class="pre">Linux-5.4\drivers\usb\dwc2\platform.c</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">dwc2_driver_probe</span>
+<span class="w">    </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dwc2_gadget_init</span><span class="p">(</span><span class="n">hsotg</span><span class="p">);</span><span class="w">				</span>
+</pre></div>
+</div>
+<p><img alt="image-20221230143936830" src="../../_images/85_stm32mp157_udc.png" /></p>
+</li>
+</ul>
+</section>
+<section id="id3">
+<h3>2.2 上层软件操作<a class="headerlink" href="#id3" title="此标题的永久链接">#</a></h3>
+<p>模拟各类USB设备时，软件怎么分层？以访问设备、获取描述符为例：</p>
+<ul class="simple">
+<li><p>Host要分配地址、把地址发送给设备：不管要模拟什么设备，Gadget都必须接收地址，这部分由usb_gadget(硬件相关的驱动程序)实现</p></li>
+<li><p>Host要读取各类描述符，这些描述符是由上层的驱动程序提供的</p></li>
+<li><p>怎么把上层的描述符通过底层的usb_gadget传回给Host？还需要一个中间层。Host获取描述符时，方法是固定、通用的，这些方法可以由内核统一提供，这就是：usb_gadget_driver。</p></li>
+</ul>
+<p>所以，从获取描述符的角度看看，上层软件至少分为2层：</p>
+<ul class="simple">
+<li><p>usb_gadget_driver：实现一些通用的USB访问方法，比如Host访问描述符时，由usb_gadget_driver提供</p></li>
+<li><p>在这上面提供各类描述符，实际上，描述符的提供还可以分为两层：</p>
+<ul>
+<li><p>设备描述符、配置描述符：由程序员决定，由usb_composite_driver提供</p></li>
+<li><p>接口描述符、endpoint描述符：由内核事先实现的、常用的function driver提供</p></li>
+</ul>
+</li>
+</ul>
+<p>软件层次可以进一步细化，如下图：</p>
+<p><img alt="image-20230103151038182" src="../../_images/87_gadget_levels.png" /></p>
+<p>这涉及2个结构体：</p>
+<ul>
+<li><p>usb_composite_dev：它里面汇集有各类描述符、有一个usb_funciton链表(实现数据传输)</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">usb_composite_dev</span><span class="w"> </span><span class="p">{</span>
+<span class="w">	</span><span class="k">struct</span><span class="w"> </span><span class="nc">usb_gadget</span><span class="w">		</span><span class="o">*</span><span class="n">gadget</span><span class="p">;</span>
+<span class="w">	</span><span class="k">struct</span><span class="w"> </span><span class="nc">usb_request</span><span class="w">		</span><span class="o">*</span><span class="n">req</span><span class="p">;</span>
+<span class="w">	</span><span class="k">struct</span><span class="w"> </span><span class="nc">usb_request</span><span class="w">		</span><span class="o">*</span><span class="n">os_desc_req</span><span class="p">;</span>
+
+<span class="w">	</span><span class="k">struct</span><span class="w"> </span><span class="nc">usb_configuration</span><span class="w">	</span><span class="o">*</span><span class="n">config</span><span class="p">;</span>
+
+<span class="w">	</span><span class="cm">/* OS String is a custom (yet popular) extension to the USB standard. */</span>
+<span class="w">	</span><span class="n">u8</span><span class="w">				</span><span class="n">qw_sign</span><span class="p">[</span><span class="n">OS_STRING_QW_SIGN_LEN</span><span class="p">];</span>
+<span class="w">	</span><span class="n">u8</span><span class="w">				</span><span class="n">b_vendor_code</span><span class="p">;</span>
+<span class="w">	</span><span class="k">struct</span><span class="w"> </span><span class="nc">usb_configuration</span><span class="w">	</span><span class="o">*</span><span class="n">os_desc_config</span><span class="p">;</span>
+<span class="w">	</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w">			</span><span class="n">use_os_string</span><span class="o">:</span><span class="mi">1</span><span class="p">;</span>
+
+<span class="w">	</span><span class="cm">/* private: */</span>
+<span class="w">	</span><span class="cm">/* internals */</span>
+<span class="w">	</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w">			</span><span class="n">suspended</span><span class="o">:</span><span class="mi">1</span><span class="p">;</span>
+<span class="w">	</span><span class="k">struct</span><span class="w"> </span><span class="nc">usb_device_descriptor</span><span class="w">	</span><span class="n">desc</span><span class="p">;</span>
+<span class="w">	</span><span class="k">struct</span><span class="w"> </span><span class="nc">list_head</span><span class="w">		</span><span class="n">configs</span><span class="p">;</span>
+<span class="w">	</span><span class="k">struct</span><span class="w"> </span><span class="nc">list_head</span><span class="w">		</span><span class="n">gstrings</span><span class="p">;</span>
+<span class="w">	</span><span class="k">struct</span><span class="w"> </span><span class="nc">usb_composite_driver</span><span class="w">	</span><span class="o">*</span><span class="n">driver</span><span class="p">;</span>
+<span class="w">	</span><span class="n">u8</span><span class="w">				</span><span class="n">next_string_id</span><span class="p">;</span>
+<span class="w">	</span><span class="kt">char</span><span class="w">				</span><span class="o">*</span><span class="n">def_manufacturer</span><span class="p">;</span>
+
+<span class="w">	</span><span class="cm">/* the gadget driver won&#39;t enable the data pullup</span>
+<span class="cm">	 * while the deactivation count is nonzero.</span>
+<span class="cm">	 */</span>
+<span class="w">	</span><span class="kt">unsigned</span><span class="w">			</span><span class="n">deactivations</span><span class="p">;</span>
+
+<span class="w">	</span><span class="cm">/* the composite driver won&#39;t complete the control transfer&#39;s</span>
+<span class="cm">	 * data/status stages till delayed_status is zero.</span>
+<span class="cm">	 */</span>
+<span class="w">	</span><span class="kt">int</span><span class="w">				</span><span class="n">delayed_status</span><span class="p">;</span>
+
+<span class="w">	</span><span class="cm">/* protects deactivations and delayed_status counts*/</span>
+<span class="w">	</span><span class="n">spinlock_t</span><span class="w">			</span><span class="n">lock</span><span class="p">;</span>
+
+<span class="w">	</span><span class="cm">/* public: */</span>
+<span class="w">	</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w">			</span><span class="n">setup_pending</span><span class="o">:</span><span class="mi">1</span><span class="p">;</span>
+<span class="w">	</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w">			</span><span class="n">os_desc_pending</span><span class="o">:</span><span class="mi">1</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</li>
+<li><p>usb_udc：UDC的本意是”usb device controller”，usb_udc结构体里面有usb_gadget(表示UDC本身)、usb_gadget_driver()</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">usb_udc</span><span class="w"> </span><span class="p">{</span>
+<span class="w">	</span><span class="k">struct</span><span class="w"> </span><span class="nc">usb_gadget_driver</span><span class="w">	</span><span class="o">*</span><span class="n">driver</span><span class="p">;</span>
+<span class="w">	</span><span class="k">struct</span><span class="w"> </span><span class="nc">usb_gadget</span><span class="w">		</span><span class="o">*</span><span class="n">gadget</span><span class="p">;</span>
+<span class="w">	</span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w">			</span><span class="n">dev</span><span class="p">;</span>
+<span class="w">	</span><span class="k">struct</span><span class="w"> </span><span class="nc">list_head</span><span class="w">		</span><span class="n">list</span><span class="p">;</span>
+<span class="w">	</span><span class="kt">bool</span><span class="w">				</span><span class="n">vbus</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+</section>
+<section id="id4">
+<h2>3. 从构造描述符的角度理解Gadget框架<a class="headerlink" href="#id4" title="此标题的永久链接">#</a></h2>
+<p>假设你要模拟一个USB设备，</p>
+<ul class="simple">
+<li><p>这个USB设备含有厂家信息：它记录在设备描述符里，所以设备描述符应该由你提供</p></li>
+<li><p>这个芯片可能有多种配置，这也是由你决定，所以配置描述符应该由你提供</p></li>
+<li><p>某个配置下多个接口，接口就是功能，Linux内核里事先提供了很多功能的驱动程序，所以：接口描述符是内核提供的</p></li>
+<li><p>某个接口下需要什么端点，也是内核里各类功能的驱动程序提供的</p></li>
+</ul>
+<p>以zero.c为例：</p>
+<ul class="simple">
+<li><p>配置1：loopback，Host写数据给它，就可以读出原样的数据</p></li>
+<li><p>配置2：sourcesink，Host写数据给它(它只是记录下数据)，Host还可以读数据(读到的都是0)</p></li>
+</ul>
+<p>从下到上涉及这些文件：</p>
+<p><img alt="image-20230105114718135" src="../../_images/88_desc_files.png" /></p>
+<p>阅读源码时，入口函数是<code class="docutils literal notranslate"><span class="pre">usb_composite_probe(&amp;zero_driver)</span></code>：</p>
+<p><img alt="image-20230105112648324" src="../../_images/90_zero_entry.png" /></p>
+<p>函数调用过程中主要的函数如下，重点关注”xxx_bind”函数，可以认为bind就是初始化的意思：</p>
+<ul class="simple">
+<li><p>usb_composite_probe</p></li>
+<li><p>composite_bind</p></li>
+<li><p>zero_bind</p></li>
+<li><p>sourcesink_bind/loopback_bind</p></li>
+</ul>
+<p><img alt="" src="../../_images/91_gadget_init_call.png" /></p>
+<p>深入解读描述符的构造过程，可以得到下面的图：</p>
+<ul class="simple">
+<li><p>构造出一个usb_composite_dev结构体</p></li>
+<li><p>它把各层串联起来，里面构造有设备描述符、配置描述符、接口描述符、端点描述符</p></li>
+</ul>
+<p><img alt="" src="../../_images/89_create_desc.png" /></p>
+</section>
+<section id="id5">
+<h2>4. 从获取描述符的角度理解Gadget框架<a class="headerlink" href="#id5" title="此标题的永久链接">#</a></h2>
+<p>安装好gadget驱动程序后(比如modprobe g_zero), 它只是构造好了各类描述符。在设备的枚举过程会读取描述符，枚举过程要做的事情可以参考《05_USB描述符.md》的《4. 设备枚举过程示例》。</p>
+<p>使用OTG线连接电脑和开发板时，电脑软件会执行如下操作：</p>
+<ul class="simple">
+<li><p>使用控制传输，读取设备信息(设备描述符)：第一次读取时，它只需要得到8字节数据，因为第8个数据表示端点0能传输的最大数据长度。</p></li>
+<li><p>Host分配地址给设备，然后把新地址发给设备</p></li>
+<li><p>使用新地址，重新读取设备描述符，设备描述符长度是18</p></li>
+<li><p>读取配置描述符：它传入的长度是255，想一次性把当前配置描述符、它下面的接口描述符、端点描述符全部读出来</p></li>
+<li><p>读取字符描述符</p></li>
+</ul>
+<p>上述过程里，设备方都是接收到Host发给endpoint 0的数据，然后做出回应。不同的Gadget设备，在返回描述符给主机时，这些操作都是一样的，只是回应的数据不同而已。源码分析的起点都是某个中断函数：</p>
+<ul class="simple">
+<li><p>IMX6ULL：ci_irq(drivers/usb/chipidea/core.c)</p></li>
+<li><p>STM32MP157: dwc2_hsotg_irq(drivers/usb/dwc2/gadget.c)</p></li>
+</ul>
+<section id="imx6ull">
+<h3>4.1 IMX6ULL的核心函数<a class="headerlink" href="#imx6ull" title="此标题的永久链接">#</a></h3>
+<p>IMX6ULL芯片中USB控制器型号是chipidea，在<code class="docutils literal notranslate"><span class="pre">Linux-4.9.88\drivers\usb\chipidea\core.c</span></code>中注册了中断函数：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">ci_hdrc_probe</span>
+<span class="w">	</span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">devm_request_irq</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="n">ci</span><span class="o">-&gt;</span><span class="n">irq</span><span class="p">,</span><span class="w"> </span><span class="n">ci_irq</span><span class="p">,</span><span class="w"> </span><span class="n">IRQF_SHARED</span><span class="p">,</span>
+<span class="w">			</span><span class="n">ci</span><span class="o">-&gt;</span><span class="n">platdata</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">ci</span><span class="p">);</span><span class="w">    </span>
+</pre></div>
+</div>
+<p>发生中断后，对于endpoint 0的数据处理流程如下：</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>//<span class="w"> </span>Linux-4.9.88<span class="se">\d</span>rivers<span class="se">\u</span>sb<span class="se">\c</span>hipidea<span class="se">\c</span>ore.c
+ci_irq
+<span class="w">	</span>/*<span class="w"> </span>Handle<span class="w"> </span>device/host<span class="w"> </span>interrupt<span class="w"> </span>*/
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="o">(</span>ci-&gt;role<span class="w"> </span>!<span class="o">=</span><span class="w"> </span>CI_ROLE_END<span class="o">)</span>
+<span class="w">		</span><span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>ci_role<span class="o">(</span>ci<span class="o">)</span>-&gt;irq<span class="o">(</span>ci<span class="o">)</span><span class="p">;</span><span class="w">  </span>//<span class="w"> </span>udc_irq
+<span class="w">			</span>
+<span class="w">			</span>//<span class="w"> </span>Linux-4.9.88<span class="se">\d</span>rivers<span class="se">\u</span>sb<span class="se">\c</span>hipidea<span class="se">\u</span>dc.c
+<span class="w">			</span>udc_irq
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="o">(</span>USBi_UI<span class="w">  </span><span class="p">&amp;</span><span class="w"> </span>intr<span class="o">)</span>
+<span class="w">                	</span>//<span class="w"> </span>Linux-4.9.88<span class="se">\d</span>rivers<span class="se">\u</span>sb<span class="se">\c</span>hipidea<span class="se">\u</span>dc.c
+<span class="w">                    </span>isr_tr_complete_handler<span class="o">(</span>ci<span class="o">)</span><span class="p">;</span>
+<span class="w">                        </span>/*<span class="w"> </span>Only<span class="w"> </span>handle<span class="w"> </span>setup<span class="w"> </span>packet<span class="w"> </span>below<span class="w"> </span>*/
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="o">(</span><span class="nv">i</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">                            </span>hw_test_and_clear<span class="o">(</span>ci,<span class="w"> </span>OP_ENDPTSETUPSTAT,<span class="w"> </span>BIT<span class="o">(</span><span class="m">0</span><span class="o">)))</span>
+<span class="w">                            </span>//<span class="w"> </span>Linux-4.9.88<span class="se">\d</span>rivers<span class="se">\u</span>sb<span class="se">\c</span>hipidea<span class="se">\u</span>dc.c
+<span class="w">                            </span>isr_setup_packet_handler<span class="o">(</span>ci<span class="o">)</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>函数<code class="docutils literal notranslate"><span class="pre">isr_setup_packet_handler</span></code>就是处理endpoint 0接收到的控制传输的关键。</p>
+</section>
+<section id="stm32mp157">
+<h3>4.2 STM32MP157的核心函数<a class="headerlink" href="#stm32mp157" title="此标题的永久链接">#</a></h3>
+<p>STM32MP157芯片中USB控制器型号是dwc2，在<code class="docutils literal notranslate"><span class="pre">Linux-5.4\drivers\usb\dwc2\gadget.c</span></code>中注册了中断函数：</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>dwc2_gadget_init
+<span class="w">	</span><span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>devm_request_irq<span class="o">(</span>hsotg-&gt;dev,<span class="w"> </span>hsotg-&gt;irq,<span class="w"> </span>dwc2_hsotg_irq,
+<span class="w">			       </span>IRQF_SHARED,<span class="w"> </span>dev_name<span class="o">(</span>hsotg-&gt;dev<span class="o">)</span>,<span class="w"> </span>hsotg<span class="o">)</span><span class="p">;</span><span class="w">	</span>
+</pre></div>
+</div>
+<p>发生中断后，函数<code class="docutils literal notranslate"><span class="pre">dwc2_hsotg_irq</span></code>被调用，它处理endpoint中断有两种方法：</p>
+<ul class="simple">
+<li><p>使用DMA时：调用<code class="docutils literal notranslate"><span class="pre">dwc2_hsotg_epint</span></code>来处理</p></li>
+<li><p>不使用DMA时：调用<code class="docutils literal notranslate"><span class="pre">dwc2_hsotg_handle_rx</span></code>来处理</p></li>
+</ul>
+<p>以<code class="docutils literal notranslate"><span class="pre">dwc2_hsotg_epint</span></code>为例进行分析，对于endpoint 0的数据处理流程如下：</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>//<span class="w"> </span>Linux-5.4<span class="se">\d</span>rivers<span class="se">\u</span>sb<span class="se">\d</span>wc2<span class="se">\g</span>adget.c
+dwc2_hsotg_irq
+<span class="w">		</span>//<span class="w"> </span>处理endpoint中断
+<span class="w">		</span><span class="k">for</span><span class="w"> </span><span class="o">(</span><span class="nv">ep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">;</span><span class="w"> </span>ep<span class="w"> </span>&lt;<span class="w"> </span>hsotg-&gt;num_of_eps<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>daint_out<span class="p">;</span>
+<span class="w">						</span>ep++,<span class="w"> </span>daint_out<span class="w"> </span>&gt;&gt;<span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">			</span><span class="k">if</span><span class="w"> </span><span class="o">(</span>daint_out<span class="w"> </span><span class="p">&amp;</span><span class="w"> </span><span class="m">1</span><span class="o">)</span>
+<span class="w">				</span>dwc2_hsotg_epint<span class="o">(</span>hsotg,<span class="w"> </span>ep,<span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="p">;</span>
+<span class="w">		</span><span class="o">}</span>
+
+<span class="w">		</span><span class="k">for</span><span class="w"> </span><span class="o">(</span><span class="nv">ep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">;</span><span class="w"> </span>ep<span class="w"> </span>&lt;<span class="w"> </span>hsotg-&gt;num_of_eps<span class="w">  </span><span class="o">&amp;&amp;</span><span class="w"> </span>daint_in<span class="p">;</span>
+<span class="w">						</span>ep++,<span class="w"> </span>daint_in<span class="w"> </span>&gt;&gt;<span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">			</span><span class="k">if</span><span class="w"> </span><span class="o">(</span>daint_in<span class="w"> </span><span class="p">&amp;</span><span class="w"> </span><span class="m">1</span><span class="o">)</span>
+<span class="w">				</span>dwc2_hsotg_epint<span class="o">(</span>hsotg,<span class="w"> </span>ep,<span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="p">;</span>
+<span class="w">		</span><span class="o">}</span><span class="w">	</span>
+</pre></div>
+</div>
+<p>函数<code class="docutils literal notranslate"><span class="pre">dwc2_hsotg_epint</span></code>中，对于endpoint 0的处理如下：</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>//<span class="w"> </span>Linux-5.4<span class="se">\d</span>rivers<span class="se">\u</span>sb<span class="se">\d</span>wc2<span class="se">\g</span>adget.c
+dwc2_hsotg_epint
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="o">(</span><span class="nv">idx</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>!hs_ep-&gt;req<span class="o">)</span>
+<span class="w">    	</span>dwc2_hsotg_enqueue_setup<span class="o">(</span>hsotg<span class="o">)</span><span class="p">;</span><span class="w"> </span>
+</pre></div>
+</div>
+<p>函数<code class="docutils literal notranslate"><span class="pre">dwc2_hsotg_enqueue_setup</span></code>被调用时，Gadget设备已经收到了SETUP令牌包，但是还没收到DATA0令牌包。<code class="docutils literal notranslate"><span class="pre">dwc2_hsotg_enqueue_setup</span></code>的作用是，设置、启动一个request，核心在于设置了request的complete函数(当SETTUP事务完成后这个函数被调用)：</p>
+<p><img alt="image-20230207111207378" src="../../_images/92_dwc2_enqueue_setup.png" /></p>
+<p>当控制传输的”setup事务”完成时，函数<code class="docutils literal notranslate"><span class="pre">dwc2_hsotg_complete_setup</span></code>被调用。</p>
+</section>
+<section id="id6">
+<h3>4.3 如何处理控制传输<a class="headerlink" href="#id6" title="此标题的永久链接">#</a></h3>
+<p>无论是IMX6ULL的函数<code class="docutils literal notranslate"><span class="pre">isr_setup_packet_handler</span></code>，还是STM32M157的函数<code class="docutils literal notranslate"><span class="pre">dwc2_hsotg_complete_setup</span></code>，它们都是在Gadget设备收到”SETUP事务”后才被调用。接收完”SETUP事务”后，就可以从里面知道这个控制传输想做什么(req.bRequest是什么)，然后就可以处理它了。</p>
+<p>怎么处理呢？可以分为3层：</p>
+<p><img alt="image-20230207151208501" src="../../_images/93_xxx_setup.png" /></p>
+<ul>
+<li><p>UDC驱动程序：类似”设置地址”的控制传输，在底层的UDC驱动程序里就可以处理，</p>
+<ul>
+<li><p>这类请求有：</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>USB_REQ_SET_ADDRESS
+USB_REQ_SET_FEATURE<span class="w">     </span>//<span class="w"> </span>有一些请求可能需要上报改gadget<span class="w"> </span>driver
+USB_REQ_CLEAR_FEATURE<span class="w">   </span>//<span class="w"> </span>有一些请求可能需要上报改gadget<span class="w"> </span>driver
+USB_REQ_GET_STATUS<span class="w">      </span>//<span class="w"> </span>有一些请求可能需要上报改gadget<span class="w"> </span>driver
+</pre></div>
+</div>
+</li>
+<li><p>驱动程序位置</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>IMX6ULL:<span class="w"> </span>Linux-4.9.88<span class="se">\d</span>rivers<span class="se">\u</span>sb<span class="se">\c</span>hipidea<span class="se">\u</span>dc.c,<span class="w"> </span>函数isr_setup_packet_handler
+STM32MP157:<span class="w"> </span>Linux-5.4<span class="se">\d</span>rivers<span class="se">\u</span>sb<span class="se">\d</span>wc2<span class="se">\g</span>adget.c,<span class="w"> </span>函数dwc2_hsotg_complete_setup
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+<li><p>gadget driver：涉及描述符的操作</p>
+<ul>
+<li><p>这类请求有：</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>USB_REQ_GET_DESCRIPTOR
+USB_REQ_SET_CONFIGURATION
+USB_REQ_GET_CONFIGURATION
+USB_REQ_SET_INTERFACE
+USB_REQ_GET_INTERFACE
+USB_REQ_GET_STATUS<span class="w">     </span>//<span class="w"> </span>底层UDC驱动无法处理的话,<span class="w"> </span>gadget<span class="w"> </span>driver来处理
+USB_REQ_CLEAR_FEATURE<span class="w">  </span>//<span class="w"> </span>底层UDC驱动无法处理的话,<span class="w"> </span>gadget<span class="w"> </span>driver来处理
+USB_REQ_SET_FEATURE<span class="w">    </span>//<span class="w"> </span>底层UDC驱动无法处理的话,<span class="w"> </span>gadget<span class="w"> </span>driver来处理
+</pre></div>
+</div>
+</li>
+<li><p>驱动程序位置</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>文件：drivers<span class="se">\u</span>sb<span class="se">\g</span>adget<span class="se">\c</span>omposite.c
+函数：composite_setup
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+<li><p>usb_configuration或usb_function的处理：这是二选一的。大部分设备使用控制传输实现标准的USB请求，但是也可以用控制传输来进行实现相关的请求，对于这些非标准的请求，就需要上层驱动来处理。</p></li>
+</ul>
+</section>
+</section>
+<section id="id7">
+<h2>5. 从数据传输的角度理解Gadget框架<a class="headerlink" href="#id7" title="此标题的永久链接">#</a></h2>
+<section id="id8">
+<h3>5.1 使用流程<a class="headerlink" href="#id8" title="此标题的永久链接">#</a></h3>
+<p>在USB协议中，永远是Host主动发起传输。作为一个Gadget驱动程序，它永远都是这样：</p>
+<ul class="simple">
+<li><p>想接收数据：</p>
+<ul>
+<li><p>先构造好usb_request：分配buffer、设置回调函数</p></li>
+<li><p>把usb_request放入队列</p></li>
+<li><p>UDC和Host完成USB传输，在usb_request中填充数据，并触发中断调用usb_request的回调函数</p></li>
+</ul>
+</li>
+<li><p>想发送数据：</p>
+<ul>
+<li><p>先构造好usb_request：分配buffer、在buffer里填充数据、设置回调函数</p></li>
+<li><p>把usb_request放入队列</p></li>
+<li><p>UDC和Host完成USB传输，把usb_request的数据发给Host，并触发中断调用usb_request的回调函数</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="endpoint">
+<h3>5.2 endpoint是核心<a class="headerlink" href="#endpoint" title="此标题的永久链接">#</a></h3>
+<p>USB传输的对象是endpoint，使用流程如下：</p>
+<ul>
+<li><p>功能驱动里，通过endpoint描述符表明需要怎样的endpoint，比如（注意：bEndpointAddress只是表明方向，里面还没有地址，drivers\usb\gadget\function\f_loopback.c）：</p>
+<p><img alt="image-20230215104041795" src="../../_images/94_ep_desc.png" /></p>
+</li>
+<li><p>功能驱动里，它的bind函数根据endpoint描述符向底层申请分配endpoint，比如：</p>
+<p><img alt="image-20230215104335696" src="../../_images/95_allocate_ep.png" /></p>
+</li>
+<li><p>功能驱动里，使能endpoint，比如：</p>
+<p><img alt="image-20230215104457077" src="../../_images/96_enable_ep.png" /></p>
+</li>
+<li><p>功能驱动里，给endpoint分配buffer、设置usb_request、提交usb_request，比如：</p>
+<p><img alt="image-20230215105253312" src="../../_images/97_enqueue_usbrequest.png" /></p>
+</li>
+</ul>
+</section>
+<section id="id9">
+<h3>5.3 回调函数<a class="headerlink" href="#id9" title="此标题的永久链接">#</a></h3>
+<p>功能驱动里构造的usb_request，可以是接收Host发来的数据，也可以是向Host发送数据。当传输完成，usb_request的回调函数被调用。</p>
+<p>在回调函数里，可以再次提交usb_request。</p>
+<p>怎么调用到回调函数？源头是UDC的中断函数。</p>
+<section id="id10">
+<h4>5.3.1 IMX6ULL<a class="headerlink" href="#id10" title="此标题的永久链接">#</a></h4>
+<p>调用关系如下：</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>//<span class="w"> </span>Linux-4.9.88<span class="se">\d</span>rivers<span class="se">\u</span>sb<span class="se">\c</span>hipidea<span class="se">\c</span>ore.c
+ci_irq
+<span class="w">	</span>/*<span class="w"> </span>Handle<span class="w"> </span>device/host<span class="w"> </span>interrupt<span class="w"> </span>*/
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="o">(</span>ci-&gt;role<span class="w"> </span>!<span class="o">=</span><span class="w"> </span>CI_ROLE_END<span class="o">)</span>
+<span class="w">		</span><span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>ci_role<span class="o">(</span>ci<span class="o">)</span>-&gt;irq<span class="o">(</span>ci<span class="o">)</span><span class="p">;</span><span class="w">  </span>//<span class="w"> </span>udc_irq
+<span class="w">			</span>udc_irq
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="o">(</span>USBi_UI<span class="w">  </span><span class="p">&amp;</span><span class="w"> </span>intr<span class="o">)</span>
+<span class="w">                    </span>isr_tr_complete_handler<span class="o">(</span>ci<span class="o">)</span><span class="p">;</span>
+<span class="w">                    	</span><span class="nv">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>isr_tr_complete_low<span class="o">(</span>hwep<span class="o">)</span><span class="p">;</span>
+<span class="w">                    				</span>usb_gadget_giveback_request<span class="o">(</span><span class="p">&amp;</span>hweptemp-&gt;ep,<span class="w"> </span><span class="p">&amp;</span>hwreq-&gt;req<span class="o">)</span><span class="p">;</span>
+<span class="w">                    					</span>req-&gt;complete<span class="o">(</span>ep,<span class="w"> </span>req<span class="o">)</span><span class="p">;</span><span class="w">				</span>
+</pre></div>
+</div>
+</section>
+<section id="id11">
+<h4>5.3.2 STM32MP157<a class="headerlink" href="#id11" title="此标题的永久链接">#</a></h4>
+<p>调用关系如下：</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>//<span class="w"> </span>Linux-5.4<span class="se">\d</span>rivers<span class="se">\u</span>sb<span class="se">\d</span>wc2<span class="se">\g</span>adget.c
+dwc2_hsotg_irq
+<span class="w">		</span>//<span class="w"> </span>处理endpoint中断
+<span class="w">		</span><span class="k">for</span><span class="w"> </span><span class="o">(</span><span class="nv">ep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">;</span><span class="w"> </span>ep<span class="w"> </span>&lt;<span class="w"> </span>hsotg-&gt;num_of_eps<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>daint_out<span class="p">;</span>
+<span class="w">						</span>ep++,<span class="w"> </span>daint_out<span class="w"> </span>&gt;&gt;<span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">			</span><span class="k">if</span><span class="w"> </span><span class="o">(</span>daint_out<span class="w"> </span><span class="p">&amp;</span><span class="w"> </span><span class="m">1</span><span class="o">)</span>
+<span class="w">				</span>dwc2_hsotg_epint<span class="o">(</span>hsotg,<span class="w"> </span>ep,<span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="p">;</span>
+<span class="w">					</span>dwc2_hsotg_handle_outdone<span class="o">(</span>hsotg,<span class="w"> </span>idx<span class="o">)</span><span class="p">;</span>
+<span class="w">						</span>dwc2_hsotg_complete_request<span class="o">(</span>hsotg,<span class="w"> </span>hs_ep,<span class="w"> </span>hs_req,<span class="w"> </span>result<span class="o">)</span><span class="p">;</span>
+<span class="w">							</span>usb_gadget_giveback_request<span class="o">(</span><span class="p">&amp;</span>hs_ep-&gt;ep,<span class="w"> </span><span class="p">&amp;</span>hs_req-&gt;req<span class="o">)</span><span class="p">;</span>
+<span class="w">								</span>req-&gt;complete<span class="o">(</span>ep,<span class="w"> </span>req<span class="o">)</span><span class="p">;</span>
+<span class="w">		</span><span class="o">}</span>
+
+<span class="w">		</span><span class="k">for</span><span class="w"> </span><span class="o">(</span><span class="nv">ep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">;</span><span class="w"> </span>ep<span class="w"> </span>&lt;<span class="w"> </span>hsotg-&gt;num_of_eps<span class="w">  </span><span class="o">&amp;&amp;</span><span class="w"> </span>daint_in<span class="p">;</span>
+<span class="w">						</span>ep++,<span class="w"> </span>daint_in<span class="w"> </span>&gt;&gt;<span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">			</span><span class="k">if</span><span class="w"> </span><span class="o">(</span>daint_in<span class="w"> </span><span class="p">&amp;</span><span class="w"> </span><span class="m">1</span><span class="o">)</span>
+<span class="w">				</span>dwc2_hsotg_epint<span class="o">(</span>hsotg,<span class="w"> </span>ep,<span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="p">;</span>
+<span class="w">					</span>dwc2_hsotg_complete_in<span class="o">(</span>hsotg,<span class="w"> </span>hs_ep<span class="o">)</span><span class="p">;</span>
+<span class="w">						</span>dwc2_hsotg_complete_request<span class="o">(</span>hsotg,<span class="w"> </span>hs_ep,<span class="w"> </span>hs_req,<span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="p">;</span>
+<span class="w">							</span>usb_gadget_giveback_request<span class="o">(</span><span class="p">&amp;</span>hs_ep-&gt;ep,<span class="w"> </span><span class="p">&amp;</span>hs_req-&gt;req<span class="o">)</span><span class="p">;</span>
+<span class="w">								</span>req-&gt;complete<span class="o">(</span>ep,<span class="w"> </span>req<span class="o">)</span><span class="p">;</span>
+<span class="w">		</span><span class="o">}</span><span class="w">	</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="f-loopback">
+<h3>5.4 f_loopback分析<a class="headerlink" href="#f-loopback" title="此标题的永久链接">#</a></h3>
+<p>loopback就是回环，Host发数据给Gadget，然后再读Gadget就可以得到原样的数据。</p>
+<section id="id12">
+<h4>5.4.1 Gadget接收数据<a class="headerlink" href="#id12" title="此标题的永久链接">#</a></h4>
+<p>Host选择某个配置时，默认会选择这个配置下那些接口的第0个设置(altsetting)；</p>
+<p>当Host发来USB_REQ_SET_INTERFACE请求时，可以选择指定的设置。</p>
+<p>所为，我们从f_loopback.c的函数<code class="docutils literal notranslate"><span class="pre">loopback_set_alt</span></code>开始分析。</p>
+<p>调用关系为：</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>loopback_set_alt
+<span class="w">	</span>enable_loopback
+<span class="w">		</span><span class="nv">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>enable_endpoint<span class="o">(</span>cdev,<span class="w"> </span>loop,<span class="w"> </span>loop-&gt;in_ep<span class="o">)</span><span class="p">;</span>
+<span class="w">		</span>
+<span class="w">		</span><span class="nv">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>enable_endpoint<span class="o">(</span>cdev,<span class="w"> </span>loop,<span class="w"> </span>loop-&gt;out_ep<span class="o">)</span><span class="p">;</span>
+<span class="w">		</span>
+<span class="w">		</span><span class="nv">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>alloc_requests<span class="o">(</span>cdev,<span class="w"> </span>loop<span class="o">)</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><img alt="image-20230215105253312" src="../../_images/97_enqueue_usbrequest.png" /></p>
+<p>如上图所示，先提交的是out_req，它在等待Host发来数据。</p>
+<p>假设断点loop-&gt;out_ep的out_req获得了数据，它的回调函数<code class="docutils literal notranslate"><span class="pre">loopback_complete</span></code>被调用，如下：</p>
+<p><img alt="image-20230215112957596" src="../../_images/99_out_req.png" /></p>
+</section>
+<section id="id13">
+<h4>5.4.2 Gadget回环数据<a class="headerlink" href="#id13" title="此标题的永久链接">#</a></h4>
+<p><img alt="image-20230215113336559" src="../../_images/100_loopback.png" /></p>
+</section>
+</section>
+<section id="f-sourcesink">
+<h3>5.5 f_sourcesink分析<a class="headerlink" href="#f-sourcesink" title="此标题的永久链接">#</a></h3>
+<p>前面的f_loopback也实现了两个方向的数据传输：Host到Gadget、Gadget到Host，但是它们之间是有依赖关系的，Host必须先发送数据再读数据。</p>
+<p>f_sourcesink.c也实现了两个方向的数据传输：Host到Gadget、Gadget到Host，它们是独立的。</p>
+<ul class="simple">
+<li><p>Host读Gadget：驱动程序里构造好数据，Host可以读到，Gadget作为源(就是source)</p></li>
+<li><p>Host写Gadget：驱动程序里得到Host发来的数据，Gadget作为目的(就是sink)</p></li>
+</ul>
+<section id="hostgadget">
+<h4>5.5.1 Host写Gadget<a class="headerlink" href="#hostgadget" title="此标题的永久链接">#</a></h4>
+<p>Host选择某个配置时，默认会选择这个配置下那些接口的第0个设置(altsetting)；</p>
+<p>当Host发来USB_REQ_SET_INTERFACE请求时，可以选择指定的设置。</p>
+<p>所为，我们从f_sourcesink.c的函数<code class="docutils literal notranslate"><span class="pre">sourcesink_set_alt</span></code>开始分析。</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sourcesink_set_alt
+<span class="w">	</span>enable_source_sink<span class="o">(</span>cdev,<span class="w"> </span>ss,<span class="w"> </span>alt<span class="o">)</span><span class="p">;</span><span class="w">		</span>
+</pre></div>
+</div>
+<p><img alt="image-20230215115725867" src="../../_images/101_source.png" /></p>
+<p>作为”source”，函数<code class="docutils literal notranslate"><span class="pre">source_sink_start_ep</span></code>会构造数据、提交usb_request：</p>
+<p><img alt="image-20230215120121990" src="../../_images/102_set_for_source.png" /></p>
+<p>当Host读取到数据后，usb_request的回调函数被调用，它只是再次提交USB请求，给Host继续提供跟上次一样的数据：</p>
+<p><img alt="image-20230215120404101" src="../../_images/103_re_enqueue_for_source.png" /></p>
+</section>
+<section id="id14">
+<h4>5.5.2 Host读Gadget<a class="headerlink" href="#id14" title="此标题的永久链接">#</a></h4>
+<p>仍然从f_sourcesink.c的函数<code class="docutils literal notranslate"><span class="pre">sourcesink_set_alt</span></code>开始分析。</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sourcesink_set_alt
+<span class="w">	</span>enable_source_sink<span class="o">(</span>cdev,<span class="w"> </span>ss,<span class="w"> </span>alt<span class="o">)</span><span class="p">;</span><span class="w">		</span>
+</pre></div>
+</div>
+<p><img alt="image-20230215120932415" src="../../_images/104_sink.png" /></p>
+<p>作为”sink”，函数<code class="docutils literal notranslate"><span class="pre">source_sink_start_ep</span></code>会故意把数据设置为0x55（这是为了调试，当读到数据时可以看到0x55被覆盖）、提交usb_request：</p>
+<p><img alt="image-20230215121120064" src="../../_images/105_set_for_sink.png" /></p>
+<p>当Host发来数据，usb_request的回调函数被调用，它检查收到的数据，再次提交usb_request：</p>
+<p><img alt="image-20230215121453456" src="../../_images/106_re_enqueue_for_sink.png" /></p>
+</section>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="10_1.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">上一页</p>
+        <p class="prev-next-title">10_OTG硬件检测电路</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="12_1.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">下一页</p>
+        <p class="prev-next-title">12_Gadget应用实例之zero</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 目录
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">1. 怎样理解Gadget框架</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">2. 从硬件软件角度理解Gadget框架</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#udc">2.1 底层硬件操作_UDC驱动</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">2.2 上层软件操作</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">3. 从构造描述符的角度理解Gadget框架</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">4. 从获取描述符的角度理解Gadget框架</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#imx6ull">4.1 IMX6ULL的核心函数</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#stm32mp157">4.2 STM32MP157的核心函数</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">4.3 如何处理控制传输</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">5. 从数据传输的角度理解Gadget框架</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">5.1 使用流程</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#endpoint">5.2 endpoint是核心</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">5.3 回调函数</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">5.3.1 IMX6ULL</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">5.3.2 STM32MP157</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-loopback">5.4 f_loopback分析</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">5.4.1 Gadget接收数据</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">5.4.2 Gadget回环数据</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-sourcesink">5.5 f_sourcesink分析</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#hostgadget">5.5.1 Host写Gadget</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">5.5.2 Host读Gadget</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+作者： 100ask_Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2019-2024 深圳百问网科技有限公司.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  最后更新于 2024 年 08 月 08 日.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

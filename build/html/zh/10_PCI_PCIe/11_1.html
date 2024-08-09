@@ -1,0 +1,1120 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="zh-CN" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>11_INTx_MSI_MSIX三种中断机制分析 &#8212; Linux设备驱动开发教程中心</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/topbar.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom-theme.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../../_static/translations.js"></script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'zh/10_PCI_PCIe/11_1';</script>
+    <link rel="icon" href="../../_static/favicon.png"/>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="12_INTx中断机制源码分析" href="12_1.html" />
+    <link rel="prev" title="10_RK3399_PCIe_Host驱动分析_设备枚举" href="10_1.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="zh-CN"/>
+    <meta name="docbuild:last-update" content="2024 年 08 月 08 日"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+
+  <div class="bd-header-announcement container-fluid bd-header-announcement">
+    <div class="bd-header-announcement__content">📢📢📢 欢迎来到百问网Linux设备驱动开发教程中心文档站点！！！技术交流社区：https://forums.100ask.net</div>
+  </div>
+
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Linux设备驱动开发教程中心</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">1.课程介绍</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../03_LCD/index.html">3.LCD显示子系统</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/01_1.html">01_单片机_Linux下不同接口的LCD硬件操作原理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/02_1.html">02_Framebuffer驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/03.html">03_编程_写出框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/04.html">04_最简单的LCD驱动_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/05.html">05_上机实验_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/06_1.html">结合APP分析LCD驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/07_1.html">07_硬件_8080接口LCD时序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/08_1.html">08_硬件_TFT-RGB接口LCD时序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/09_1.html">09_硬件_IMX6ULL的LCD控制器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/10_1.html">10_分析内核自带的LCD驱动程序_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/11_1.html">11_编程_LCD驱动程序框架_使用设备树</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/12_1.html">12_编程_配置引脚_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/13_1.html">13_编程_配置时钟_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/14_1.html">14_编程_ 配置LCD控制器之获得LCD参数_ 基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/15_1.html">15_编程_配置LCD控制器之寄存器操作_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/16.html">16_上机实验_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/17_1.html">17_单Buffer的缺点与改进方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/18.html">18_编写使用多buffer的应用程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../04_I2C/index.html">4.I2C子系统</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/01.html">01_I2C视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/02_1.html">02_I2C协议</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/03.html">03_SMBus协议</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/04.html">04_I2C系统的重要结构体</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/05.html">05_无需编写驱动直接访问设备_I2C-Tools介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/06.html">06_编写APP直接访问EEPROM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/07.html">07_通用驱动i2c-dev分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/08_1.html">08_I2C系统驱动程序模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/09.html">09_编写设备驱动之i2c_driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/10.html">10_编写设备驱动之i2c_client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/11.html">11_I2C_Adapter驱动框架讲解与编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/12_1.html">12_完善虚拟的I2C_Adapter驱动并模拟EEPROM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/13_1.html">13_使用GPIO模拟I2C的驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/14.html">14_使用GPIO操作I2C设备_IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/15_1.html">15_具体芯片的I2C_Adapter驱动分析</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../05_Input/index.html">5.Input输入子系统</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/01.html">01_Input子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/02.html">02_先学习输入系统应用编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_1.html">DRV_01_Input子系统框架详解</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_2.html">DRV_02_编写input_dev驱动框架解</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_3.html">DRV_03_ 编写最简单的触摸屏驱动程序_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_4.html">DRV_04_GPIO按键驱动分析与使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_5.html">DRV_05_I2C接口触摸屏驱动分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_6.html">DRV_06_UInput分析_用户态创建input_dev</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../06_Pinctrl/index.html">6.Pinctrl子系统</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/01.html">01_Pinctrl子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/03_1.html">02_Pinctrl子系统使用示例_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/03_2.html">03_Pinctrl子系统使用示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/04_1.html">04_Pinctrl子系统主要数据结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/05_1.html">05_Pincontroller构造过程情景分析_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/06_1.html">06_client端使用pinctrl过程的情景分析_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/07_1.html">07_编写虚拟的Pinctrl驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/08_1.html">08_调试虚拟的Pinctrl驱动程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../07_GPIO/index.html">7.GPIO子系统</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/01_1.html">01_GPIO子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/05_1.html">02_GPIO子系统层次与数据结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/06_1.html">03_IMX6ULL的GPIO驱动源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/07_1.html">04_编写一个虚拟GPIO控制器的驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/08_1.html">05_调试与使用虚拟的GPIO控制器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/09_1.html">06_GPIO子系统与Pinctrl子系统的交互</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/10_1.html">07_编程_GPIO使用Pinctrl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/11_1.html">08_GPIO子系统的sysfs接口</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../08_Interrupt/index.html">8.Interrupt子系统</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/08_1.html">01_中断相关的其他驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/09_1.html">02_中断的硬件框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/10_1.html">03_GIC介绍与编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/11_1.html">04_异常向量表的安装与调用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/12_1.html">05_GIC驱动程序对中断的处理流程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/13_1.html">06_GIC驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/14_1.html">07_两类中断控制器处理流程_链式和层级</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/15_1.html">08_链式中断控制器驱动程序编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/16_1.html">09_legacy方式代码的上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/17_1.html">10_链式中断控制器驱动程序编写_linear方式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/18_1.html">11_层级中断控制器驱动程序编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/19_1.html">12_层级中断控制器驱动程序上机实验</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../09_UART/index.html">9.UART子系统</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/01_1.html">01_UART子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/02_1.html">02_硬件知识_UART硬件介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/03_1.html">03_TTY体系中设备节点的差别</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/04_1.html">04_TTY驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/05_1.html">05_在STM32MP157上做串口实验的准备工作</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/05_2.html">06_Linux串口应用编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/07_1.html">07_字符设备驱动程序的另一种注册方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/08_1.html">08_UART驱动情景分析_注册</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/09_1.html">09_UART驱动情景分析_open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/10_1.html">10_UART驱动情景分析_read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/11_1.html">11_UART驱动情景分析_write</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/12_1.html">12_UART驱动调试方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/13_1.html">13_编写虚拟UART驱动程序_框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/14_1.html">14_编写虚拟UART驱动程序_实现uart_ops</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/15_1.html">15_编写虚拟UART驱动程序_实现数据传输</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/16_1.html">16_编写虚拟UART驱动程序_调试</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/17_1.html">17_printk执行过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/18_1.html">18_console驱动注册过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/19_1.html">19_编写console驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/20_1.html">20_early_printk和earlycon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/21_1.html">21_RS485简单讲解</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">10.PCI_PCIe子系统</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="01_1.html">01_从软件开发角度看待PCI和PCIe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="02_1.html">02_PCI设备的访问方法_非桥设备(type0)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="03_1.html">03_PCI设备的访问方法_桥设备(type1)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="04_1.html">04_从软件角度看PCIe设备的硬件结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05_1.html">05_PCIe设备的配置过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="06_1.html">06_PCIe路由方式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="07_1.html">07_PCI驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="08_1.html">08_RK3399_PCIe芯片手册解读</a></li>
+<li class="toctree-l2"><a class="reference internal" href="09_1.html">09_RK3399_PCIe_Host驱动分析_地址映射</a></li>
+<li class="toctree-l2"><a class="reference internal" href="10_1.html">10_RK3399_PCIe_Host驱动分析_设备枚举</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">11_INTx_MSI_MSIX三种中断机制分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="12_1.html">12_INTx中断机制源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="13_1.html">13_GICv3_LPI机制</a></li>
+<li class="toctree-l2"><a class="reference internal" href="14_1.html">14_MSI_MSI-X中断之体验与使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="15_1.html">15_MSI_MSI-X中断之源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="16_1.html">16_怎么编写PCIe设备驱动程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../11_SPI/index.html">11.SPI子系统</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/01_1.html">01_SPI视频概述</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/02_1.html">02_SPI协议介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/03_1.html">03_SPI总线设备驱动模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/04_1.html">04_SPI设备树处理过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/05_1.html">05_spidev的使用(SPI用户态API)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/06_1.html">06_使用spidev操作SPI_DAC模块</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/07_1.html">07_SPI_DAC模块上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/08_1.html">08_SPI_OLED模块操作方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/09_1.html">09_使用spidev操作SPI_OLED模块</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/10_1.html">10_OLED模块上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/11_1.html">11_编写SPI设备驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/12_1.html">12_编写SPI_DAC模块驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/13_1.html">13_编写DAC驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/14_1.html">14_编写SPI_OLED模块驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/15_1.html">15_编写OLED驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/16_1.html">16_使用Framebuffer改造OLED驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/17_1.html">17_OLED_Framebuffer驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/18_1.html">18_SPI_Master驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/19_1.html">19_编写SPI_Master驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/20_1.html">20_使用老方法编写的SPI_Master驱动程序上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/21_1.html">21_编写SPI_Master驱动程序_新方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/22_1.html">22_使用新方法编写的SPI_Master驱动程序上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/23_1.html">23_SPI_Slave_Mode驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/24_1.html">24_SPI_Slave_Mode驱动程序源码解读</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/25_1.html">临时笔记</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../12_USB/index.html">12.USB子系统</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-10"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/01_1.html">01_USB视频介绍及资料下载</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/02_1.html">02_USB系统硬件框架和软件框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/03_1.html">03_软件工程师眼里的USB电气信号</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/04_1.html">04_USB协议层数据格式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/05_1.html">05_USB描述符</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/06_1.html">06_libusb的使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/07_1.html">07_使用libusb读取鼠标数据</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/08_1.html">08_USB设备驱动模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/09_1.html">09_编写USB鼠标驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/10_1.html">10_OTG硬件检测电路</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/11_1.html">11_Gadget驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/12_1.html">12_Gadget应用实例之zero</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/13_1.html">13_Gadget应用实例之serial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/14_1.html">14_configfs的使用与内部机制</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/15_1.html">15_Gadget应用实例之adb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/16_1.html">tmp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/17_1.html">Gadget驱动程序框架</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../13_V4L2/index.html">13.V4L2子系统</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/01_1.html">01_V4L2应用程序开发</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/02_1.html">02_V4L2驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/03_1.html">03_从0编写一个虚拟摄像头驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/04_1.html">04_USB摄像头驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/05_1.html">05_MIPI摄像头驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/06_1.html">06_V4L2视频介绍及资料下载/笔记</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/07_1.html">tmp_摄像头控制接口</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/100askTeam/LinuxDeviceDriver-Tranning" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="源码库"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="下载此页面">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/zh/10_PCI_PCIe/11_1.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="下载源文件"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="列印成 PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="全屏模式"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="搜索" aria-label="搜索" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>11_INTx_MSI_MSIX三种中断机制分析</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> 目录 </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">INTx_MSI_MSIX三种中断机制分析</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pciintx">1. PCI设备的INTx中断机制</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pcieintx">2. PCIe设备的INTx中断机制</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#msi">3. MSI中断机制</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#capability">3.1 capability</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#msi-capability">3.2 MSI capability</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">3.3 格式解析</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#msi-x">4. MSI-X中断机制</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#msi-x-capability">4.1 MSI-X capability</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">4.2 MSI-X capability格式解析</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#msi-x-table">4.3 MSI-X Table</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pba">4.4 PBA</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#msi-msi-x">5. MSI/MSI-X操作流程</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">5.1 扫描设备</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">5.2 配置设备</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">5.2.1 MSI配置</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">5.2.2 MSI-X配置</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">5.3 设备发出中断</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">5.4 中断函数</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="intx-msi-msix">
+<h1>11_INTx_MSI_MSIX三种中断机制分析<a class="headerlink" href="#intx-msi-msix" title="此标题的永久链接">#</a></h1>
+<section id="id1">
+<h2>INTx_MSI_MSIX三种中断机制分析<a class="headerlink" href="#id1" title="此标题的永久链接">#</a></h2>
+<p>参考资料：</p>
+<ul class="simple">
+<li><p>《PCI_SPEV_V3_0.pdf》6.8节</p></li>
+<li><p><a class="reference external" href="https://blog.csdn.net/pieces_thinking/article/details/119431791">PCIe中MSI和MSI-X中断机制</a></p></li>
+<li><p><a class="reference external" href="https://blog.csdn.net/yhb1047818384/article/details/106676560/">PCIe学习笔记之MSI/MSI-x中断及代码分析</a></p></li>
+<li><p><a class="reference external" href="https://blog.csdn.net/weijitao/article/details/46566789">msix中断分析</a></p></li>
+<li><p><a class="reference external" href="https://www.cnblogs.com/gunl/archive/2011/06/09/2076892.html">MSI中断与Linux实现</a></p></li>
+<li><p><a class="reference external" href="https://blog.csdn.net/yhb1047818384/article/details/86708769">ARM GICv3中断控制器</a></p></li>
+</ul>
+<p>开发板资料：</p>
+<ul class="simple">
+<li><p>https://wiki.t-firefly.com/zh_CN/ROC-RK3399-PC-PLUS/</p></li>
+</ul>
+<p>本课程分析的文件：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">linux-4.4_rk3399\drivers\pci\host\pcie-rockchip.c</span></code></p></li>
+</ul>
+<section id="pciintx">
+<h3>1. PCI设备的INTx中断机制<a class="headerlink" href="#pciintx" title="此标题的永久链接">#</a></h3>
+<p>传统PCI设备的引脚中有4条线：INTA#、INTB#、INTC#、INTD#，”#”表示低电平有效，如下图所示：</p>
+<p><img alt="image-20220114144708980" src="../../_images/96_pci_intx.png" /></p>
+<p>PCI设备就像普通的设备一样，通过物理引脚发出中断信号：</p>
+<p><img alt="image-20220114150723805" src="../../_images/97_pci_intx_example.png" /></p>
+<p>在PCI设备的配置空间，它声明：通过INTA#、INTB#、INTC#还是INTD#发出中断。</p>
+<p><img alt="image-20220114152410023" src="../../_images/98_pci_config_reg_for_int.png" /></p>
+<p>配置空间有2个寄存器：Interrupt Pin、Interrupt Line，作用如下：</p>
+<ul>
+<li><p>Interrupt Pin：用来表示本设备通过哪条引脚发出中断信号，取值如下</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Interrupt Pin取值</p></th>
+<th class="head"><p>含义</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>不需要中断引脚</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>通过INTA#发出中断</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>通过INTB#发出中断</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>通过INTC#发出中断</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>通过INTD#发出中断</p></td>
+</tr>
+<tr class="row-odd"><td><p>5~0xff</p></td>
+<td><p>保留</p></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p>Interrupt Line：给软件使用的，PCI设备本身不使用该寄存器。软件可以写入中断相关的信息，比如在Linux系统中，可以把分配的virq(虚拟中断号)写入此寄存器。软件完全可以自己记录中断信息，没必要依赖这个寄存器。</p></li>
+</ul>
+<p>INTx中断是电平触发，处理过程如下：</p>
+<ul class="simple">
+<li><p>PCI设备发出中断：让INTx引脚变低</p></li>
+<li><p>软件处理中断，清除中断：写PCI设备的某个寄存器，导致PCI设备取消中断</p></li>
+<li><p>PCI设备取消中断：让INTx引脚变高</p></li>
+</ul>
+</section>
+<section id="pcieintx">
+<h3>2. PCIe设备的INTx中断机制<a class="headerlink" href="#pcieintx" title="此标题的永久链接">#</a></h3>
+<p>PCIe设备的配置空间也同样有这2个寄存器：Interrupt Pin、Interrupt Line，它们的作用跟PCI设备完全一样。</p>
+<p>PCI总线上有INTA#~INTD#这些真实存在的引脚，但是PCIE总线上并没有这些引脚，PCIe设备怎么兼容INTx中断机制？</p>
+<p>PCIe设备通过”INTx模拟”(PCI Compatible INTx Emulation)来实现传统的INTx中断，当设备需要发出中断时，它会发出特殊的TLP包：</p>
+<p><img alt="image-20220114155205690" src="../../_images/99_tlp_for_int.png" /></p>
+<p>TLP头部中，Message Code被用来区分发出的是哪类TLP包，为例”INTx模拟”，有两类TLP包：</p>
+<ul class="simple">
+<li><p>Assert_INTx
+<img alt="image-20220114155744259" src="../../_images/100_Assert_INTx.png" /></p></li>
+<li><p>Deassert_INTx
+<img alt="image-20220114160030443" src="../../_images/101_Deassert_INTx.png" /></p></li>
+</ul>
+<p>跟传统PCI设备类似，这个”INTx模拟”的处理过程也是一样的：</p>
+<ul class="simple">
+<li><p>PCIe设备发出中断：发出Assert_INTx的TLP包</p></li>
+<li><p>软件处理中断，清除中断：写PCIe设备的某个寄存器，导致PCIe设备取消中断</p></li>
+<li><p>PCIe设备取消中断：发出Deassert_INTx的TLP包</p></li>
+</ul>
+<p>硬件框图如下：</p>
+<p><img alt="image-20220114160521777" src="../../_images/102_pcie_intx_example.png" /></p>
+<p>对于软件开发人员来说，他感觉不到变化：</p>
+<ul class="simple">
+<li><p>PCI设备通过真实的引脚传输中断</p></li>
+<li><p>PCIe设备通过TLP实现虚拟的引脚传输中断</p></li>
+</ul>
+<p>PCIe控制器内部接收到INTx的TLP包后，就会向GIC发出中断，最终导致CPU接收到中断信号。</p>
+<p>对应的中断程序执行时，会读取PCIe控制器的寄存器，分辨发生的是INTA#~INTD#这4个中断的哪一个。</p>
+</section>
+<section id="msi">
+<h3>3. MSI中断机制<a class="headerlink" href="#msi" title="此标题的永久链接">#</a></h3>
+<p>在PCI系统中，使用真实的引脚发出中断已经带来了不方便：</p>
+<ul class="simple">
+<li><p>电路板上需要布线</p></li>
+<li><p>只有4条引脚，多个PCI设备共享这些引脚，中断处理效率低。</p></li>
+</ul>
+<p>在PCI系统中，就已经引入了新的中断机制：MSI，Message Signaled Interrupts。</p>
+<p>在初始PCI设备时，可以告诉它一个地址(主控芯片的地址)、一个数据：</p>
+<ul class="simple">
+<li><p>PCI设备想发出中断时，往这个地址写入这个数据就可以触发中断</p></li>
+<li><p>软件读到这个数据，就知道是哪个设备发出中断了</p></li>
+</ul>
+<p>流程及硬件框图如下：</p>
+<ul class="simple">
+<li><p>写哪个地址可以触发中断？可能是PCI/PCIe控制器里面的某个地址，也可能是GIC的某个地址</p></li>
+<li><p>初始化PCI/PCIe设备时，把该地址(cpu_addr)转换为pci_addr，告知PCI/PCIe设备(写入它的配置空间)</p></li>
+<li><p>PCI/PCIe设备要发出中断时，会发起一个”写内存传输”：往pci_addr写入数据value</p></li>
+<li><p>这导致cpu_addr被写入数据value，触发中断</p></li>
+</ul>
+<p><img alt="image-20220114165335847" src="../../_images/104_msi_msix.png" /></p>
+<p>上图中的”pci_addr/value”保存在哪里？保存在设备的配置空间的capability里。</p>
+<section id="capability">
+<h4>3.1 capability<a class="headerlink" href="#capability" title="此标题的永久链接">#</a></h4>
+<p>capability的意思是”能力”，PCI/PCIe设备可以提供各种能力，所以在配置空间里有寄存器来描述这些capability：</p>
+<ul class="simple">
+<li><p>配置空间里有第1个capability的位置：Capabilities Pointer</p></li>
+<li><p>它指向第1个capability的多个寄存器，这些寄存器也是在配置空间里</p></li>
+<li><p>第1个capability的寄存器里，也会指示第2个capability在哪里</p></li>
+</ul>
+<p><img alt="image-20220114163327615" src="../../_images/103_capability.png" /></p>
+<p>Capability示例图如下：</p>
+<ul class="simple">
+<li><p>配置空间0x34位置，存放的是第1个capability的位置：假设是 A4H</p></li>
+<li><p>在配置空间0xA4位置，找到第1个capability，capability的寄存器有如下约定</p>
+<ul>
+<li><p>第1个字节表示ID，每类capability都有自己的ID</p></li>
+<li><p>第2个字节表示下一个capability的位置，如果等于0表示这是最后一个capability</p></li>
+<li><p>其他寄存器由capability决定，所占据的寄存器数量由capability决定</p></li>
+</ul>
+</li>
+<li><p>第1个capability里面，它表示下一个capability在5CH</p></li>
+<li><p>在配置空间0x5C位置，找到第2个capability</p>
+<ul>
+<li><p>第1个字节表示ID，第2个字节表示下一个capability的位置(图里是E0H)</p></li>
+<li><p>其他字节由capability本身决定</p></li>
+</ul>
+</li>
+<li><p>在配置空间0xE0位置，找到第3个capability</p>
+<ul>
+<li><p>第1个字节表示ID</p></li>
+<li><p>第2个字节表示下一个capability的位置，这里是00H表示没有更多的capability了</p></li>
+<li><p>其他字节由capability本身决定</p></li>
+</ul>
+</li>
+</ul>
+<p><img alt="image-20220117103544744" src="../../_images/105_capabilities.png" /></p>
+</section>
+<section id="msi-capability">
+<h4>3.2 MSI capability<a class="headerlink" href="#msi-capability" title="此标题的永久链接">#</a></h4>
+<p>一个PCI设备是否支持MSI，需要读取配置空间的capability来判断: 有MSI capability的话就支持MSI机制。</p>
+<p>在配置空间中，MSI capability用来保存：pci_addr、data。表示：PCI设备往这个pci_addr写入data，就可以触发中断。</p>
+<p>有如下问题要确认：</p>
+<ul class="simple">
+<li><p>pci_addr是32位、还是64位？</p></li>
+<li><p>能触发几个中断？通过地址来分辨，还是通过数据来分辨？</p></li>
+<li><p>这些中断能否屏蔽？</p></li>
+<li><p>能否读出中断状态？</p></li>
+<li><p>这个些问题，都由capability里面的”Message Control”决定。</p></li>
+</ul>
+<p>MSI capability格式如下：</p>
+<p><img alt="image-20220117115002363" src="../../_images/106_msi_capability.png" /></p>
+</section>
+<section id="id2">
+<h4>3.3 格式解析<a class="headerlink" href="#id2" title="此标题的永久链接">#</a></h4>
+<p>MSI Capability格式的含义如下：</p>
+<ul>
+<li><p>Capability ID：对于MSI capability，它的ID为05H</p></li>
+<li><p>Next Pointer：下一个capability的位置，00H表示这是最后一个capability</p></li>
+<li><p>Message Control</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位</p></th>
+<th class="head"><p>域</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>8</p></td>
+<td><p>Per-vector masking capable</p></td>
+<td><p>是否支持屏蔽单个中断(vector)：<br />1: 支持<br />0: 不支持<br />这是只读位。</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>64 bit address capable</p></td>
+<td><p>是否支持64位地址：<br />1: 支持<br />0: 不支持<br />这是只读位。</p></td>
+</tr>
+<tr class="row-even"><td><p>6:4</p></td>
+<td><p>Multiple Message Enable</p></td>
+<td><p>系统软件可以支持多少个MSI中断？<br />PCI设备可以表明自己想发出多少个中断，<br />但是到底能发出几个中断？<br />由系统软件决定，它会写这些位，表示能支持多少个中断：<br />000: 系统分配了1个中断<br />001: 系统分配了2个中断<br />010: 系统分配了4个中断<br />011: 系统分配了8个中断<br />100: 系统分配了16个中断<br />101: 系统分配了32个中断<br />110: 保留值<br />111: 保留值<br />这些位是可读可写的。</p></td>
+</tr>
+<tr class="row-odd"><td><p>3:1</p></td>
+<td><p>Multiple Message Capable</p></td>
+<td><p>PCI设备可以表明自己想发出多少个中断：<br />000: 设备申请1个中断<br />001: 设备申请2个中断<br />010: 设备申请4个中断<br />011: 设备申请8个中断<br />100: 设备申请16个中断<br />101: 设备申请32个中断<br />110: 保留值<br />111: 保留值<br />这些位是只读的。</p></td>
+</tr>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>MSI Enable</p></td>
+<td><p>使能MSI：<br />1: 使能<br />0: 禁止</p></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p>Message Address/Message Uper Address：地址</p>
+<ul class="simple">
+<li><p>32位地址保存在Message Address中</p></li>
+<li><p>64位地址：低32位地址保存在Message Address中，高32位地址保存在Message Uper Address中</p></li>
+<li><p>这些地址是系统软件初始化PCI设备时分配的，系统软件把分配的地址写入这些寄存器</p></li>
+<li><p>这些地址属于PCI地址空间</p></li>
+</ul>
+</li>
+<li><p>Message Data：数据</p>
+<ul class="simple">
+<li><p>这个寄存器只有15位，PCI设备发出中断时数据是32位的，其中高16位数据为0</p></li>
+<li><p>这个寄存器的数值是系统软件初始化设备时写入的</p></li>
+<li><p>当PCI设备想发出中断是会发起一次写传输：</p>
+<ul>
+<li><p>往Message Address寄存器表示的地址，写入Message Data寄存器的数据</p></li>
+<li><p>如果可以发出多个中断的话，发出的数据中低位可以改变</p></li>
+<li><p>比如”Multiple Message Enable”被设置为”010”表示可以发出4个中断</p></li>
+<li><p>那么PCI设备发出的数据中bit1,0可以修改</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Mask Bits/Pending Bits: 屏蔽位/挂起位，这是可选的功能，PCI设备不一定实现它</p>
+<ul class="simple">
+<li><p>Mask Bits：每一位用来屏蔽一个中断，被系统软件设置为1表示禁止对应的中断</p></li>
+<li><p>Pending Bits：每一位用来表示一个中断的状态，这是软件只读位，它的值为1表示对应中断发生了，待处理</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="msi-x">
+<h3>4. MSI-X中断机制<a class="headerlink" href="#msi-x" title="此标题的永久链接">#</a></h3>
+<p>MSI机制有几个缺点：</p>
+<ul class="simple">
+<li><p>每个设备的中断数最大是32，太少了</p></li>
+<li><p>需要系统软件分配连续的中断号，很可能失败，也就是说设备想发出N个中断，但是系统软件分配给它的中断少于N个</p></li>
+<li><p>通过MSI发出中断时，地址是固定的</p></li>
+</ul>
+<p>于是引入了MSI-X机制：Enhanced MSI interrupt support，它解决了MSI的缺点：</p>
+<ul class="simple">
+<li><p>可以支持多大2048个中断</p></li>
+<li><p>系统软件可以单独设置每个中断，不需要分配连续的中断号</p></li>
+<li><p>每个中断可以单独设置：PCI设备使用的”地址/数据”可以单独设置</p></li>
+</ul>
+<p>假设MSI-X可以支持很多中断，每个中断的”地址/数据”都不一样。提问：在哪里描述这些信息？</p>
+<ul class="simple">
+<li><p>“地址/数据”：</p>
+<ul>
+<li><p>不放在配置空间，空间不够</p></li>
+<li><p>放在PCI设备的内存空间：哪个内存空间？哪个BAR？内存空间哪个位置(偏移地址)？</p></li>
+<li><p>系统软件可以读写这些内存空间</p></li>
+</ul>
+</li>
+<li><p>中断的控制信息</p>
+<ul>
+<li><p>使能/禁止？</p></li>
+<li><p>地址是32位还是64位？</p></li>
+<li><p>这些控制信息也是保存在PCI设备的内存空间</p></li>
+</ul>
+</li>
+<li><p>中断的状态信息(挂起？)</p>
+<ul>
+<li><p>这些信息也是保存在PCI设备的内存空间</p></li>
+</ul>
+</li>
+</ul>
+<section id="msi-x-capability">
+<h4>4.1 MSI-X capability<a class="headerlink" href="#msi-x-capability" title="此标题的永久链接">#</a></h4>
+<p>一个PCI设备是否支持MSI-X，需要读取配置空间的capability来判断: 有MSI-X capability的话就支持MSI-X机制。</p>
+<p>MSI-X capability格式如下：</p>
+<p><img alt="image-20220117142556453" src="../../_images/107_msi-x_capability.png" /></p>
+</section>
+<section id="id3">
+<h4>4.2 MSI-X capability格式解析<a class="headerlink" href="#id3" title="此标题的永久链接">#</a></h4>
+<p>格式解析如下：</p>
+<ul>
+<li><p>Capability ID：对于MSI-X capability，它的ID为11H</p></li>
+<li><p>Next Pointer：下一个capability的位置，00H表示这是最后一个capability</p></li>
+<li><p>Message Control</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位</p></th>
+<th class="head"><p>名</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>15</p></td>
+<td><p>MSI-X Enable</p></td>
+<td><p>是否使能MSI-X：<br />1: 使能<br />0: 禁止<br />注意: MSI-X和MSI不能同时使能。</p></td>
+</tr>
+<tr class="row-odd"><td><p>14</p></td>
+<td><p>Function Mask</p></td>
+<td><p>相当于MSI-X中断总开关：<br />1: 所有中断禁止<br />0: 有各个中断的Mask位决定是否使能对应中断</p></td>
+</tr>
+<tr class="row-even"><td><p>13</p></td>
+<td><p>保留</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>10:0</p></td>
+<td><p>Table Size</p></td>
+<td><p>系统软件读取这些位，算出MSI-X Table的大小，也就是支持多少个中断<br />读出值为”N-1”，表示支持N个中断</p></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p>Table Offset/Table BIR ：BIR意思为”BAR Indicator register”，表示使用哪个BAR。</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位</p></th>
+<th class="head"><p>域</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>31:3</p></td>
+<td><p>Table Offset</p></td>
+<td><p>MSI-X Table保存在PCI设备的内存空间里，<br />在哪个内存空间？有下面的”Table BIR”表示。<br />在这个内存空间的哪个位置？由当前这几位表示。</p></td>
+</tr>
+<tr class="row-odd"><td><p>2:0</p></td>
+<td><p>Table BIR</p></td>
+<td><p>使用哪个内存空间来保存MSI-X Table？<br />也就是系统软件使用哪个BAR来访问MSI-X Table？<br />取值为0~5，表示BAR0~BAR5</p></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p>PBA Offset/PBA BIR：PBA意思为”Pending Bit Array”，用来表示MSI-X中断的挂起状态。</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位</p></th>
+<th class="head"><p>域</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>31:3</p></td>
+<td><p>PBA Offset</p></td>
+<td><p>PBA保存在PCI设备的内存空间里，<br />在哪个内存空间？有下面的”PBA BIR”表示。<br />在这个内存空间的哪个位置？由当前这几位表示。</p></td>
+</tr>
+<tr class="row-odd"><td><p>2:0</p></td>
+<td><p>PBA BIR</p></td>
+<td><p>使用哪个内存空间来保存PBA？<br />也就是系统软件使用哪个BAR来访问PBA？<br />取值为0~5，表示BAR0~BAR5</p></td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</section>
+<section id="msi-x-table">
+<h4>4.3 MSI-X Table<a class="headerlink" href="#msi-x-table" title="此标题的永久链接">#</a></h4>
+<p>PCI设备可以往某个地址写入某个数据，从而触发MSI-X中断。</p>
+<p>这些”地址/数据”信息，是由系统软件分配的，系统软件要把”地址/数据”发给PCI设备。</p>
+<p>PCI设备在哪里保存这些信息？</p>
+<ul class="simple">
+<li><p>在PCI设备的内存空间</p></li>
+<li><p>在哪个内存空间？由MSI-X capability的”Table BIR”决定</p></li>
+<li><p>在这个内存空间的哪个位置？由MSI-X capability的”Table Offset”决定</p></li>
+</ul>
+<p>MSI-X Table格式如何？如下图所示：</p>
+<p><img alt="image-20220117144509485" src="../../_images/108_msi-x_table.png" /></p>
+<p>上图中，Msg Data、Msg Addr Msg Upper Addr含义与MSI机制相同：PCI设备要发出MSI-X中断时，往这个地址写入这个数据。如果使用32位地址的话，写哪个地址由Msg Addr寄存器决定；如果使用64位地址的话，写哪个地址由Msg Addr和Msg Upper Addr这两个寄存器决定。</p>
+<p>Vector Control寄存器中，只有Bit0有作用，表示”Mask Bit”。系统软件写入1表示禁止对应中断，写入0表示使能对应中断。</p>
+</section>
+<section id="pba">
+<h4>4.4 PBA<a class="headerlink" href="#pba" title="此标题的永久链接">#</a></h4>
+<p>PBA意思为”Pending Bit Array”，用来表示MSI-X中断的挂起状态。它的格式如下：</p>
+<p>这些”挂起”信息，是由PCI设备设置，系统软件只能读取这些信息。</p>
+<p>PCI设备在哪里保存这些信息？</p>
+<ul class="simple">
+<li><p>在PCI设备的内存空间</p></li>
+<li><p>在哪个内存空间？由MSI-X capability的”PBA BIR”决定</p></li>
+<li><p>在这个内存空间的哪个位置？由MSI-X capability的”PBA Offset”决定</p></li>
+</ul>
+<p>PBA格式如下：每一位对应一个中断，值为1表示中断发生了、等待处理。</p>
+<p><img alt="image-20220117145232528" src="../../_images/109_pba.png" /></p>
+</section>
+</section>
+<section id="msi-msi-x">
+<h3>5. MSI/MSI-X操作流程<a class="headerlink" href="#msi-msi-x" title="此标题的永久链接">#</a></h3>
+<section id="id4">
+<h4>5.1 扫描设备<a class="headerlink" href="#id4" title="此标题的永久链接">#</a></h4>
+<p>扫描设备，读取capability，确定是否含有MSI capability、是否含有MSI-X capability。</p>
+</section>
+<section id="id5">
+<h4>5.2 配置设备<a class="headerlink" href="#id5" title="此标题的永久链接">#</a></h4>
+<p>一个设备，可能都支持INTx、MSI、MSI-X，这3中方式只能选择一种。</p>
+<section id="id6">
+<h5>5.2.1 MSI配置<a class="headerlink" href="#id6" title="此标题的永久链接">#</a></h5>
+<p>系统软件读取MSI capability，确定设备想申请多少个中断。</p>
+<p>系统软件确定能分配多少个中断给这个设备，并把”地址/数据”写入MSI capability。</p>
+<p>如果MSI capability支持中断使能的话，还需要系统软件设置MSI capability来使能中断。</p>
+<p>注意：如果支持多个MSI中断，PCI设备发出中断时，写的是同一个地址，但是数据的低位可以发生变化。</p>
+<p>比如支持4个MSI中断时，通过数据的bit1、bit0来表示是哪个中断。</p>
+</section>
+<section id="id7">
+<h5>5.2.2 MSI-X配置<a class="headerlink" href="#id7" title="此标题的永久链接">#</a></h5>
+<p>MSI-X机制中，中断相关的更多信息保存在设备的内存空间。所以要使用MSI-X中断，要先配置设备、分配内存空间。</p>
+<p>然后，系统软件读取MSI-X capability，确定设备需要多少个中断。</p>
+<p>系统软件确定能分配多少个中断给这个设备，并把多个”地址/数据”写入MSI-X Table。</p>
+<p>注意：PCI设备要发出MSI-X中断时，它会往”地址”写入”数据”，这些”地址/数据”一旦配置后是不会变化的。MSI机制中，数据可以变化，MSI-X机制中数据不可以变化。</p>
+<p>使能中断：设置总开关、MSI-X Table中某个中断的开关。</p>
+<p>注意：MSI-X Table中，每一项都可以保存一个”地址/数据”，Table中”地址/数据”可以相同，也就是说：PCI设备发出的中断可以是同一个。</p>
+</section>
+</section>
+<section id="id8">
+<h4>5.3 设备发出中断<a class="headerlink" href="#id8" title="此标题的永久链接">#</a></h4>
+<p>PCI设备发出MSI中断、MSI-X中断时，都是发起”数据写”传输，就是往指定地址写入指定数据。</p>
+<p>PCI控制器接收到数据后，就会触发CPU中断。</p>
+</section>
+<section id="id9">
+<h4>5.4 中断函数<a class="headerlink" href="#id9" title="此标题的永久链接">#</a></h4>
+<p>系统软件执行中断处理函数。</p>
+</section>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="10_1.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">上一页</p>
+        <p class="prev-next-title">10_RK3399_PCIe_Host驱动分析_设备枚举</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="12_1.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">下一页</p>
+        <p class="prev-next-title">12_INTx中断机制源码分析</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 目录
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">INTx_MSI_MSIX三种中断机制分析</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pciintx">1. PCI设备的INTx中断机制</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pcieintx">2. PCIe设备的INTx中断机制</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#msi">3. MSI中断机制</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#capability">3.1 capability</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#msi-capability">3.2 MSI capability</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">3.3 格式解析</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#msi-x">4. MSI-X中断机制</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#msi-x-capability">4.1 MSI-X capability</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">4.2 MSI-X capability格式解析</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#msi-x-table">4.3 MSI-X Table</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pba">4.4 PBA</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#msi-msi-x">5. MSI/MSI-X操作流程</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">5.1 扫描设备</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">5.2 配置设备</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">5.2.1 MSI配置</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">5.2.2 MSI-X配置</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">5.3 设备发出中断</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">5.4 中断函数</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+作者： 100ask_Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2019-2024 深圳百问网科技有限公司.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  最后更新于 2024 年 08 月 08 日.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

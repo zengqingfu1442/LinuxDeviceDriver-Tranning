@@ -1,0 +1,1137 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="zh-CN" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>01_V4L2应用程序开发 &#8212; Linux设备驱动开发教程中心</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/topbar.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom-theme.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../../_static/translations.js"></script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'zh/13_V4L2/01_1';</script>
+    <link rel="icon" href="../../_static/favicon.png"/>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="02_V4L2驱动程序框架" href="02_1.html" />
+    <link rel="prev" title="13.V4L2子系统" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="zh-CN"/>
+    <meta name="docbuild:last-update" content="2024 年 08 月 08 日"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+
+  <div class="bd-header-announcement container-fluid bd-header-announcement">
+    <div class="bd-header-announcement__content">📢📢📢 欢迎来到百问网Linux设备驱动开发教程中心文档站点！！！技术交流社区：https://forums.100ask.net</div>
+  </div>
+
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Linux设备驱动开发教程中心</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">1.课程介绍</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../03_LCD/index.html">3.LCD显示子系统</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/01_1.html">01_单片机_Linux下不同接口的LCD硬件操作原理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/02_1.html">02_Framebuffer驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/03.html">03_编程_写出框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/04.html">04_最简单的LCD驱动_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/05.html">05_上机实验_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/06_1.html">结合APP分析LCD驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/07_1.html">07_硬件_8080接口LCD时序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/08_1.html">08_硬件_TFT-RGB接口LCD时序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/09_1.html">09_硬件_IMX6ULL的LCD控制器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/10_1.html">10_分析内核自带的LCD驱动程序_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/11_1.html">11_编程_LCD驱动程序框架_使用设备树</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/12_1.html">12_编程_配置引脚_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/13_1.html">13_编程_配置时钟_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/14_1.html">14_编程_ 配置LCD控制器之获得LCD参数_ 基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/15_1.html">15_编程_配置LCD控制器之寄存器操作_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/16.html">16_上机实验_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/17_1.html">17_单Buffer的缺点与改进方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/18.html">18_编写使用多buffer的应用程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../04_I2C/index.html">4.I2C子系统</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/01.html">01_I2C视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/02_1.html">02_I2C协议</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/03.html">03_SMBus协议</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/04.html">04_I2C系统的重要结构体</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/05.html">05_无需编写驱动直接访问设备_I2C-Tools介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/06.html">06_编写APP直接访问EEPROM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/07.html">07_通用驱动i2c-dev分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/08_1.html">08_I2C系统驱动程序模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/09.html">09_编写设备驱动之i2c_driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/10.html">10_编写设备驱动之i2c_client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/11.html">11_I2C_Adapter驱动框架讲解与编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/12_1.html">12_完善虚拟的I2C_Adapter驱动并模拟EEPROM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/13_1.html">13_使用GPIO模拟I2C的驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/14.html">14_使用GPIO操作I2C设备_IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/15_1.html">15_具体芯片的I2C_Adapter驱动分析</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../05_Input/index.html">5.Input输入子系统</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/01.html">01_Input子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/02.html">02_先学习输入系统应用编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_1.html">DRV_01_Input子系统框架详解</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_2.html">DRV_02_编写input_dev驱动框架解</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_3.html">DRV_03_ 编写最简单的触摸屏驱动程序_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_4.html">DRV_04_GPIO按键驱动分析与使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_5.html">DRV_05_I2C接口触摸屏驱动分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_6.html">DRV_06_UInput分析_用户态创建input_dev</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../06_Pinctrl/index.html">6.Pinctrl子系统</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/01.html">01_Pinctrl子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/03_1.html">02_Pinctrl子系统使用示例_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/03_2.html">03_Pinctrl子系统使用示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/04_1.html">04_Pinctrl子系统主要数据结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/05_1.html">05_Pincontroller构造过程情景分析_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/06_1.html">06_client端使用pinctrl过程的情景分析_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/07_1.html">07_编写虚拟的Pinctrl驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/08_1.html">08_调试虚拟的Pinctrl驱动程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../07_GPIO/index.html">7.GPIO子系统</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/01_1.html">01_GPIO子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/05_1.html">02_GPIO子系统层次与数据结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/06_1.html">03_IMX6ULL的GPIO驱动源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/07_1.html">04_编写一个虚拟GPIO控制器的驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/08_1.html">05_调试与使用虚拟的GPIO控制器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/09_1.html">06_GPIO子系统与Pinctrl子系统的交互</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/10_1.html">07_编程_GPIO使用Pinctrl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/11_1.html">08_GPIO子系统的sysfs接口</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../08_Interrupt/index.html">8.Interrupt子系统</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/08_1.html">01_中断相关的其他驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/09_1.html">02_中断的硬件框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/10_1.html">03_GIC介绍与编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/11_1.html">04_异常向量表的安装与调用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/12_1.html">05_GIC驱动程序对中断的处理流程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/13_1.html">06_GIC驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/14_1.html">07_两类中断控制器处理流程_链式和层级</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/15_1.html">08_链式中断控制器驱动程序编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/16_1.html">09_legacy方式代码的上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/17_1.html">10_链式中断控制器驱动程序编写_linear方式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/18_1.html">11_层级中断控制器驱动程序编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/19_1.html">12_层级中断控制器驱动程序上机实验</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../09_UART/index.html">9.UART子系统</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/01_1.html">01_UART子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/02_1.html">02_硬件知识_UART硬件介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/03_1.html">03_TTY体系中设备节点的差别</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/04_1.html">04_TTY驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/05_1.html">05_在STM32MP157上做串口实验的准备工作</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/05_2.html">06_Linux串口应用编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/07_1.html">07_字符设备驱动程序的另一种注册方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/08_1.html">08_UART驱动情景分析_注册</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/09_1.html">09_UART驱动情景分析_open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/10_1.html">10_UART驱动情景分析_read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/11_1.html">11_UART驱动情景分析_write</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/12_1.html">12_UART驱动调试方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/13_1.html">13_编写虚拟UART驱动程序_框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/14_1.html">14_编写虚拟UART驱动程序_实现uart_ops</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/15_1.html">15_编写虚拟UART驱动程序_实现数据传输</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/16_1.html">16_编写虚拟UART驱动程序_调试</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/17_1.html">17_printk执行过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/18_1.html">18_console驱动注册过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/19_1.html">19_编写console驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/20_1.html">20_early_printk和earlycon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/21_1.html">21_RS485简单讲解</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../10_PCI_PCIe/index.html">10.PCI_PCIe子系统</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/01_1.html">01_从软件开发角度看待PCI和PCIe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/02_1.html">02_PCI设备的访问方法_非桥设备(type0)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/03_1.html">03_PCI设备的访问方法_桥设备(type1)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/04_1.html">04_从软件角度看PCIe设备的硬件结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/05_1.html">05_PCIe设备的配置过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/06_1.html">06_PCIe路由方式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/07_1.html">07_PCI驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/08_1.html">08_RK3399_PCIe芯片手册解读</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/09_1.html">09_RK3399_PCIe_Host驱动分析_地址映射</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/10_1.html">10_RK3399_PCIe_Host驱动分析_设备枚举</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/11_1.html">11_INTx_MSI_MSIX三种中断机制分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/12_1.html">12_INTx中断机制源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/13_1.html">13_GICv3_LPI机制</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/14_1.html">14_MSI_MSI-X中断之体验与使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/15_1.html">15_MSI_MSI-X中断之源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/16_1.html">16_怎么编写PCIe设备驱动程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../11_SPI/index.html">11.SPI子系统</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/01_1.html">01_SPI视频概述</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/02_1.html">02_SPI协议介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/03_1.html">03_SPI总线设备驱动模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/04_1.html">04_SPI设备树处理过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/05_1.html">05_spidev的使用(SPI用户态API)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/06_1.html">06_使用spidev操作SPI_DAC模块</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/07_1.html">07_SPI_DAC模块上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/08_1.html">08_SPI_OLED模块操作方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/09_1.html">09_使用spidev操作SPI_OLED模块</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/10_1.html">10_OLED模块上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/11_1.html">11_编写SPI设备驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/12_1.html">12_编写SPI_DAC模块驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/13_1.html">13_编写DAC驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/14_1.html">14_编写SPI_OLED模块驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/15_1.html">15_编写OLED驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/16_1.html">16_使用Framebuffer改造OLED驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/17_1.html">17_OLED_Framebuffer驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/18_1.html">18_SPI_Master驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/19_1.html">19_编写SPI_Master驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/20_1.html">20_使用老方法编写的SPI_Master驱动程序上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/21_1.html">21_编写SPI_Master驱动程序_新方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/22_1.html">22_使用新方法编写的SPI_Master驱动程序上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/23_1.html">23_SPI_Slave_Mode驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/24_1.html">24_SPI_Slave_Mode驱动程序源码解读</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/25_1.html">临时笔记</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../12_USB/index.html">12.USB子系统</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-10"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/01_1.html">01_USB视频介绍及资料下载</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/02_1.html">02_USB系统硬件框架和软件框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/03_1.html">03_软件工程师眼里的USB电气信号</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/04_1.html">04_USB协议层数据格式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/05_1.html">05_USB描述符</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/06_1.html">06_libusb的使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/07_1.html">07_使用libusb读取鼠标数据</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/08_1.html">08_USB设备驱动模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/09_1.html">09_编写USB鼠标驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/10_1.html">10_OTG硬件检测电路</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/11_1.html">11_Gadget驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/12_1.html">12_Gadget应用实例之zero</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/13_1.html">13_Gadget应用实例之serial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/14_1.html">14_configfs的使用与内部机制</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/15_1.html">15_Gadget应用实例之adb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/16_1.html">tmp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/17_1.html">Gadget驱动程序框架</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">13.V4L2子系统</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">01_V4L2应用程序开发</a></li>
+<li class="toctree-l2"><a class="reference internal" href="02_1.html">02_V4L2驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="03_1.html">03_从0编写一个虚拟摄像头驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="04_1.html">04_USB摄像头驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05_1.html">05_MIPI摄像头驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="06_1.html">06_V4L2视频介绍及资料下载/笔记</a></li>
+<li class="toctree-l2"><a class="reference internal" href="07_1.html">tmp_摄像头控制接口</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/100askTeam/LinuxDeviceDriver-Tranning" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="源码库"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="下载此页面">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/zh/13_V4L2/01_1.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="下载源文件"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="列印成 PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="全屏模式"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="搜索" aria-label="搜索" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>01_V4L2应用程序开发</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> 目录 </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">1. 数据采集流程</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#buffer">1.1 buffer的管理</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">1.2 完整的使用流程</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">2. 控制流程</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#app">2.1 APP接口</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">2.1.1 数据格式</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">2.1.2 选择输入源</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">2.1.3 其他参数</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">2.2 理解接口</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">2.2.1 概念</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">2.2.2 操作方法</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">3. 编写APP</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">3.1 列出帧细节</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">3.2 获取数据</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">3.3 控制亮度</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="v4l2">
+<h1>01_V4L2应用程序开发<a class="headerlink" href="#v4l2" title="此标题的永久链接">#</a></h1>
+<p>参考资料：</p>
+<ul class="simple">
+<li><p>mjpg-streamer：https://github.com/jacksonliam/mjpg-streamer</p></li>
+<li><p>video2lcd：这是百问网编写的APP，它可以在LCD上直接显示摄像头的图像</p></li>
+<li><p>这2个源码都放在GIT仓库里：
+<img alt="image-20230617173258521" src="../../_images/04_demo.png" /></p></li>
+<li><p>UVC文档
+<img alt="image-20230725082351792" src="../../_images/06_uvc_specific.png" /></p></li>
+<li><p>参考文章：https://www.xjx100.cn/news/700965.html?action=onClick</p></li>
+</ul>
+<section id="id1">
+<h2>1. 数据采集流程<a class="headerlink" href="#id1" title="此标题的永久链接">#</a></h2>
+<p>可以参考这些文件：</p>
+<ul class="simple">
+<li><p>mjpg-streamer\mjpg-streamer-experimental\plugins\input_control\input_uvc.c</p></li>
+<li><p>video2lcd\video\v4l2.c</p></li>
+</ul>
+<p>Video for Linux two(Video4Linux2)简称V4L2，是V4L的改进版。V4L2支持三种方式来采集图像：内存映射方式(mmap)、直接读取方式(read)和用户指针。内存映射的方式采集速度较快，一般用于连续视频数据的采集，实际工作中的应用概率更高；直接读取的方式相对速度慢一些，所以常用于静态图片数据的采集；用户指针使用较少，如有兴趣可自行研究。</p>
+<section id="buffer">
+<h3>1.1 buffer的管理<a class="headerlink" href="#buffer" title="此标题的永久链接">#</a></h3>
+<p>使用摄像头时，核心是”获得数据”。所以先讲如何获取数据，即如何得到buffer。</p>
+<p>摄像头采集数据时，是一帧又一帧地连续采集。所以需要申请若干个buffer，驱动程序把数据放入buffer，APP从buffer得到数据。这些buffer可以使用链表来管理。</p>
+<p>驱动程序周而复始地做如下事情：</p>
+<ul class="simple">
+<li><p>从硬件采集到数据</p></li>
+<li><p>把”空闲链表”取出buffer，把数据存入buffer</p></li>
+<li><p>把含有数据的buffer放入”完成链表”</p></li>
+</ul>
+<p>APP也会周而复始地做如下事情：</p>
+<ul class="simple">
+<li><p>监测”完成链表”，等待它含有buffer</p></li>
+<li><p>从”完成链表”中取出buffer</p></li>
+<li><p>处理数据</p></li>
+<li><p>把buffer放入”空闲链表”</p></li>
+</ul>
+<p>链表操作示意图如下：</p>
+<p><img alt="image-20230617171816630" src="../../_images/05_buffers.png" /></p>
+</section>
+<section id="id2">
+<h3>1.2 完整的使用流程<a class="headerlink" href="#id2" title="此标题的永久链接">#</a></h3>
+<p>参考mjpg-streamer和video2lcd，总结了摄像头的使用流程，如下：</p>
+<ul class="simple">
+<li><p>open：打开设备节点/dev/videoX</p></li>
+<li><p>ioctl VIDIOC_QUERYCAP：Query Capbility，查询能力，比如</p>
+<ul>
+<li><p>确认它是否是”捕获设备”，因为有些节点是输出设备</p></li>
+<li><p>确认它是否支持mmap操作，还是仅支持read/write操作</p></li>
+</ul>
+</li>
+<li><p>ioctl VIDIOC_ENUM_FMT：枚举它支持的格式</p></li>
+<li><p>ioctl VIDIOC_S_FMT：在上面枚举出来的格式里，选择一个来设置格式</p></li>
+<li><p>ioctl VIDIOC_REQBUFS：申请buffer，APP可以申请很多个buffer，但是驱动程序不一定能申请到</p></li>
+<li><p>ioctl VIDIOC_QUERYBUF和mmap：查询buffer信息、映射</p>
+<ul>
+<li><p>如果申请到了N个buffer，这个ioctl就应该执行N次</p></li>
+<li><p>执行mmap后，APP就可以直接读写这些buffer</p></li>
+</ul>
+</li>
+<li><p>ioctl VIDIOC_QBUF：把buffer放入”空闲链表”</p>
+<ul>
+<li><p>如果申请到了N个buffer，这个ioctl就应该执行N次</p></li>
+</ul>
+</li>
+<li><p>ioctl VIDIOC_STREAMON：启动摄像头</p></li>
+<li><p>这里是一个循环：使用poll/select监测buffer，然后从”完成链表”中取出buffer，处理后再放入”空闲链表”</p>
+<ul>
+<li><p>poll/select</p></li>
+<li><p>ioctl VIDIOC_DQBUF：从”完成链表”中取出buffer</p></li>
+<li><p>处理：前面使用mmap映射了每个buffer的地址，处理时就可以直接使用地址来访问buffer</p></li>
+<li><p>ioclt VIDIOC_QBUF：把buffer放入”空闲链表”</p></li>
+</ul>
+</li>
+<li><p>ioctl VIDIOC_STREAMOFF：停止摄像头</p></li>
+</ul>
+</section>
+</section>
+<section id="id3">
+<h2>2. 控制流程<a class="headerlink" href="#id3" title="此标题的永久链接">#</a></h2>
+<p>使用摄像头时，我们可以调整很多参数，比如：</p>
+<ul class="simple">
+<li><p>对于视频流本身：</p>
+<ul>
+<li><p>设置格式：比如V4L2_PIX_FMT_YUYV、V4L2_PIX_FMT_MJPEG、V4L2_PIX_FMT_RGB565</p></li>
+<li><p>设置分辨率：1024*768等</p></li>
+</ul>
+</li>
+<li><p>对于控制部分：</p>
+<ul>
+<li><p>调节亮度</p></li>
+<li><p>调节对比度</p></li>
+<li><p>调节色度</p></li>
+</ul>
+</li>
+</ul>
+<section id="app">
+<h3>2.1 APP接口<a class="headerlink" href="#app" title="此标题的永久链接">#</a></h3>
+<p>就APP而言，对于这些参数有3套接口：查询或枚举(Query/Enum)、获得(Get)、设置(Set)。</p>
+<section id="id4">
+<h4>2.1.1 数据格式<a class="headerlink" href="#id4" title="此标题的永久链接">#</a></h4>
+<p>以设置数据格式为例，可以先枚举：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">v4l2_fmtdesc</span><span class="w"> </span><span class="n">fmtdesc</span><span class="p">;</span>
+<span class="n">fmtdesc</span><span class="p">.</span><span class="n">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">  </span><span class="c1">// 比如从0开始</span>
+<span class="n">fmtdesc</span><span class="p">.</span><span class="n">type</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">V4L2_BUF_TYPE_VIDEO_CAPTURE</span><span class="p">;</span><span class="w">  </span><span class="c1">// 指定type为&quot;捕获&quot;</span>
+<span class="n">ioctl</span><span class="p">(</span><span class="n">vd</span><span class="o">-&gt;</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="n">VIDIOC_ENUM_FMT</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">fmtdesc</span><span class="p">);</span>
+
+<span class="cp">#if 0</span>
+<span class="c">/*</span>
+<span class="c"> *	F O R M A T   E N U M E R A T I O N</span>
+<span class="c"> */</span>
+<span class="c">struct v4l2_fmtdesc {</span>
+<span class="c">	__u32		    index;             /* Format number      */</span>
+<span class="c">	__u32		    type;              /* enum v4l2_buf_type */</span>
+<span class="c">	__u32               flags;</span>
+<span class="c">	__u8		    description[32];   /* Description string */</span>
+<span class="c">	__u32		    pixelformat;       /* Format fourcc      */</span>
+<span class="c">	__u32		    reserved[4];</span>
+<span class="c">};</span>
+<span class="cp">#endif</span>
+</pre></div>
+</div>
+<p>还可以获得当前的格式：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">v4l2_format</span><span class="w"> </span><span class="n">currentFormat</span><span class="p">;</span>
+<span class="n">memset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">currentFormat</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">v4l2_format</span><span class="p">));</span>
+<span class="n">currentFormat</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V4L2_BUF_TYPE_VIDEO_CAPTURE</span><span class="p">;</span>
+<span class="n">ioctl</span><span class="p">(</span><span class="n">vd</span><span class="o">-&gt;</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="n">VIDIOC_G_FMT</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">currentFormat</span><span class="p">);</span>
+
+<span class="cp">#if 0</span>
+<span class="c">struct v4l2_format {</span>
+<span class="c">	__u32	 type;</span>
+<span class="c">	union {</span>
+<span class="c">		struct v4l2_pix_format		pix;     /* V4L2_BUF_TYPE_VIDEO_CAPTURE */</span>
+<span class="c">		struct v4l2_pix_format_mplane	pix_mp;  /* V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE */</span>
+<span class="c">		struct v4l2_window		win;     /* V4L2_BUF_TYPE_VIDEO_OVERLAY */</span>
+<span class="c">		struct v4l2_vbi_format		vbi;     /* V4L2_BUF_TYPE_VBI_CAPTURE */</span>
+<span class="c">		struct v4l2_sliced_vbi_format	sliced;  /* V4L2_BUF_TYPE_SLICED_VBI_CAPTURE */</span>
+<span class="c">		struct v4l2_sdr_format		sdr;     /* V4L2_BUF_TYPE_SDR_CAPTURE */</span>
+<span class="c">		__u8	raw_data[200];                   /* user-defined */</span>
+<span class="c">	} fmt;</span>
+<span class="c">};</span>
+
+<span class="c">/*</span>
+<span class="c"> *	V I D E O   I M A G E   F O R M A T</span>
+<span class="c"> */</span>
+<span class="c">struct v4l2_pix_format {v4l2_format</span>
+<span class="c">	__u32         		width;</span>
+<span class="c">	__u32			height;</span>
+<span class="c">	__u32			pixelformat;</span>
+<span class="c">	__u32			field;		/* enum v4l2_field */</span>
+<span class="c">	__u32            	bytesperline;	/* for padding, zero if unused */</span>
+<span class="c">	__u32          		sizeimage;</span>
+<span class="c">	__u32			colorspace;	/* enum v4l2_colorspace */</span>
+<span class="c">	__u32			priv;		/* private data, depends on pixelformat */</span>
+<span class="c">	__u32			flags;		/* format flags (V4L2_PIX_FMT_FLAG_*) */</span>
+<span class="c">	__u32			ycbcr_enc;	/* enum v4l2_ycbcr_encoding */</span>
+<span class="c">	__u32			quantization;	/* enum v4l2_quantization */</span>
+<span class="c">	__u32			xfer_func;	/* enum v4l2_xfer_func */</span>
+<span class="c">};</span>
+<span class="cp">#endif</span>
+</pre></div>
+</div>
+<p>也可以设置当前的格式：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">v4l2_format</span><span class="w"> </span><span class="n">fmt</span><span class="p">;</span>
+<span class="n">memset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fmt</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">v4l2_format</span><span class="p">));</span>
+<span class="n">fmt</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V4L2_BUF_TYPE_VIDEO_CAPTURE</span><span class="p">;</span>
+<span class="n">fmt</span><span class="p">.</span><span class="n">fmt</span><span class="p">.</span><span class="n">pix</span><span class="p">.</span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1024</span><span class="p">;</span>
+<span class="n">fmt</span><span class="p">.</span><span class="n">fmt</span><span class="p">.</span><span class="n">pix</span><span class="p">.</span><span class="n">height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">768</span><span class="p">;</span>
+<span class="n">fmt</span><span class="p">.</span><span class="n">fmt</span><span class="p">.</span><span class="n">pix</span><span class="p">.</span><span class="n">pixelformat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V4L2_PIX_FMT_MJPEG</span><span class="p">;</span>
+<span class="n">fmt</span><span class="p">.</span><span class="n">fmt</span><span class="p">.</span><span class="n">pix</span><span class="p">.</span><span class="n">field</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V4L2_FIELD_ANY</span><span class="p">;</span>
+<span class="kt">int</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ioctl</span><span class="p">(</span><span class="n">vd</span><span class="o">-&gt;</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="n">VIDIOC_S_FMT</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">fmt</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h4>2.1.2 选择输入源<a class="headerlink" href="#id5" title="此标题的永久链接">#</a></h4>
+<p>可以获得当期输入源、设置当前输入源：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="n">value</span><span class="p">;</span>
+<span class="n">ioctl</span><span class="p">(</span><span class="n">h</span><span class="o">-&gt;</span><span class="n">fd</span><span class="p">,</span><span class="n">VIDIOC_G_INPUT</span><span class="p">,</span><span class="o">&amp;</span><span class="n">value</span><span class="p">);</span><span class="w">  </span><span class="c1">// 读到的value从0开始, 0表示第1个input源</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">  </span><span class="c1">// 0表示第1个input源</span>
+<span class="n">ioctl</span><span class="p">(</span><span class="n">h</span><span class="o">-&gt;</span><span class="n">fd</span><span class="p">,</span><span class="n">VIDIOC_S_INPUT</span><span class="p">,</span><span class="o">&amp;</span><span class="n">value</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id6">
+<h4>2.1.3 其他参数<a class="headerlink" href="#id6" title="此标题的永久链接">#</a></h4>
+<p>如果每一参数都提供一系列的ioctl cmd，那使用起来很不方便。</p>
+<p>对于这些参数，APP使用对应ID来选中它，然后使用VIDIOC_QUERYCTRL、VIDIOC_G_CTRL、VIDIOC_S_CTRL来操作它。</p>
+<p>不同参数的ID值不同。</p>
+<p>以亮度Brightness为例，有如下调用方法:</p>
+<ul class="simple">
+<li><p>查询：</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">v4l2_queryctrl</span><span class="w">   </span><span class="n">qctrl</span><span class="p">;</span>
+<span class="n">memset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qctrl</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">qctrl</span><span class="p">));</span>
+<span class="n">qctrl</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V4L2_CID_BRIGHTNESS</span><span class="p">;</span><span class="w"> </span><span class="c1">// V4L2_CID_BASE+0;</span>
+<span class="n">ioctl</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="n">VIDIOC_QUERYCTRL</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">qctrl</span><span class="p">);</span>
+
+<span class="cm">/*  Used in the VIDIOC_QUERYCTRL ioctl for querying controls */</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">v4l2_queryctrl</span><span class="w"> </span><span class="p">{</span>
+<span class="w">	</span><span class="n">__u32</span><span class="w">		     </span><span class="n">id</span><span class="p">;</span>
+<span class="w">	</span><span class="n">__u32</span><span class="w">		     </span><span class="n">type</span><span class="p">;</span><span class="w">	</span><span class="cm">/* enum v4l2_ctrl_type */</span>
+<span class="w">	</span><span class="n">__u8</span><span class="w">		     </span><span class="n">name</span><span class="p">[</span><span class="mi">32</span><span class="p">];</span><span class="w">	</span><span class="cm">/* Whatever */</span>
+<span class="w">	</span><span class="n">__s32</span><span class="w">		     </span><span class="n">minimum</span><span class="p">;</span><span class="w">	</span><span class="cm">/* Note signedness */</span>
+<span class="w">	</span><span class="n">__s32</span><span class="w">		     </span><span class="n">maximum</span><span class="p">;</span>
+<span class="w">	</span><span class="n">__s32</span><span class="w">		     </span><span class="n">step</span><span class="p">;</span>
+<span class="w">	</span><span class="n">__s32</span><span class="w">		     </span><span class="n">default_value</span><span class="p">;</span>
+<span class="w">	</span><span class="n">__u32</span><span class="w">                </span><span class="n">flags</span><span class="p">;</span>
+<span class="w">	</span><span class="n">__u32</span><span class="w">		     </span><span class="n">reserved</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+<span class="p">};</span>
+
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>获得当前值</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">v4l2_control</span><span class="w"> </span><span class="n">c</span><span class="p">;</span>
+<span class="n">c</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V4L2_CID_BRIGHTNESS</span><span class="p">;</span><span class="w"> </span><span class="c1">// V4L2_CID_BASE+0;</span>
+<span class="n">ioctl</span><span class="p">(</span><span class="n">h</span><span class="o">-&gt;</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="n">VIDIOC_G_CTRL</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">c</span><span class="p">);</span>
+
+
+<span class="cm">/*</span>
+<span class="cm"> *	C O N T R O L S</span>
+<span class="cm"> */</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">v4l2_control</span><span class="w"> </span><span class="p">{</span>
+<span class="w">	</span><span class="n">__u32</span><span class="w">		     </span><span class="n">id</span><span class="p">;</span>
+<span class="w">	</span><span class="n">__s32</span><span class="w">		     </span><span class="n">value</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>设置</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">v4l2_control</span><span class="w"> </span><span class="n">c</span><span class="p">;</span>
+<span class="n">c</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V4L2_CID_BRIGHTNESS</span><span class="p">;</span><span class="w"> </span><span class="c1">// V4L2_CID_BASE+0;</span>
+<span class="n">c</span><span class="p">.</span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">99</span><span class="p">;</span>
+<span class="n">ioctl</span><span class="p">(</span><span class="n">h</span><span class="o">-&gt;</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="n">VIDIOC_S_CTRL</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">c</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id7">
+<h3>2.2 理解接口<a class="headerlink" href="#id7" title="此标题的永久链接">#</a></h3>
+<section id="id8">
+<h4>2.2.1 概念<a class="headerlink" href="#id8" title="此标题的永久链接">#</a></h4>
+<p>以USB摄像头为例，它的内部结构如下：</p>
+<p><img alt="image-20230725082453370" src="../../_images/07_uvc_topology.png" /></p>
+<p>一个USB摄像头必定有一个VideoControl接口，用于控制。有0个或多个VideoStreaming接口，用于传输视频。</p>
+<p>在VideoControl内部，有多个Unit或Terminal，上一个Unit或Terminal的数据，流向下一个Unit或Terminal，多个Unit或Terminal组成一个完整的UVC功能设备。</p>
+<ul>
+<li><p>只有一个输出引脚
+<img alt="image-20230725083717206" src="../../_images/11_unit_example.png" /></p></li>
+<li><p>可以Fan-out，不能Fan-in
+<img alt="image-20230725084117149" src="../../_images/12_fanout_fanin.png" /></p></li>
+<li><p>Terminal：位于边界，用于联通外界。有：IT(Input Terminal)、OT(Output Terminal)、CT(Camera Terminal)。模型如下，有一个输出引脚：</p>
+<p><img alt="image-20230725082942680" src="../../_images/08_itot.png" /></p>
+</li>
+<li><p>Unit：位于VideoControl内部，用来进行各种控制</p>
+<ul class="simple">
+<li><p>SU：Selector Unit(选择单元)，从多路输入中选择一路，比如设备支持多种输入源，可以通过SU进行选择切换。模型如下
+<img alt="image-20230725083123895" src="../../_images/09_su.png" /></p></li>
+<li><p>PU：Porocessing Unit(处理单元)，用于调整亮度、对比度、色度等，有如下控制功能：</p>
+<ul>
+<li><p>User Controls</p>
+<ul>
+<li><p>Brightness 背光</p></li>
+<li><p>Hue 色度</p></li>
+<li><p>Saturation 饱和度</p></li>
+<li><p>Sharpness 锐度</p></li>
+<li><p>Gamma 伽马</p></li>
+<li><p>Digital Multiplier (Zoom) 数字放大</p></li>
+</ul>
+</li>
+<li><p>Auto Controls</p>
+<ul>
+<li><p>White Balance Temperature 白平衡色温</p></li>
+<li><p>White Balance Component 白平衡组件</p></li>
+<li><p>Backlight Compensation 背光补偿</p></li>
+<li><p>Contrast 对比度</p></li>
+</ul>
+</li>
+<li><p>Other</p>
+<ul>
+<li><p>Gain 增益</p></li>
+<li><p>Power Line Frequency 电源线频率</p></li>
+<li><p>Analog Video Standard 模拟视频标准</p></li>
+<li><p>Analog Video Lock Status 模拟视频锁状态</p></li>
+</ul>
+</li>
+<li><p>模型如下
+<img alt="image-20230725083301071" src="../../_images/10_pu.png" /></p></li>
+</ul>
+</li>
+<li><p>EU：Encoding Unit(编码单元)，对采集所得的数据进行个性化处理的功能。编码单元控制编码器的属性，该编码器对通过它流式传输的视频进行编码。它具有如下功能：
+<img alt="image-20230725084636672" src="../../_images/13_eu_functions.png" /></p></li>
+<li><p>模型如下
+<img alt="image-20230725084743426" src="../../_images/14_eu.png" /></p></li>
+</ul>
+</li>
+<li><p>XU：Extension Unit(扩展单元)，厂家可以在XU上提供自定义的操作，模型如下：
+<img alt="image-20230725084952604" src="../../_images/15_xu.png" /></p></li>
+</ul>
+</section>
+<section id="id9">
+<h4>2.2.2 操作方法<a class="headerlink" href="#id9" title="此标题的永久链接">#</a></h4>
+<p>我们使用ioctl操作设备节点”/dev/video0”时，不同的ioctl操作的可能是VideoControl接口，或者VideoStreaming接口。</p>
+<p>跟视频流相关的操作，比如：VIDIOC_ENUM_FMT、VIDIOC_G_FMT、VIDIOC_S_FMT、VIDIOC_STREAMON、VIDIOC_STREAMOFF，是操作VideoStreaming接口。</p>
+<p>其他ioctl，大多都是操作VideoControl接口。</p>
+<p>从底层驱动和硬件角度看，要操作VideoControl接口，需要指明：</p>
+<ul class="simple">
+<li><p>entity：你要操作哪个Terminal或Unit，比如PU</p></li>
+<li><p>Control Selector：你要操作entity里面的哪个控制项？比如亮度PU_BRIGHTNESS_CONTROL</p></li>
+<li><p>控制项里哪些位：比如CT(Camera Terminal)里的CT_PANTILT_RELATIVE_CONTROL控制项对应32位的数据，其中前16位对应PAN控制(左右转动)，后16位对应TILE控制(上下转动)</p></li>
+</ul>
+<p>但是APP不关注这些细节，使用一个ID来指定entity、Control Selector、哪些位：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm"> *	C O N T R O L S</span>
+<span class="cm"> */</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">v4l2_control</span><span class="w"> </span><span class="p">{</span>
+<span class="w">	</span><span class="n">__u32</span><span class="w">		     </span><span class="n">id</span><span class="p">;</span>
+<span class="w">	</span><span class="n">__s32</span><span class="w">		     </span><span class="n">value</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>驱动程序里，会解析APP传入的ID，找到entity、Control Selector、那些位。</p>
+<p>但是有了上述知识后，我们才能看懂mjpg-streamer的如下代码：</p>
+<ul>
+<li><p>XU：使用比较老的UVC驱动时，需要APP传入厂家的XU信息；新驱动里可以解析出XU信息，无需APP传入
+<img alt="image-20230725091551391" src="../../_images/16_logitech_xu.png" /></p></li>
+<li><p>mapping：无论新老UVC驱动，都需要提供更细化的mapping信息</p>
+<p><img alt="image-20230725092210341" src="../../_images/17_logitech_mapping.png" /></p>
+</li>
+<li><p>代码如下
+<img alt="image-20230725092349892" src="../../_images/18_add_control_mapping.png" /></p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="id10">
+<h2>3. 编写APP<a class="headerlink" href="#id10" title="此标题的永久链接">#</a></h2>
+<p>参考：mjpg-streamer，https://github.com/jacksonliam/mjpg-streamer</p>
+<section id="id11">
+<h3>3.1 列出帧细节<a class="headerlink" href="#id11" title="此标题的永久链接">#</a></h3>
+<p>调用ioctl VIDIOC_ENUM_FMT可以枚举摄像头支持的格式，但是无法获得更多细节（比如支持哪些分辨率），</p>
+<p>调用ioctl VIDIOC_G_FMT可以获得”当前的格式”，包括分辨率等细节，但是无法获得其他格式的细节。</p>
+<p>需要结合VIDIOC_ENUM_FMT、VIDIOC_ENUM_FRAMESIZES这2个ioctl来获得这些细节：</p>
+<ul class="simple">
+<li><p>VIDIOC_ENUM_FMT：枚举格式</p></li>
+<li><p>VIDIOC_ENUM_FRAMESIZES：枚举指定格式的帧大小(即分辨率)</p></li>
+</ul>
+<p>示例代码如下：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sys/types.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sys/stat.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fcntl.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sys/ioctl.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;unistd.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;linux/types.h&gt;</span><span class="c1">          /* for videodev2.h */</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;linux/videodev2.h&gt;</span>
+
+<span class="cm">/* ./video_test &lt;/dev/video0&gt; */</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">argv</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">fd</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">v4l2_fmtdesc</span><span class="w"> </span><span class="n">fmtdesc</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">v4l2_frmsizeenum</span><span class="w"> </span><span class="n">fsenum</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">fmt_index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">frame_index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">argc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;Usage: %s &lt;/dev/videoX&gt;, print format detail for video device</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="cm">/* open */</span>
+<span class="w">    </span><span class="n">fd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">open</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="n">O_RDWR</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fd</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;can not open %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="cm">/* 枚举格式 */</span>
+<span class="w">        </span><span class="n">fmtdesc</span><span class="p">.</span><span class="n">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fmt_index</span><span class="p">;</span><span class="w">  </span><span class="c1">// 比如从0开始</span>
+<span class="w">        </span><span class="n">fmtdesc</span><span class="p">.</span><span class="n">type</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">V4L2_BUF_TYPE_VIDEO_CAPTURE</span><span class="p">;</span><span class="w">  </span><span class="c1">// 指定type为&quot;捕获&quot;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">ioctl</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="n">VIDIOC_ENUM_FMT</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">fmtdesc</span><span class="p">))</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">frame_index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="cm">/* 枚举这种格式所支持的帧大小 */</span>
+<span class="w">            </span><span class="n">memset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fsenum</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">v4l2_frmsizeenum</span><span class="p">));</span>
+<span class="w">            </span><span class="n">fsenum</span><span class="p">.</span><span class="n">pixel_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fmtdesc</span><span class="p">.</span><span class="n">pixelformat</span><span class="p">;</span>
+<span class="w">            </span><span class="n">fsenum</span><span class="p">.</span><span class="n">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">frame_index</span><span class="p">;</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ioctl</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="n">VIDIOC_ENUM_FRAMESIZES</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">fsenum</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;format %s,%d, framesize %d: %d x %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">fmtdesc</span><span class="p">.</span><span class="n">description</span><span class="p">,</span><span class="w"> </span><span class="n">fmtdesc</span><span class="p">.</span><span class="n">pixelformat</span><span class="p">,</span><span class="w"> </span><span class="n">frame_index</span><span class="p">,</span><span class="w"> </span><span class="n">fsenum</span><span class="p">.</span><span class="n">discrete</span><span class="p">.</span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="n">fsenum</span><span class="p">.</span><span class="n">discrete</span><span class="p">.</span><span class="n">height</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">else</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="n">frame_index</span><span class="o">++</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">fmt_index</span><span class="o">++</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="id12">
+<h3>3.2 获取数据<a class="headerlink" href="#id12" title="此标题的永久链接">#</a></h3>
+<p>根据《1.2 完整的使用流程》来编写程序，步骤如下：</p>
+<ul class="simple">
+<li><p>打开设备</p></li>
+<li><p>ioctl VIDIOC_QUERYCAP：Query Capbility，查询能力</p></li>
+<li><p>枚举格式、设置格式</p></li>
+<li><p>ioctl VIDIOC_REQBUFS：申请buffer</p></li>
+<li><p>ioctl VIDIOC_QUERYBUF和mmap：查询buffer信息、映射</p></li>
+<li><p>ioctl VIDIOC_QBUF：把buffer放入”空闲链表”</p></li>
+<li><p>ioctl VIDIOC_STREAMON：启动摄像头</p></li>
+<li><p>这里是一个循环：使用poll/select监测buffer，然后从”完成链表”中取出buffer，处理后再放入”空闲链表”</p>
+<ul>
+<li><p>poll/select</p></li>
+<li><p>ioctl VIDIOC_DQBUF：从”完成链表”中取出buffer</p></li>
+<li><p>处理：前面使用mmap映射了每个buffer的地址，把这个buffer的数据存为文件</p></li>
+<li><p>ioclt VIDIOC_QBUF：把buffer放入”空闲链表”</p></li>
+</ul>
+</li>
+<li><p>ioctl VIDIOC_STREAMOFF：停止摄像头</p></li>
+</ul>
+<p><img alt="image-20230726162003001" src="../../_images/19_get_data.png" /></p>
+</section>
+<section id="id13">
+<h3>3.3 控制亮度<a class="headerlink" href="#id13" title="此标题的永久链接">#</a></h3>
+<p><img alt="image-20230726170548040" src="../../_images/20_brightness.png" /></p>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">上一页</p>
+        <p class="prev-next-title">13.V4L2子系统</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="02_1.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">下一页</p>
+        <p class="prev-next-title">02_V4L2驱动程序框架</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 目录
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">1. 数据采集流程</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#buffer">1.1 buffer的管理</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">1.2 完整的使用流程</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">2. 控制流程</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#app">2.1 APP接口</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">2.1.1 数据格式</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">2.1.2 选择输入源</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">2.1.3 其他参数</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">2.2 理解接口</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">2.2.1 概念</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">2.2.2 操作方法</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">3. 编写APP</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">3.1 列出帧细节</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">3.2 获取数据</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">3.3 控制亮度</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+作者： 100ask_Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2019-2024 深圳百问网科技有限公司.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  最后更新于 2024 年 08 月 08 日.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

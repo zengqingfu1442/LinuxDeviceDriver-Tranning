@@ -1,0 +1,1377 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="zh-CN" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>03_GIC介绍与编程 &#8212; Linux设备驱动开发教程中心</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/topbar.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom-theme.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../../_static/translations.js"></script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'zh/08_Interrupt/10_1';</script>
+    <link rel="icon" href="../../_static/favicon.png"/>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="04_异常向量表的安装与调用" href="11_1.html" />
+    <link rel="prev" title="02_中断的硬件框架" href="09_1.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="zh-CN"/>
+    <meta name="docbuild:last-update" content="2024 年 08 月 08 日"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+
+  <div class="bd-header-announcement container-fluid bd-header-announcement">
+    <div class="bd-header-announcement__content">📢📢📢 欢迎来到百问网Linux设备驱动开发教程中心文档站点！！！技术交流社区：https://forums.100ask.net</div>
+  </div>
+
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Linux设备驱动开发教程中心</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">1.课程介绍</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../03_LCD/index.html">3.LCD显示子系统</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/01_1.html">01_单片机_Linux下不同接口的LCD硬件操作原理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/02_1.html">02_Framebuffer驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/03.html">03_编程_写出框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/04.html">04_最简单的LCD驱动_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/05.html">05_上机实验_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/06_1.html">结合APP分析LCD驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/07_1.html">07_硬件_8080接口LCD时序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/08_1.html">08_硬件_TFT-RGB接口LCD时序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/09_1.html">09_硬件_IMX6ULL的LCD控制器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/10_1.html">10_分析内核自带的LCD驱动程序_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/11_1.html">11_编程_LCD驱动程序框架_使用设备树</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/12_1.html">12_编程_配置引脚_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/13_1.html">13_编程_配置时钟_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/14_1.html">14_编程_ 配置LCD控制器之获得LCD参数_ 基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/15_1.html">15_编程_配置LCD控制器之寄存器操作_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/16.html">16_上机实验_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/17_1.html">17_单Buffer的缺点与改进方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/18.html">18_编写使用多buffer的应用程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../04_I2C/index.html">4.I2C子系统</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/01.html">01_I2C视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/02_1.html">02_I2C协议</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/03.html">03_SMBus协议</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/04.html">04_I2C系统的重要结构体</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/05.html">05_无需编写驱动直接访问设备_I2C-Tools介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/06.html">06_编写APP直接访问EEPROM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/07.html">07_通用驱动i2c-dev分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/08_1.html">08_I2C系统驱动程序模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/09.html">09_编写设备驱动之i2c_driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/10.html">10_编写设备驱动之i2c_client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/11.html">11_I2C_Adapter驱动框架讲解与编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/12_1.html">12_完善虚拟的I2C_Adapter驱动并模拟EEPROM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/13_1.html">13_使用GPIO模拟I2C的驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/14.html">14_使用GPIO操作I2C设备_IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/15_1.html">15_具体芯片的I2C_Adapter驱动分析</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../05_Input/index.html">5.Input输入子系统</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/01.html">01_Input子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/02.html">02_先学习输入系统应用编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_1.html">DRV_01_Input子系统框架详解</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_2.html">DRV_02_编写input_dev驱动框架解</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_3.html">DRV_03_ 编写最简单的触摸屏驱动程序_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_4.html">DRV_04_GPIO按键驱动分析与使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_5.html">DRV_05_I2C接口触摸屏驱动分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_6.html">DRV_06_UInput分析_用户态创建input_dev</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../06_Pinctrl/index.html">6.Pinctrl子系统</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/01.html">01_Pinctrl子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/03_1.html">02_Pinctrl子系统使用示例_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/03_2.html">03_Pinctrl子系统使用示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/04_1.html">04_Pinctrl子系统主要数据结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/05_1.html">05_Pincontroller构造过程情景分析_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/06_1.html">06_client端使用pinctrl过程的情景分析_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/07_1.html">07_编写虚拟的Pinctrl驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/08_1.html">08_调试虚拟的Pinctrl驱动程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../07_GPIO/index.html">7.GPIO子系统</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/01_1.html">01_GPIO子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/05_1.html">02_GPIO子系统层次与数据结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/06_1.html">03_IMX6ULL的GPIO驱动源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/07_1.html">04_编写一个虚拟GPIO控制器的驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/08_1.html">05_调试与使用虚拟的GPIO控制器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/09_1.html">06_GPIO子系统与Pinctrl子系统的交互</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/10_1.html">07_编程_GPIO使用Pinctrl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/11_1.html">08_GPIO子系统的sysfs接口</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">8.Interrupt子系统</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="08_1.html">01_中断相关的其他驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="09_1.html">02_中断的硬件框架</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">03_GIC介绍与编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="11_1.html">04_异常向量表的安装与调用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="12_1.html">05_GIC驱动程序对中断的处理流程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="13_1.html">06_GIC驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="14_1.html">07_两类中断控制器处理流程_链式和层级</a></li>
+<li class="toctree-l2"><a class="reference internal" href="15_1.html">08_链式中断控制器驱动程序编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="16_1.html">09_legacy方式代码的上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="17_1.html">10_链式中断控制器驱动程序编写_linear方式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="18_1.html">11_层级中断控制器驱动程序编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="19_1.html">12_层级中断控制器驱动程序上机实验</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../09_UART/index.html">9.UART子系统</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/01_1.html">01_UART子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/02_1.html">02_硬件知识_UART硬件介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/03_1.html">03_TTY体系中设备节点的差别</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/04_1.html">04_TTY驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/05_1.html">05_在STM32MP157上做串口实验的准备工作</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/05_2.html">06_Linux串口应用编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/07_1.html">07_字符设备驱动程序的另一种注册方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/08_1.html">08_UART驱动情景分析_注册</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/09_1.html">09_UART驱动情景分析_open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/10_1.html">10_UART驱动情景分析_read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/11_1.html">11_UART驱动情景分析_write</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/12_1.html">12_UART驱动调试方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/13_1.html">13_编写虚拟UART驱动程序_框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/14_1.html">14_编写虚拟UART驱动程序_实现uart_ops</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/15_1.html">15_编写虚拟UART驱动程序_实现数据传输</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/16_1.html">16_编写虚拟UART驱动程序_调试</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/17_1.html">17_printk执行过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/18_1.html">18_console驱动注册过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/19_1.html">19_编写console驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/20_1.html">20_early_printk和earlycon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/21_1.html">21_RS485简单讲解</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../10_PCI_PCIe/index.html">10.PCI_PCIe子系统</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/01_1.html">01_从软件开发角度看待PCI和PCIe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/02_1.html">02_PCI设备的访问方法_非桥设备(type0)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/03_1.html">03_PCI设备的访问方法_桥设备(type1)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/04_1.html">04_从软件角度看PCIe设备的硬件结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/05_1.html">05_PCIe设备的配置过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/06_1.html">06_PCIe路由方式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/07_1.html">07_PCI驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/08_1.html">08_RK3399_PCIe芯片手册解读</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/09_1.html">09_RK3399_PCIe_Host驱动分析_地址映射</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/10_1.html">10_RK3399_PCIe_Host驱动分析_设备枚举</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/11_1.html">11_INTx_MSI_MSIX三种中断机制分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/12_1.html">12_INTx中断机制源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/13_1.html">13_GICv3_LPI机制</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/14_1.html">14_MSI_MSI-X中断之体验与使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/15_1.html">15_MSI_MSI-X中断之源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/16_1.html">16_怎么编写PCIe设备驱动程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../11_SPI/index.html">11.SPI子系统</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/01_1.html">01_SPI视频概述</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/02_1.html">02_SPI协议介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/03_1.html">03_SPI总线设备驱动模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/04_1.html">04_SPI设备树处理过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/05_1.html">05_spidev的使用(SPI用户态API)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/06_1.html">06_使用spidev操作SPI_DAC模块</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/07_1.html">07_SPI_DAC模块上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/08_1.html">08_SPI_OLED模块操作方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/09_1.html">09_使用spidev操作SPI_OLED模块</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/10_1.html">10_OLED模块上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/11_1.html">11_编写SPI设备驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/12_1.html">12_编写SPI_DAC模块驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/13_1.html">13_编写DAC驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/14_1.html">14_编写SPI_OLED模块驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/15_1.html">15_编写OLED驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/16_1.html">16_使用Framebuffer改造OLED驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/17_1.html">17_OLED_Framebuffer驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/18_1.html">18_SPI_Master驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/19_1.html">19_编写SPI_Master驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/20_1.html">20_使用老方法编写的SPI_Master驱动程序上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/21_1.html">21_编写SPI_Master驱动程序_新方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/22_1.html">22_使用新方法编写的SPI_Master驱动程序上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/23_1.html">23_SPI_Slave_Mode驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/24_1.html">24_SPI_Slave_Mode驱动程序源码解读</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/25_1.html">临时笔记</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../12_USB/index.html">12.USB子系统</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-10"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/01_1.html">01_USB视频介绍及资料下载</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/02_1.html">02_USB系统硬件框架和软件框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/03_1.html">03_软件工程师眼里的USB电气信号</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/04_1.html">04_USB协议层数据格式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/05_1.html">05_USB描述符</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/06_1.html">06_libusb的使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/07_1.html">07_使用libusb读取鼠标数据</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/08_1.html">08_USB设备驱动模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/09_1.html">09_编写USB鼠标驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/10_1.html">10_OTG硬件检测电路</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/11_1.html">11_Gadget驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/12_1.html">12_Gadget应用实例之zero</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/13_1.html">13_Gadget应用实例之serial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/14_1.html">14_configfs的使用与内部机制</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/15_1.html">15_Gadget应用实例之adb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/16_1.html">tmp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/17_1.html">Gadget驱动程序框架</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../13_V4L2/index.html">13.V4L2子系统</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/01_1.html">01_V4L2应用程序开发</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/02_1.html">02_V4L2驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/03_1.html">03_从0编写一个虚拟摄像头驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/04_1.html">04_USB摄像头驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/05_1.html">05_MIPI摄像头驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/06_1.html">06_V4L2视频介绍及资料下载/笔记</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/07_1.html">tmp_摄像头控制接口</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/100askTeam/LinuxDeviceDriver-Tranning" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="源码库"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="下载此页面">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/zh/08_Interrupt/10_1.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="下载源文件"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="列印成 PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="全屏模式"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="搜索" aria-label="搜索" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>03_GIC介绍与编程</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> 目录 </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">1.1 GIC介绍</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">1.1.1 配置</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">1.1.2 初始化</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">1.1.3 GIC中断处理</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">1.2 GIC的寄存器</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#distributor">1.2.1 Distributor 寄存器描述</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#distributor-control-register-gicd-ctlr">1. <strong>Distributor Control Register, GICD_CTLR</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-controller-type-register-gicd-typer">2. <strong>Interrupt Controller Type Register, GICD_TYPER</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#distributor-implementer-identification-register-gicd-iidr">3. <strong>Distributor Implementer Identification Register, GICD_IIDR</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-group-registers-gicd-igrouprn">4. <strong>Interrupt Group Registers, GICD_IGROUPRn</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-set-enable-registers-gicd-isenablern">5. <strong>Interrupt Set-Enable Registers, GICD_ISENABLERn</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-clear-enable-registers-gicd-icenablern">6. <strong>Interrupt Clear-Enable Registers, GICD_ICENABLERn</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-set-active-registers-gicd-isactivern">7. <strong>Interrupt Set-Active Registers, GICD_ISACTIVERn</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-clear-active-registers-gicd-icactivern">8. <strong>Interrupt Clear-Active Registers, GICD_ICACTIVERn</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-priority-registers-gicd-ipriorityrn">9. <strong>Interrupt Priority Registers, GICD_IPRIORITYRn</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-processor-targets-registers-gicd-itargetsrn">10. <strong>Interrupt Processor Targets Registers, GICD_ITARGETSRn</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-configuration-registers-gicd-icfgrn">11. <strong>Interrupt Configuration Registers, GICD_ICFGRn</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#identification-registers-peripheral-id2-register-icpidr2">12. <strong>Identification registers: Peripheral ID2 Register, ICPIDR2</strong></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cpu-interface">1.2.2 CPU interface寄存器描述</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#cpu-interface-control-register-gicc-ctlr">1. <strong>CPU Interface Control Register, GICC_CTLR</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-priority-mask-register-gicc-pmr">2. <strong>Interrupt Priority Mask Register, GICC_PMR</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#binary-point-register-gicc-bpr">3. <strong>Binary Point Register, GICC_BPR</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-acknowledge-register-gicc-iar">4. <strong>Interrupt Acknowledge Register, GICC_IAR</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-register-gicc-eoir">5. <strong>Interrupt Register, GICC_EOIR</strong></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">1.3 GIC编程</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="gic">
+<h1>03_GIC介绍与编程<a class="headerlink" href="#gic" title="此标题的永久链接">#</a></h1>
+<p>参考资料：</p>
+<ul>
+<li><p>GIC的官方文档：GIT仓库</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>doc_and_source_for_drivers\IMX6ULL\doc_pic\08_Interrupt:
+doc_and_source_for_drivers\STM32MP157\doc_pic\08_Interrupt:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>ARM® Generic Interrupt Controller Architecture Specification Architecture version 2.0(IHI0048B_b_gic_architecture_specification_v2).pdf
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+* 源码：GIT仓库
+
+```shell
+doc_and_source_for_drivers\IMX6ULL\source\08_Interrupt\02_gic
+doc_and_source_for_drivers\STM32MP157\source\A7\08_Interrupt\02_gic
+</pre></div>
+</div>
+<section id="id1">
+<h2>1.1 GIC介绍<a class="headerlink" href="#id1" title="此标题的永久链接">#</a></h2>
+<p>​	ARM体系结构定义了通用中断控制器（GIC），该控制器包括一组用于管理单核或多核系统中的中断的硬件资源。GIC提供了内存映射寄存器，可用于管理中断源和行为，以及（在多核系统中）用于将中断路由到各个CPU核。它使软件能够屏蔽，启用和禁用来自各个中断源的中断，以（在硬件中）对各个中断源进行优先级排序和生成软件触发中断。它还提供对TrustZone安全性扩展的支持。GIC接受系统级别中断的产生，并可以发信号通知给它所连接的每个内核，从而有可能导致IRQ或FIQ异常发生。</p>
+<p><strong>从软件角度来看，GIC具有两个主要功能模块，简单画图如下：</strong></p>
+<p><img alt="" src="../../_images/37_imx6ull_gic.png" /></p>
+<p>① 分发器(Distributor)
+系统中的所有中断源都连接到该单元。可以通过仲裁单元的寄存器来控制各个中断源的属性，例如优先级、状态、安全性、路由信息和使能状态。
+分发器把中断输出到“CPU接口单元”，后者决定将哪个中断转发给CPU核。</p>
+<p>② CPU接口单元（CPU Interface）
+CPU核通过控制器的CPU接口单元接收中断。CPU接口单元寄存器用于屏蔽，识别和控制转发到CPU核的中断的状态。系统中的每个CPU核心都有一个单独的CPU接口。
+中断在软件中由一个称为中断ID的数字标识。中断ID唯一对应于一个中断源。软件可以使用中断ID来识别中断源并调用相应的处理程序来处理中断。呈现给软件的中断ID由系统设计确定，一般在SOC的数据手册有记录。</p>
+<p><strong>中断可以有多种不同的类型：</strong></p>
+<p>① 软件触发中断（SGI，Software Generated Interrupt）
+这是由软件通过写入专用仲裁单元的寄存器即软件触发中断寄存器（ICDSGIR）显式生成的。它最常用于CPU核间通信。SGI既可以发给所有的核，也可以发送给系统中选定的一组核心。中断号0-15保留用于SGI的中断号。用于通信的确切中断号由软件决定。</p>
+<p>② 私有外设中断（PPI，Private Peripheral Interrupt）
+这是由单个CPU核私有的外设生成的。PPI的中断号为16-31。它们标识CPU核私有的中断源，并且独立于另一个内核上的相同中断源，比如，每个核的计时器。</p>
+<p>③ 共享外设中断（SPI，Shared Peripheral Interrupt）
+这是由外设生成的，中断控制器可以将其路由到多个核。中断号为32-1020。SPI用于从整个系统可访问的各种外围设备发出中断信号。</p>
+<p>​	 中断可以是边沿触发的（在中断控制器检测到相关输入的上升沿时认为中断触发，并且一直保持到清除为止）或电平触发（仅在中断控制器的相关输入为高时触发）。</p>
+<p><strong>中断可以处于多种不同状态：</strong></p>
+<p>① 非活动状态（Inactive）–这意味着该中断未触发。
+② 挂起（Pending）–这意味着中断源已被触发，但正在等待CPU核处理。待处理的中断要通过转发到CPU接口单元，然后再由CPU接口单元转发到内核。
+③ 活动（Active）–描述了一个已被内核接收并正在处理的中断。
+④ 活动和挂起（Active and pending）–描述了一种情况，其中CPU核正在为中断服务，而GIC又收到来自同一源的中断。</p>
+<p>​	中断的优先级和可接收中断的核都在分发器(distributor)中配置。外设发给分发器的中断将标记为pending状态（或Active and Pending状态，如触发时果状态是active）。distributor确定可以传递给CPU核的优先级最高的pending中断，并将其转发给内核的CPU interface。通过CPU interface，该中断又向CPU核发出信号，此时CPU核将触发FIQ或IRQ异常。</p>
+<p>​	作为响应，CPU核执行异常处理程序。异常处理程序必须从CPU interface寄存器查询中断ID，并开始为中断源提供服务。完成后，处理程序必须写入CPU interface寄存器以报告处理结束。然后CPU interface准备转发distributor发给它的下一个中断。</p>
+<p>​	在处理中断时，中断的状态开始为pending，active，结束时变成inactive。中断状态保存在distributor寄存器中。</p>
+<p>下图是GIC控制器的逻辑结构：</p>
+<p><img alt="" src="../../_images/38_imx6ull_gic.png" /></p>
+<section id="id2">
+<h3>1.1.1 配置<a class="headerlink" href="#id2" title="此标题的永久链接">#</a></h3>
+<p>​	GIC作为内存映射的外围设备，被软件访问。所有内核都可以访问公共的distributor单元，但是CPU interface是备份的，也就是说，每个CPU核都使用相同的地址来访问其专用CPU接口。一个CPU核不可能访问另一个CPU核的CPU接口。</p>
+<p><strong>Distributor拥有许多寄存器，可以通过它们配置各个中断的属性。这些可配置属性是：</strong></p>
+<ul>
+<li><p>中断优先级：Distributor使用它来确定接下来将哪个中断转发到CPU接口。</p></li>
+<li><p>中断配置：这确定中断是对电平触发还是边沿触发。</p></li>
+<li><p>中断目标：这确定了可以将中断发给哪些CPU核。</p></li>
+<li><p>中断启用或禁用状态：只有Distributor中启用的那些中断变为挂起状态时，才有资格转发。</p></li>
+<li><p>中断安全性：确定将中断分配给Secure还是Normal world软件。</p></li>
+<li><p>中断状态。</p>
+<p>Distributor还提供优先级屏蔽，可防止低于某个优先级的中断发送给CPU核。
+每个CPU核上的CPU interface，专注于控制和处理发送给该CPU核的中断。</p>
+</li>
+</ul>
+</section>
+<section id="id3">
+<h3>1.1.2 初始化<a class="headerlink" href="#id3" title="此标题的永久链接">#</a></h3>
+<p>​	Distributor和CPU interface在复位时均被禁用。复位后，必须初始化GIC，才能将中断传递给CPU核。
+​	在Distributor中，软件必须配置优先级、目标核、安全性并启用单个中断；随后必须通过其控制寄存器使能。
+​	对于每个CPU interface，软件必须对优先级和抢占设置进行编程。每个CPU接口模块本身必须通过其控制寄存器使能。
+​	在CPU核可以处理中断之前，软件会通过在向量表中设置有效的中断向量并清除CPSR中的中断屏蔽位来让CPU核可以接收中断。
+​	可以通过禁用Distributor单元来禁用系统中的整个中断机制；可以通过禁用单个CPU的CPU接口模块或者在CPSR中设置屏蔽位来禁止向单个CPU核的中断传递。也可以在Distributor中禁用（或启用）单个中断。
+​	为了使某个中断可以触发CPU核，必须将各个中断，Distributor和CPU interface全部使能，并</p>
+<p>将CPSR中断屏蔽位清零，如下图：
+<img alt="" src="../../_images/39_imx6ull_gic.png" /></p>
+</section>
+<section id="id4">
+<h3>1.1.3 GIC中断处理<a class="headerlink" href="#id4" title="此标题的永久链接">#</a></h3>
+<p>​	当CPU核接收到中断时，它会跳转到中断向量表执行。
+​	顶层中断处理程序读取CPU接口模块的Interrupt Acknowledge Register，以获取中断ID。除了返回中断ID之外，读取操作还会使该中断在Distributor中标记为active状态。一旦知道了中断ID（标识中断源），顶层处理程序现在就可以分派特定于设备的处理程序来处理中断。
+​	当特定于设备的处理程序完成执行时，顶级处理程序将相同的中断ID写入CPU interface模块中的End of Interrupt register中断结束寄存器，指示中断处理结束。除了把当前中断移除active状态之外，这将使最终中断状态变为inactive或pending（如果状态为inactive and pending），这将使CPU interface能够将更多待处理pending的中断转发给CPU核。这样就结束了单个中断的处理。
+​	同一CPU核上可能有多个中断等待服务，但是CPU interface一次只能发出一个中断信号。顶层中断处理程序重复上述顺序，直到读取特殊的中断ID值1023，表明该内核不再有任何待处理的中断。这个特殊的中断ID被称为伪中断ID（spurious interrupt ID）。
+​	伪中断ID是保留值，不能分配给系统中的任何设备。</p>
+</section>
+</section>
+<section id="id5">
+<h2>1.2 GIC的寄存器<a class="headerlink" href="#id5" title="此标题的永久链接">#</a></h2>
+<p>​	GIC分为两部分：Distributor和CPU interface，它们的寄存器都有相应的前缀：“GICD_”、“GICC_”。这些寄存器都是映射为内存接口(memery map)，CPU可以直接读写。</p>
+<section id="distributor">
+<h3>1.2.1 Distributor 寄存器描述<a class="headerlink" href="#distributor" title="此标题的永久链接">#</a></h3>
+<section id="distributor-control-register-gicd-ctlr">
+<h4>1. <strong>Distributor Control Register, GICD_CTLR</strong><a class="headerlink" href="#distributor-control-register-gicd-ctlr" title="此标题的永久链接">#</a></h4>
+<p><img alt="" src="../../_images/40_imx6ull_gic.png" /></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位域</p></th>
+<th class="head"><p>名</p></th>
+<th class="head"><p>读写</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>EnableGrp1</p></td>
+<td><p>R/W</p></td>
+<td><p>用于将pending Group 1中断从Distributor转发到CPU interfaces  0：group 1中断不转发  1：根据优先级规则转发Group 1中断</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>EnableGrp0</p></td>
+<td><p>R/W</p></td>
+<td><p>用于将pending Group 0中断从Distributor转发到CPU interfaces  0：group 0中断不转发  1：根据优先级规则转发Group 0中断</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="interrupt-controller-type-register-gicd-typer">
+<h4>2. <strong>Interrupt Controller Type Register, GICD_TYPER</strong><a class="headerlink" href="#interrupt-controller-type-register-gicd-typer" title="此标题的永久链接">#</a></h4>
+<p><img alt="" src="../../_images/41_imx6ull_gic.png" /></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位域</p></th>
+<th class="head"><p>名</p></th>
+<th class="head"><p>读写</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>15:11</p></td>
+<td><p>LSPI</p></td>
+<td><p>R</p></td>
+<td><p>如果GIC实现了安全扩展，则此字段的值是已实现的可锁定SPI的最大数量，范围为0（0b00000）到31（0b11111）。  如果此字段为0b00000，则GIC不会实现配置锁定。  如果GIC没有实现安全扩展，则保留该字段。</p></td>
+</tr>
+<tr class="row-odd"><td><p>10</p></td>
+<td><p>SecurityExtn</p></td>
+<td><p>R</p></td>
+<td><p>表示GIC是否实施安全扩展：  0未实施安全扩展；  1实施了安全扩展</p></td>
+</tr>
+<tr class="row-even"><td><p>7:5</p></td>
+<td><p>CPUNumber</p></td>
+<td><p>R</p></td>
+<td><p>表示已实现的CPU  interfaces的数量。  已实现的CPU interfaces数量比该字段的值大1。  例如，如果此字段为0b011，则有四个CPU interfaces。</p></td>
+</tr>
+<tr class="row-odd"><td><p>4:0</p></td>
+<td><p>ITLinesNumber</p></td>
+<td><p>R</p></td>
+<td><p>表示GIC支持的最大中断数。  如果ITLinesNumber = N，则最大中断数为32*(N+1)。  中断ID的范围是0到（ID的数量– 1）。  例如：0b00011最多128条中断线，中断ID 0-127。  中断的最大数量为1020（0b11111）。  无论此字段定义的中断ID的范围如何，都将中断ID  1020-1023保留用于特殊目的</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="distributor-implementer-identification-register-gicd-iidr">
+<h4>3. <strong>Distributor Implementer Identification Register, GICD_IIDR</strong><a class="headerlink" href="#distributor-implementer-identification-register-gicd-iidr" title="此标题的永久链接">#</a></h4>
+<p><img alt="" src="../../_images/42_imx6ull_gic.png" /></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位域</p></th>
+<th class="head"><p>名</p></th>
+<th class="head"><p>读写</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>31:24</p></td>
+<td><p>ProductID</p></td>
+<td><p>R</p></td>
+<td><p>产品标识ID</p></td>
+</tr>
+<tr class="row-odd"><td><p>23:20</p></td>
+<td><p>保留</p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>19:16</p></td>
+<td><p>Variant</p></td>
+<td><p>R</p></td>
+<td><p>通常是产品的主要版本号</p></td>
+</tr>
+<tr class="row-odd"><td><p>15:12</p></td>
+<td><p>Revision</p></td>
+<td><p>R</p></td>
+<td><p>通常此字段用于区分产品的次版本号</p></td>
+</tr>
+<tr class="row-even"><td><p>11:0</p></td>
+<td><p>Implementer</p></td>
+<td><p>R</p></td>
+<td><p>含有实现这个GIC的公司的JEP106代码；  [11:8]：JEP106 continuation code，对于ARM实现，此字段为0x4；  [7]：始终为0；  [6:0]：实现者的JEP106code，对于ARM实现，此字段为0x3B</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="interrupt-group-registers-gicd-igrouprn">
+<h4>4. <strong>Interrupt Group Registers, GICD_IGROUPRn</strong><a class="headerlink" href="#interrupt-group-registers-gicd-igrouprn" title="此标题的永久链接">#</a></h4>
+<p><img alt="" src="../../_images/43_imx6ull_gic.png" /></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位域</p></th>
+<th class="head"><p>名</p></th>
+<th class="head"><p>读写</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>31:0</p></td>
+<td><p>Group  status bits</p></td>
+<td><p>R/W</p></td>
+<td><p>组状态位，对于每个位：  0：相应的中断为Group 0；  1：相应的中断为Group 1。</p></td>
+</tr>
+</tbody>
+</table>
+<p>对于一个中断，如何设置它的Group ？首先找到对应的GICD_IGROUPRn寄存器，即n是多少？还要确定使用这个寄存器里哪一位。
+对于interrtups ID m，如下计算：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>n = m DIV 32，GICD_IGROUPRn里的n就确定了；
+GICD_IGROUPRn在GIC内部的偏移地址是多少？0x080+(4*n)
+使用GICD_IPRIORITYRn中哪一位来表示interrtups ID m？
+bit = m mod 32。
+</pre></div>
+</div>
+</section>
+<section id="interrupt-set-enable-registers-gicd-isenablern">
+<h4>5. <strong>Interrupt Set-Enable Registers, GICD_ISENABLERn</strong><a class="headerlink" href="#interrupt-set-enable-registers-gicd-isenablern" title="此标题的永久链接">#</a></h4>
+<p><img alt="" src="../../_images/44_imx6ull_gic.png" /></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位域</p></th>
+<th class="head"><p>名</p></th>
+<th class="head"><p>读写</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>31:0</p></td>
+<td><p>Set-enable  bits</p></td>
+<td><p>R/W</p></td>
+<td><p>对于SPI和PPI类型的中断，每一位控制对应中断的转发行为：从Distributor转发到CPU interface：  读：  0：表示当前是禁止转发的；  1：表示当前是使能转发的；  写：  0：无效  1：使能转发</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>对于一个中断，如何找到GICD_ISENABLERn并确定相应的位？</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>对于interrtups ID m，如下计算：
+n = m DIV 32，GICD_ISENABLERn里的n就确定了；
+GICD_ISENABLERn在GIC内部的偏移地址是多少？0x100+(4*n)
+使用GICD_ISENABLERn中哪一位来表示interrtups ID m？
+bit = m mod 32。
+</pre></div>
+</div>
+</section>
+<section id="interrupt-clear-enable-registers-gicd-icenablern">
+<h4>6. <strong>Interrupt Clear-Enable Registers, GICD_ICENABLERn</strong><a class="headerlink" href="#interrupt-clear-enable-registers-gicd-icenablern" title="此标题的永久链接">#</a></h4>
+<p><img alt="" src="../../_images/45_imx6ull_gic.png" /></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位域</p></th>
+<th class="head"><p>名</p></th>
+<th class="head"><p>读写</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>31:0</p></td>
+<td><p>Clear-enable  bits</p></td>
+<td><p>R/W</p></td>
+<td><p>对于SPI和PPI类型的中断，每一位控制对应中断的转发行为：从Distributor转发到CPU interface：  读：  0：表示当前是禁止转发的；  1：表示当前是使能转发的；  写：  0：无效  1：禁止转发</p></td>
+</tr>
+</tbody>
+</table>
+<p>对于一个中断，如何找到GICD_ICENABLERn并确定相应的位？</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>对于interrtups ID m，如下计算：
+n = m DIV 32，GICD_ICENABLERn里的n就确定了；
+GICD_ICENABLERn在GIC内部的偏移地址是多少？0x180+(4*n)
+使用GICD_ICENABLERn中哪一位来表示interrtups ID m？
+bit = m mod 32。
+</pre></div>
+</div>
+</section>
+<section id="interrupt-set-active-registers-gicd-isactivern">
+<h4>7. <strong>Interrupt Set-Active Registers, GICD_ISACTIVERn</strong><a class="headerlink" href="#interrupt-set-active-registers-gicd-isactivern" title="此标题的永久链接">#</a></h4>
+<p><img alt="" src="../../_images/46_imx6ull_gic.png" /></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位域</p></th>
+<th class="head"><p>名</p></th>
+<th class="head"><p>读写</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>31:0</p></td>
+<td><p>Set-active  bits</p></td>
+<td><p>R/W</p></td>
+<td><p>读：  0：表示相应中断不是active状态；  1：表示相应中断是active状态；  写：  0：无效  1：把相应中断设置为active状态，如果中断已处于Active状态，则写入无效</p></td>
+</tr>
+</tbody>
+</table>
+<p>对于一个中断，如何找到GICD_ISACTIVERn并确定相应的位？</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>对于interrtups ID m，如下计算：
+n = m DIV 32，GICD_ISACTIVERn里的n就确定了；
+GICD_ISACTIVERn在GIC内部的偏移地址是多少？0x300+(4*n)
+使用GICD_ISACTIVERn 中哪一位来表示interrtups ID m？
+bit = m mod 32。
+</pre></div>
+</div>
+</section>
+<section id="interrupt-clear-active-registers-gicd-icactivern">
+<h4>8. <strong>Interrupt Clear-Active Registers, GICD_ICACTIVERn</strong><a class="headerlink" href="#interrupt-clear-active-registers-gicd-icactivern" title="此标题的永久链接">#</a></h4>
+<p><img alt="" src="../../_images/47_imx6ull_gic.png" /></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位域</p></th>
+<th class="head"><p>名</p></th>
+<th class="head"><p>读写</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>31:0</p></td>
+<td><p>Clear-active  bits</p></td>
+<td><p>R/W</p></td>
+<td><p>读：  0：表示相应中断不是active状态；  1：表示相应中断是active状态；  写：  0：无效  1：把相应中断设置为deactive状态，如果中断已处于dective状态，则写入无效</p></td>
+</tr>
+</tbody>
+</table>
+<p>对于一个中断，如何找到GICD_ICACTIVERn并确定相应的位？</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>对于interrtups ID m，如下计算：
+n = m DIV 32，GICD_ICACTIVERn里的n就确定了；
+GICD_ICACTIVERn 在GIC内部的偏移地址是多少？0x380+(4*n)
+使用GICD_ICACTIVERn中哪一位来表示interrtups ID m？
+bit = m mod 32。
+</pre></div>
+</div>
+</section>
+<section id="interrupt-priority-registers-gicd-ipriorityrn">
+<h4>9. <strong>Interrupt Priority Registers, GICD_IPRIORITYRn</strong><a class="headerlink" href="#interrupt-priority-registers-gicd-ipriorityrn" title="此标题的永久链接">#</a></h4>
+<p><img alt="" src="../../_images/48_imx6ull_gic.png" /></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位域</p></th>
+<th class="head"><p>名</p></th>
+<th class="head"><p>读写</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>31:24</p></td>
+<td><p>Priority, byte  offset 3</p></td>
+<td><p>R/W</p></td>
+<td><p>对于每一个中断，都有对应的8位数据用来描述：它的优先级。  每个优先级字段都对应一个优先级值，值越小，相应中断的优先级越高</p></td>
+</tr>
+<tr class="row-odd"><td><p>23:16</p></td>
+<td><p>Priority,  byte offset 2</p></td>
+<td><p>R/W</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>15:8</p></td>
+<td><p>Priority,  byte offset 1</p></td>
+<td><p>R/W</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>7:0</p></td>
+<td><p>Priority,  byte offset 0</p></td>
+<td><p>R/W</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<p>对于一个中断，如何设置它的优先级(Priority)，首先找到对应的GICD_IPRIORITYRn寄存器，即n是多少？还要确定使用这个寄存器里哪一个字节。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>对于interrtups ID m，如下计算：
+n = m DIV 4，GICD_IPRIORITYRn里的n就确定了；
+GICD_IPRIORITYRn在GIC内部的偏移地址是多少？0x400+(4*n)
+使用GICD_IPRIORITYRn中4个字节中的哪一个来表示interrtups ID m的优先级？
+byte offset = m mod 4。
+byte offset 0对应寄存器里的[7:0]；
+byte offset 1对应寄存器里的[15:8]；
+byte offset 2对应寄存器里的[23:16]；
+byte offset 3对应寄存器里的[31:24]。
+</pre></div>
+</div>
+</section>
+<section id="interrupt-processor-targets-registers-gicd-itargetsrn">
+<h4>10. <strong>Interrupt Processor Targets Registers, GICD_ITARGETSRn</strong><a class="headerlink" href="#interrupt-processor-targets-registers-gicd-itargetsrn" title="此标题的永久链接">#</a></h4>
+<p><img alt="" src="../../_images/49_imx6ull_gic.png" /></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位域</p></th>
+<th class="head"><p>名</p></th>
+<th class="head"><p>读写</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>31:24</p></td>
+<td><p>CPU targets, byte offset 3</p></td>
+<td><p>R/W</p></td>
+<td><p>对于每一个中断，都有对应的8位数据用来描述：这个中断可以发给哪些CPU。  处理器编号从0开始，8位数里每个位均指代相应的处理器。  例如，值0x3表示将中断发送到处理器0和1。  当读取GICD_ITARGETSR0～GICD_ITARGETSR7时，读取里面任意字节，返回的都是执行这个读操作的CPU的编号。</p></td>
+</tr>
+<tr class="row-odd"><td><p>23:16</p></td>
+<td><p>CPU targets, byte offset 2</p></td>
+<td><p>R/W</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>15:8</p></td>
+<td><p>CPU targets, byte offset 1</p></td>
+<td><p>R/W</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>7:0</p></td>
+<td><p>CPU targets, byte offset 0</p></td>
+<td><p>R/W</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<p>对于一个中断，如何设置它的目杯CPU？优先级(Priority)，首先找到对应的GICD_ITARGETSRn寄存器，即n是多少？还要确定使用这个寄存器里哪一个字节。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>对于interrtups ID m，如下计算：
+n = m DIV 4，GICD_ITARGETSRn里的n就确定了；
+GICD_ITARGETSRn在GIC内部的偏移地址是多少？0x800+(4*n)
+使用GICD_ITARGETSRn中4个字节中的哪一个来表示interrtups ID m的目标CPU？
+byte offset = m mod 4。
+byte offset 0对应寄存器里的[7:0]；
+byte offset 1对应寄存器里的[15:8]；
+byte offset 2对应寄存器里的[23:16]；
+byte offset 3对应寄存器里的[31:24]。
+</pre></div>
+</div>
+</section>
+<section id="interrupt-configuration-registers-gicd-icfgrn">
+<h4>11. <strong>Interrupt Configuration Registers, GICD_ICFGRn</strong><a class="headerlink" href="#interrupt-configuration-registers-gicd-icfgrn" title="此标题的永久链接">#</a></h4>
+<p><img alt="" src="../../_images/50_imx6ull_gic.png" /></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位域</p></th>
+<th class="head"><p>名</p></th>
+<th class="head"><p>读写</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>[2<em>F</em>+1:2<em>F</em>]</p></td>
+<td><p>Int_config, field <em>F</em></p></td>
+<td><p>R/W</p></td>
+<td><p>对于每一个中断，都有对应的2位数据用来描述：它的边沿触发，还是电平触发。  对于Int_config [1]，即高位[2F + 1]，含义为：  0：相应的中断是电平触发；  1：相应的中断是边沿触发。     对于Int_config [0]，即低位[2F]，是保留位。</p></td>
+</tr>
+</tbody>
+</table>
+<p>对于一个中断，如何找到GICD_ICFGRn并确定相应的位域F？</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>对于interrtups ID m，如下计算：
+n = m DIV 16，GICD_ICFGRn里的n就确定了；
+GICD_ICACTIVERn 在GIC内部的偏移地址是多少？0xC00+(4*n)
+F = m mod 16。
+</pre></div>
+</div>
+</section>
+<section id="identification-registers-peripheral-id2-register-icpidr2">
+<h4>12. <strong>Identification registers: Peripheral ID2 Register, ICPIDR2</strong><a class="headerlink" href="#identification-registers-peripheral-id2-register-icpidr2" title="此标题的永久链接">#</a></h4>
+<p><img alt="" src="../../_images/51_imx6ull_gic.png" /></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位域</p></th>
+<th class="head"><p>名</p></th>
+<th class="head"><p>读写</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>[31:0]</p></td>
+<td><p>-</p></td>
+<td><p>R/W</p></td>
+<td><p>由实现定义</p></td>
+</tr>
+<tr class="row-odd"><td><p>[7:4]</p></td>
+<td><p>ArchRev</p></td>
+<td><p>R</p></td>
+<td><p>该字段的值取决于GIC架构版本：  0x1：GICv1；  0x2：GICv2。</p></td>
+</tr>
+<tr class="row-even"><td><p>[3:0]</p></td>
+<td><p>-</p></td>
+<td><p>R/W</p></td>
+<td><p>由实现定义</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="cpu-interface">
+<h3>1.2.2 CPU interface寄存器描述<a class="headerlink" href="#cpu-interface" title="此标题的永久链接">#</a></h3>
+<section id="cpu-interface-control-register-gicc-ctlr">
+<h4>1. <strong>CPU Interface Control Register, GICC_CTLR</strong><a class="headerlink" href="#cpu-interface-control-register-gicc-ctlr" title="此标题的永久链接">#</a></h4>
+<p>​	此寄存器用来控制CPU interface传给CPU的中断信号。对于不同版本的GIC，这个寄存器里各个位的含义大有不同。以GICv2为例，有如下2种格式：</p>
+<p><img alt="" src="../../_images/52_imx6ull_gic.png" />
+<img alt="" src="../../_images/53_imx6ull_gic.png" /></p>
+<p>​	以<code class="docutils literal notranslate"><span class="pre">GIC2</span> <span class="pre">with</span> <span class="pre">Security</span> <span class="pre">Extensions,</span> <span class="pre">Non-secure</span> <span class="pre">copy</span></code> 为例，GICC_CTLR中各个位的定义如下：</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位域</p></th>
+<th class="head"><p>名</p></th>
+<th class="head"><p>读写</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>[31:10]</p></td>
+<td><p>-</p></td>
+<td><p></p></td>
+<td><p>保留</p></td>
+</tr>
+<tr class="row-odd"><td><p>[9]</p></td>
+<td><p>EOImodeNS</p></td>
+<td><p>R/W</p></td>
+<td><p>控制对GICC_EOIR和GICC_DIR寄存器的非安全访问：  0：GICC_EOIR具有降低优先级和deactivate中断的功能；  对GICC_DIR的访问是未定义的。  1：GICC_EOIR仅具有降低优先级功能；  GICC_DIR寄存器具有deactivate中断功能。</p></td>
+</tr>
+<tr class="row-even"><td><p>[8:7]</p></td>
+<td><p>-</p></td>
+<td><p></p></td>
+<td><p>保留</p></td>
+</tr>
+<tr class="row-odd"><td><p>[6]</p></td>
+<td><p>IRQBypDisGrp1</p></td>
+<td><p>R/W</p></td>
+<td><p>当CPU interface的IRQ信号被禁用时，该位控制是否向处理器发送bypass IRQ信号：  0：将bypass IRQ信号发送给处理器；  1：将bypass IRQ信号不发送到处理器。</p></td>
+</tr>
+<tr class="row-even"><td><p>[5]</p></td>
+<td><p>FIQBypDisGrp1</p></td>
+<td><p>R/W</p></td>
+<td><p>当CPU interface的FIQ信号被禁用时，该位控制是否向处理器发送bypass FIQ信号：  0：将bypass FIQ信号发送给处理器；  1：旁路FIQ信号不发送到处理器</p></td>
+</tr>
+<tr class="row-odd"><td><p>[4:1]</p></td>
+<td><p>-</p></td>
+<td><p></p></td>
+<td><p>保留</p></td>
+</tr>
+<tr class="row-even"><td><p>[0]</p></td>
+<td><p>-</p></td>
+<td><p>R/W</p></td>
+<td><p>使能CPU interface向连接的处理器发出的组1中断的信号:  0：禁用中断信号  1：使能中断信号</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="interrupt-priority-mask-register-gicc-pmr">
+<h4>2. <strong>Interrupt Priority Mask Register, GICC_PMR</strong><a class="headerlink" href="#interrupt-priority-mask-register-gicc-pmr" title="此标题的永久链接">#</a></h4>
+<p>​	提供优先级过滤功能，优先级高于某值的中断，才会发送给CPU。</p>
+<p><img alt="" src="../../_images/54_imx6ull_gic.png" /></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位域</p></th>
+<th class="head"><p>名</p></th>
+<th class="head"><p>读写</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>[31:8]</p></td>
+<td><p>-</p></td>
+<td><p></p></td>
+<td><p>保留</p></td>
+</tr>
+<tr class="row-odd"><td><p>[7:0]</p></td>
+<td><p>-</p></td>
+<td><p>R/W</p></td>
+<td><p>优先级高于这个值的中断，才会发送给CPU</p></td>
+</tr>
+</tbody>
+</table>
+<p><code class="docutils literal notranslate"><span class="pre">[7:0]</span></code>共8位，可以表示256个优先级。但是某些芯片里的GIC支持的优先级少于256个，则某些位为RAZ / WI，如下所示：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>如果有128个级别，则寄存器中bit[0] = 0b0，即使用[7:1]来表示优先级；
+如果有64个级别，则寄存器中bit[1:0] = 0b00，即使用[7:2]来表示优先级；
+如果有32个级别，则寄存器中bit[2:0] = 0b000，即使用[7:3]来表示优先级；
+如果有16个级别，则寄存器中bit[3:0] = 0b0000，即使用[7:4]来表示优先级；
+</pre></div>
+</div>
+<p>注意：<strong>imx6ull最多为32个级别</strong></p>
+</section>
+<section id="binary-point-register-gicc-bpr">
+<h4>3. <strong>Binary Point Register, GICC_BPR</strong><a class="headerlink" href="#binary-point-register-gicc-bpr" title="此标题的永久链接">#</a></h4>
+<p>​	此寄存器用来把8位的优先级字段拆分为组优先级和子优先级，组优先级用来决定中断抢占。</p>
+<p><img alt="" src="../../_images/55_imx6ull_gic.png" /></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位域</p></th>
+<th class="head"><p>名</p></th>
+<th class="head"><p>读写</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>[31:3]</p></td>
+<td><p>-</p></td>
+<td><p></p></td>
+<td><p>保留</p></td>
+</tr>
+<tr class="row-odd"><td><p>[2:0]</p></td>
+<td><p>Binary  point</p></td>
+<td><p>R/W</p></td>
+<td><p>此字段的值控制如何将8bit中断优先级字段拆分为组优先级和子优先级，组优先级用来决定中断抢占。  更多信息还得看看GIC手册。</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="interrupt-acknowledge-register-gicc-iar">
+<h4>4. <strong>Interrupt Acknowledge Register, GICC_IAR</strong><a class="headerlink" href="#interrupt-acknowledge-register-gicc-iar" title="此标题的永久链接">#</a></h4>
+<p>​	CPU读此寄存器，获得当前中断的interrtup ID。</p>
+<p><img alt="" src="../../_images/56_imx6ull_gic.png" /></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位域</p></th>
+<th class="head"><p>名</p></th>
+<th class="head"><p>读写</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>[31:13]</p></td>
+<td><p>-</p></td>
+<td><p></p></td>
+<td><p>保留</p></td>
+</tr>
+<tr class="row-odd"><td><p>[12:10]</p></td>
+<td><p>CPUID</p></td>
+<td><p>R</p></td>
+<td><p>对于SGI类中断，它表示谁发出了中断。例如，值为3表示该请求是通过对CPU  interface 3上的GICD_SGIR的写操作生成的。</p></td>
+</tr>
+<tr class="row-even"><td><p>[9:0]</p></td>
+<td><p>Interrupt ID</p></td>
+<td><p>R</p></td>
+<td><p>中断ID</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="interrupt-register-gicc-eoir">
+<h4>5. <strong>Interrupt Register, GICC_EOIR</strong><a class="headerlink" href="#interrupt-register-gicc-eoir" title="此标题的永久链接">#</a></h4>
+<p>​	写此寄存器，表示某中断已经处理完毕。GICC_IAR的值表示当前在处理的中断，把GICC_IAR的值写入GICC_EOIR就表示中断处理完了。</p>
+<p><img alt="" src="../../_images/57_imx6ull_gic.png" /></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>位域</p></th>
+<th class="head"><p>名</p></th>
+<th class="head"><p>读写</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>[31:13]</p></td>
+<td><p>-</p></td>
+<td><p></p></td>
+<td><p>保留</p></td>
+</tr>
+<tr class="row-odd"><td><p>[12:10]</p></td>
+<td><p>CPUID</p></td>
+<td><p>W</p></td>
+<td><p>对于SGI类中断，它的值跟GICD_IAR. CPUID的相同。</p></td>
+</tr>
+<tr class="row-even"><td><p>[9:0]</p></td>
+<td><p>EOIINTID</p></td>
+<td><p>W</p></td>
+<td><p>中断ID，它的值跟GICD_IAR里的中断ID相同</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+<section id="id6">
+<h2>1.3 GIC编程<a class="headerlink" href="#id6" title="此标题的永久链接">#</a></h2>
+<p>使用cortex A7处理器的芯片，一般都是使用GIC v2的中断控制器。
+处理GIC的基地址不一样外，对GIC的操作都是一样的。
+在NXP官网可以找到<a class="reference external" href="https://www.nxp.com.cn/products/processors-and-microcontrollers/arm-processors/i-mx-applications-processors/i-mx-6-processors/i-mx-6ull-single-core-processor-with-arm-cortex-a7-core:i.MX6ULL?tab=Design_Tools_Tab">IMX6ULL的SDK包</a>。
+下载后可以参考这个文件：core_ca7.h，里面含有GIC的初始化代码。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="09_1.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">上一页</p>
+        <p class="prev-next-title">02_中断的硬件框架</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="11_1.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">下一页</p>
+        <p class="prev-next-title">04_异常向量表的安装与调用</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 目录
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">1.1 GIC介绍</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">1.1.1 配置</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">1.1.2 初始化</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">1.1.3 GIC中断处理</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">1.2 GIC的寄存器</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#distributor">1.2.1 Distributor 寄存器描述</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#distributor-control-register-gicd-ctlr">1. <strong>Distributor Control Register, GICD_CTLR</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-controller-type-register-gicd-typer">2. <strong>Interrupt Controller Type Register, GICD_TYPER</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#distributor-implementer-identification-register-gicd-iidr">3. <strong>Distributor Implementer Identification Register, GICD_IIDR</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-group-registers-gicd-igrouprn">4. <strong>Interrupt Group Registers, GICD_IGROUPRn</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-set-enable-registers-gicd-isenablern">5. <strong>Interrupt Set-Enable Registers, GICD_ISENABLERn</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-clear-enable-registers-gicd-icenablern">6. <strong>Interrupt Clear-Enable Registers, GICD_ICENABLERn</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-set-active-registers-gicd-isactivern">7. <strong>Interrupt Set-Active Registers, GICD_ISACTIVERn</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-clear-active-registers-gicd-icactivern">8. <strong>Interrupt Clear-Active Registers, GICD_ICACTIVERn</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-priority-registers-gicd-ipriorityrn">9. <strong>Interrupt Priority Registers, GICD_IPRIORITYRn</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-processor-targets-registers-gicd-itargetsrn">10. <strong>Interrupt Processor Targets Registers, GICD_ITARGETSRn</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-configuration-registers-gicd-icfgrn">11. <strong>Interrupt Configuration Registers, GICD_ICFGRn</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#identification-registers-peripheral-id2-register-icpidr2">12. <strong>Identification registers: Peripheral ID2 Register, ICPIDR2</strong></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cpu-interface">1.2.2 CPU interface寄存器描述</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#cpu-interface-control-register-gicc-ctlr">1. <strong>CPU Interface Control Register, GICC_CTLR</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-priority-mask-register-gicc-pmr">2. <strong>Interrupt Priority Mask Register, GICC_PMR</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#binary-point-register-gicc-bpr">3. <strong>Binary Point Register, GICC_BPR</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-acknowledge-register-gicc-iar">4. <strong>Interrupt Acknowledge Register, GICC_IAR</strong></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interrupt-register-gicc-eoir">5. <strong>Interrupt Register, GICC_EOIR</strong></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">1.3 GIC编程</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+作者： 100ask_Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2019-2024 深圳百问网科技有限公司.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  最后更新于 2024 年 08 月 08 日.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

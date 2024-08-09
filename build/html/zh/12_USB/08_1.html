@@ -1,0 +1,1264 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="zh-CN" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>08_USB设备驱动模型 &#8212; Linux设备驱动开发教程中心</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/topbar.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom-theme.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../../_static/translations.js"></script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'zh/12_USB/08_1';</script>
+    <link rel="icon" href="../../_static/favicon.png"/>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="09_编写USB鼠标驱动程序" href="09_1.html" />
+    <link rel="prev" title="07_使用libusb读取鼠标数据" href="07_1.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="zh-CN"/>
+    <meta name="docbuild:last-update" content="2024 年 08 月 08 日"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+
+  <div class="bd-header-announcement container-fluid bd-header-announcement">
+    <div class="bd-header-announcement__content">📢📢📢 欢迎来到百问网Linux设备驱动开发教程中心文档站点！！！技术交流社区：https://forums.100ask.net</div>
+  </div>
+
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Linux设备驱动开发教程中心</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">1.课程介绍</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../03_LCD/index.html">3.LCD显示子系统</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/01_1.html">01_单片机_Linux下不同接口的LCD硬件操作原理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/02_1.html">02_Framebuffer驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/03.html">03_编程_写出框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/04.html">04_最简单的LCD驱动_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/05.html">05_上机实验_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/06_1.html">结合APP分析LCD驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/07_1.html">07_硬件_8080接口LCD时序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/08_1.html">08_硬件_TFT-RGB接口LCD时序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/09_1.html">09_硬件_IMX6ULL的LCD控制器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/10_1.html">10_分析内核自带的LCD驱动程序_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/11_1.html">11_编程_LCD驱动程序框架_使用设备树</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/12_1.html">12_编程_配置引脚_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/13_1.html">13_编程_配置时钟_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/14_1.html">14_编程_ 配置LCD控制器之获得LCD参数_ 基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/15_1.html">15_编程_配置LCD控制器之寄存器操作_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/16.html">16_上机实验_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/17_1.html">17_单Buffer的缺点与改进方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/18.html">18_编写使用多buffer的应用程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../04_I2C/index.html">4.I2C子系统</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/01.html">01_I2C视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/02_1.html">02_I2C协议</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/03.html">03_SMBus协议</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/04.html">04_I2C系统的重要结构体</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/05.html">05_无需编写驱动直接访问设备_I2C-Tools介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/06.html">06_编写APP直接访问EEPROM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/07.html">07_通用驱动i2c-dev分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/08_1.html">08_I2C系统驱动程序模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/09.html">09_编写设备驱动之i2c_driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/10.html">10_编写设备驱动之i2c_client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/11.html">11_I2C_Adapter驱动框架讲解与编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/12_1.html">12_完善虚拟的I2C_Adapter驱动并模拟EEPROM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/13_1.html">13_使用GPIO模拟I2C的驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/14.html">14_使用GPIO操作I2C设备_IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/15_1.html">15_具体芯片的I2C_Adapter驱动分析</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../05_Input/index.html">5.Input输入子系统</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/01.html">01_Input子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/02.html">02_先学习输入系统应用编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_1.html">DRV_01_Input子系统框架详解</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_2.html">DRV_02_编写input_dev驱动框架解</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_3.html">DRV_03_ 编写最简单的触摸屏驱动程序_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_4.html">DRV_04_GPIO按键驱动分析与使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_5.html">DRV_05_I2C接口触摸屏驱动分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_6.html">DRV_06_UInput分析_用户态创建input_dev</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../06_Pinctrl/index.html">6.Pinctrl子系统</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/01.html">01_Pinctrl子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/03_1.html">02_Pinctrl子系统使用示例_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/03_2.html">03_Pinctrl子系统使用示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/04_1.html">04_Pinctrl子系统主要数据结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/05_1.html">05_Pincontroller构造过程情景分析_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/06_1.html">06_client端使用pinctrl过程的情景分析_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/07_1.html">07_编写虚拟的Pinctrl驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/08_1.html">08_调试虚拟的Pinctrl驱动程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../07_GPIO/index.html">7.GPIO子系统</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/01_1.html">01_GPIO子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/05_1.html">02_GPIO子系统层次与数据结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/06_1.html">03_IMX6ULL的GPIO驱动源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/07_1.html">04_编写一个虚拟GPIO控制器的驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/08_1.html">05_调试与使用虚拟的GPIO控制器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/09_1.html">06_GPIO子系统与Pinctrl子系统的交互</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/10_1.html">07_编程_GPIO使用Pinctrl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/11_1.html">08_GPIO子系统的sysfs接口</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../08_Interrupt/index.html">8.Interrupt子系统</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/08_1.html">01_中断相关的其他驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/09_1.html">02_中断的硬件框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/10_1.html">03_GIC介绍与编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/11_1.html">04_异常向量表的安装与调用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/12_1.html">05_GIC驱动程序对中断的处理流程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/13_1.html">06_GIC驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/14_1.html">07_两类中断控制器处理流程_链式和层级</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/15_1.html">08_链式中断控制器驱动程序编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/16_1.html">09_legacy方式代码的上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/17_1.html">10_链式中断控制器驱动程序编写_linear方式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/18_1.html">11_层级中断控制器驱动程序编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/19_1.html">12_层级中断控制器驱动程序上机实验</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../09_UART/index.html">9.UART子系统</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/01_1.html">01_UART子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/02_1.html">02_硬件知识_UART硬件介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/03_1.html">03_TTY体系中设备节点的差别</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/04_1.html">04_TTY驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/05_1.html">05_在STM32MP157上做串口实验的准备工作</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/05_2.html">06_Linux串口应用编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/07_1.html">07_字符设备驱动程序的另一种注册方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/08_1.html">08_UART驱动情景分析_注册</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/09_1.html">09_UART驱动情景分析_open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/10_1.html">10_UART驱动情景分析_read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/11_1.html">11_UART驱动情景分析_write</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/12_1.html">12_UART驱动调试方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/13_1.html">13_编写虚拟UART驱动程序_框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/14_1.html">14_编写虚拟UART驱动程序_实现uart_ops</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/15_1.html">15_编写虚拟UART驱动程序_实现数据传输</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/16_1.html">16_编写虚拟UART驱动程序_调试</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/17_1.html">17_printk执行过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/18_1.html">18_console驱动注册过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/19_1.html">19_编写console驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/20_1.html">20_early_printk和earlycon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/21_1.html">21_RS485简单讲解</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../10_PCI_PCIe/index.html">10.PCI_PCIe子系统</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/01_1.html">01_从软件开发角度看待PCI和PCIe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/02_1.html">02_PCI设备的访问方法_非桥设备(type0)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/03_1.html">03_PCI设备的访问方法_桥设备(type1)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/04_1.html">04_从软件角度看PCIe设备的硬件结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/05_1.html">05_PCIe设备的配置过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/06_1.html">06_PCIe路由方式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/07_1.html">07_PCI驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/08_1.html">08_RK3399_PCIe芯片手册解读</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/09_1.html">09_RK3399_PCIe_Host驱动分析_地址映射</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/10_1.html">10_RK3399_PCIe_Host驱动分析_设备枚举</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/11_1.html">11_INTx_MSI_MSIX三种中断机制分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/12_1.html">12_INTx中断机制源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/13_1.html">13_GICv3_LPI机制</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/14_1.html">14_MSI_MSI-X中断之体验与使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/15_1.html">15_MSI_MSI-X中断之源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/16_1.html">16_怎么编写PCIe设备驱动程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../11_SPI/index.html">11.SPI子系统</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/01_1.html">01_SPI视频概述</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/02_1.html">02_SPI协议介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/03_1.html">03_SPI总线设备驱动模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/04_1.html">04_SPI设备树处理过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/05_1.html">05_spidev的使用(SPI用户态API)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/06_1.html">06_使用spidev操作SPI_DAC模块</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/07_1.html">07_SPI_DAC模块上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/08_1.html">08_SPI_OLED模块操作方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/09_1.html">09_使用spidev操作SPI_OLED模块</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/10_1.html">10_OLED模块上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/11_1.html">11_编写SPI设备驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/12_1.html">12_编写SPI_DAC模块驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/13_1.html">13_编写DAC驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/14_1.html">14_编写SPI_OLED模块驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/15_1.html">15_编写OLED驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/16_1.html">16_使用Framebuffer改造OLED驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/17_1.html">17_OLED_Framebuffer驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/18_1.html">18_SPI_Master驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/19_1.html">19_编写SPI_Master驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/20_1.html">20_使用老方法编写的SPI_Master驱动程序上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/21_1.html">21_编写SPI_Master驱动程序_新方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/22_1.html">22_使用新方法编写的SPI_Master驱动程序上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/23_1.html">23_SPI_Slave_Mode驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/24_1.html">24_SPI_Slave_Mode驱动程序源码解读</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/25_1.html">临时笔记</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">12.USB子系统</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-10"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="01_1.html">01_USB视频介绍及资料下载</a></li>
+<li class="toctree-l2"><a class="reference internal" href="02_1.html">02_USB系统硬件框架和软件框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="03_1.html">03_软件工程师眼里的USB电气信号</a></li>
+<li class="toctree-l2"><a class="reference internal" href="04_1.html">04_USB协议层数据格式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05_1.html">05_USB描述符</a></li>
+<li class="toctree-l2"><a class="reference internal" href="06_1.html">06_libusb的使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="07_1.html">07_使用libusb读取鼠标数据</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">08_USB设备驱动模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="09_1.html">09_编写USB鼠标驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="10_1.html">10_OTG硬件检测电路</a></li>
+<li class="toctree-l2"><a class="reference internal" href="11_1.html">11_Gadget驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="12_1.html">12_Gadget应用实例之zero</a></li>
+<li class="toctree-l2"><a class="reference internal" href="13_1.html">13_Gadget应用实例之serial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="14_1.html">14_configfs的使用与内部机制</a></li>
+<li class="toctree-l2"><a class="reference internal" href="15_1.html">15_Gadget应用实例之adb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="16_1.html">tmp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="17_1.html">Gadget驱动程序框架</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../13_V4L2/index.html">13.V4L2子系统</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/01_1.html">01_V4L2应用程序开发</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/02_1.html">02_V4L2驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/03_1.html">03_从0编写一个虚拟摄像头驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/04_1.html">04_USB摄像头驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/05_1.html">05_MIPI摄像头驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/06_1.html">06_V4L2视频介绍及资料下载/笔记</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/07_1.html">tmp_摄像头控制接口</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/100askTeam/LinuxDeviceDriver-Tranning" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="源码库"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="下载此页面">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/zh/12_USB/08_1.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="下载源文件"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="列印成 PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="全屏模式"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="搜索" aria-label="搜索" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>08_USB设备驱动模型</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> 目录 </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bus-dev-drv">1. BUS/DEV/DRV模型</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">2. 接口函数</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pipe">2.1 pipe</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">2.2 同步传输函数</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">2.3 异步传输函数</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#urb">2.3.1 分配和释放URB</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dma-buffer">2.3.2 分配/释放DMA Buffer</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">2.3.3 填充URB</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">2.3.4 提交URB</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">2.3.5 取消URB</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="usb">
+<h1>08_USB设备驱动模型<a class="headerlink" href="#usb" title="此标题的永久链接">#</a></h1>
+<p>参考资料：</p>
+<ul class="simple">
+<li><p>Linux内核源码：<code class="docutils literal notranslate"><span class="pre">include\linux\usb.h</span></code></p></li>
+<li><p>Linux内核源码：<code class="docutils literal notranslate"><span class="pre">drivers\hid\usbhid\usbmouse.c</span></code></p></li>
+</ul>
+<section id="bus-dev-drv">
+<h2>1. BUS/DEV/DRV模型<a class="headerlink" href="#bus-dev-drv" title="此标题的永久链接">#</a></h2>
+<p><img alt="image-20221010144529823" src="../../_images/62_usb_bus_dev_drv.png" /></p>
+<ul>
+<li><p>“USB接口”是逻辑上的USB设备，我们编写的usb_driver驱动程序，支持的是”USB接口”：</p>
+<p><img alt="image-20221010145250687" src="../../_images/63_usb_driver.png" /></p>
+</li>
+<li><p>USB控制器或Hub识别出USB设备后，会创建、注册usb_deive</p></li>
+<li><p>usb_device被”drivers\usb\core\generic.c”驱动认领后，会选择、设置某个配置</p></li>
+<li><p>这个配置下面的接口，都会分配、设置、注册一个usb_interface</p></li>
+<li><p>左边的usb_driver和右边的usb_interface如果匹配，则掉用usb_driver.probe</p></li>
+</ul>
+</section>
+<section id="id1">
+<h2>2. 接口函数<a class="headerlink" href="#id1" title="此标题的永久链接">#</a></h2>
+<p>在USB设备驱动程序中，能使用的USB函数都在这个头文件里：<code class="docutils literal notranslate"><span class="pre">include\linux\usb.h</span></code>。</p>
+<section id="pipe">
+<h3>2.1 pipe<a class="headerlink" href="#pipe" title="此标题的永久链接">#</a></h3>
+<p>使用这些接口函数的主要目的是传输数据，传输数据的对象是USB设备里的某个endpoint，这被称为pipe：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* Create various pipes... */</span>
+<span class="cp">#define usb_sndctrlpipe(dev, endpoint)	\</span>
+<span class="cp">	((PIPE_CONTROL &lt;&lt; 30) | __create_pipe(dev, endpoint))</span>
+<span class="cp">#define usb_rcvctrlpipe(dev, endpoint)	\</span>
+<span class="cp">	((PIPE_CONTROL &lt;&lt; 30) | __create_pipe(dev, endpoint) | USB_DIR_IN)</span>
+<span class="cp">#define usb_sndisocpipe(dev, endpoint)	\</span>
+<span class="cp">	((PIPE_ISOCHRONOUS &lt;&lt; 30) | __create_pipe(dev, endpoint))</span>
+<span class="cp">#define usb_rcvisocpipe(dev, endpoint)	\</span>
+<span class="cp">	((PIPE_ISOCHRONOUS &lt;&lt; 30) | __create_pipe(dev, endpoint) | USB_DIR_IN)</span>
+<span class="cp">#define usb_sndbulkpipe(dev, endpoint)	\</span>
+<span class="cp">	((PIPE_BULK &lt;&lt; 30) | __create_pipe(dev, endpoint))</span>
+<span class="cp">#define usb_rcvbulkpipe(dev, endpoint)	\</span>
+<span class="cp">	((PIPE_BULK &lt;&lt; 30) | __create_pipe(dev, endpoint) | USB_DIR_IN)</span>
+<span class="cp">#define usb_sndintpipe(dev, endpoint)	\</span>
+<span class="cp">	((PIPE_INTERRUPT &lt;&lt; 30) | __create_pipe(dev, endpoint))</span>
+<span class="cp">#define usb_rcvintpipe(dev, endpoint)	\</span>
+<span class="cp">	((PIPE_INTERRUPT &lt;&lt; 30) | __create_pipe(dev, endpoint) | USB_DIR_IN)</span>
+</pre></div>
+</div>
+</section>
+<section id="id2">
+<h3>2.2 同步传输函数<a class="headerlink" href="#id2" title="此标题的永久链接">#</a></h3>
+<p>对于控制传输、批量传输、中断传输，有3个同步函数可以用来直接发起传输。这些函数内部会创建、填充、提交一个URB(“usb request block”)，并等待它完成或超时。</p>
+<p>函数原型如下：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm"> * usb_control_msg - Builds a control urb, sends it off and waits for completion</span>
+<span class="cm"> * @dev: pointer to the usb device to send the message to</span>
+<span class="cm"> * @pipe: endpoint &quot;pipe&quot; to send the message to</span>
+<span class="cm"> * @request: USB message request value</span>
+<span class="cm"> * @requesttype: USB message request type value</span>
+<span class="cm"> * @value: USB message value</span>
+<span class="cm"> * @index: USB message index value</span>
+<span class="cm"> * @data: pointer to the data to send</span>
+<span class="cm"> * @size: length in bytes of the data to send</span>
+<span class="cm"> * @timeout: time in msecs to wait for the message to complete before timing</span>
+<span class="cm"> *	out (if 0 the wait is forever)</span>
+<span class="cm"> *</span>
+<span class="cm"> * Context: !in_interrupt ()</span>
+<span class="cm"> *</span>
+<span class="cm"> * This function sends a simple control message to a specified endpoint and</span>
+<span class="cm"> * waits for the message to complete, or timeout.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Don&#39;t use this function from within an interrupt context, like a bottom half</span>
+<span class="cm"> * handler.  If you need an asynchronous message, or need to send a message</span>
+<span class="cm"> * from within interrupt context, use usb_submit_urb().</span>
+<span class="cm"> * If a thread in your driver uses this call, make sure your disconnect()</span>
+<span class="cm"> * method can wait for it to complete.  Since you don&#39;t have a handle on the</span>
+<span class="cm"> * URB used, you can&#39;t cancel the request.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Return: If successful, the number of bytes transferred. Otherwise, a negative</span>
+<span class="cm"> * error number.</span>
+<span class="cm"> */</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">usb_control_msg</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">usb_device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">pipe</span><span class="p">,</span><span class="w"> </span><span class="n">__u8</span><span class="w"> </span><span class="n">request</span><span class="p">,</span>
+<span class="w">		    </span><span class="n">__u8</span><span class="w"> </span><span class="n">requesttype</span><span class="p">,</span><span class="w"> </span><span class="n">__u16</span><span class="w"> </span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="n">__u16</span><span class="w"> </span><span class="n">index</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span>
+<span class="w">		    </span><span class="n">__u16</span><span class="w"> </span><span class="n">size</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">timeout</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * usb_bulk_msg - Builds a bulk urb, sends it off and waits for completion</span>
+<span class="cm"> * @usb_dev: pointer to the usb device to send the message to</span>
+<span class="cm"> * @pipe: endpoint &quot;pipe&quot; to send the message to</span>
+<span class="cm"> * @data: pointer to the data to send</span>
+<span class="cm"> * @len: length in bytes of the data to send</span>
+<span class="cm"> * @actual_length: pointer to a location to put the actual length transferred</span>
+<span class="cm"> *	in bytes</span>
+<span class="cm"> * @timeout: time in msecs to wait for the message to complete before</span>
+<span class="cm"> *	timing out (if 0 the wait is forever)</span>
+<span class="cm"> *</span>
+<span class="cm"> * Context: !in_interrupt ()</span>
+<span class="cm"> *</span>
+<span class="cm"> * This function sends a simple bulk message to a specified endpoint</span>
+<span class="cm"> * and waits for the message to complete, or timeout.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Don&#39;t use this function from within an interrupt context, like a bottom half</span>
+<span class="cm"> * handler.  If you need an asynchronous message, or need to send a message</span>
+<span class="cm"> * from within interrupt context, use usb_submit_urb() If a thread in your</span>
+<span class="cm"> * driver uses this call, make sure your disconnect() method can wait for it to</span>
+<span class="cm"> * complete.  Since you don&#39;t have a handle on the URB used, you can&#39;t cancel</span>
+<span class="cm"> * the request.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Because there is no usb_interrupt_msg() and no USBDEVFS_INTERRUPT ioctl,</span>
+<span class="cm"> * users are forced to abuse this routine by using it to submit URBs for</span>
+<span class="cm"> * interrupt endpoints.  We will take the liberty of creating an interrupt URB</span>
+<span class="cm"> * (with the default interval) if the target is an interrupt endpoint.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Return:</span>
+<span class="cm"> * If successful, 0. Otherwise a negative error number. The number of actual</span>
+<span class="cm"> * bytes transferred will be stored in the @actual_length parameter.</span>
+<span class="cm"> *</span>
+<span class="cm"> */</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">usb_bulk_msg</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">usb_device</span><span class="w"> </span><span class="o">*</span><span class="n">usb_dev</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">pipe</span><span class="p">,</span>
+<span class="w">		 </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">len</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">actual_length</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">timeout</span><span class="p">);</span>
+
+
+<span class="cm">/**</span>
+<span class="cm"> * usb_interrupt_msg - Builds an interrupt urb, sends it off and waits for completion</span>
+<span class="cm"> * @usb_dev: pointer to the usb device to send the message to</span>
+<span class="cm"> * @pipe: endpoint &quot;pipe&quot; to send the message to</span>
+<span class="cm"> * @data: pointer to the data to send</span>
+<span class="cm"> * @len: length in bytes of the data to send</span>
+<span class="cm"> * @actual_length: pointer to a location to put the actual length transferred</span>
+<span class="cm"> *	in bytes</span>
+<span class="cm"> * @timeout: time in msecs to wait for the message to complete before</span>
+<span class="cm"> *	timing out (if 0 the wait is forever)</span>
+<span class="cm"> *</span>
+<span class="cm"> * Context: !in_interrupt ()</span>
+<span class="cm"> *</span>
+<span class="cm"> * This function sends a simple interrupt message to a specified endpoint and</span>
+<span class="cm"> * waits for the message to complete, or timeout.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Don&#39;t use this function from within an interrupt context, like a bottom half</span>
+<span class="cm"> * handler.  If you need an asynchronous message, or need to send a message</span>
+<span class="cm"> * from within interrupt context, use usb_submit_urb() If a thread in your</span>
+<span class="cm"> * driver uses this call, make sure your disconnect() method can wait for it to</span>
+<span class="cm"> * complete.  Since you don&#39;t have a handle on the URB used, you can&#39;t cancel</span>
+<span class="cm"> * the request.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Return:</span>
+<span class="cm"> * If successful, 0. Otherwise a negative error number. The number of actual</span>
+<span class="cm"> * bytes transferred will be stored in the @actual_length parameter.</span>
+<span class="cm"> */</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">usb_interrupt_msg</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">usb_device</span><span class="w"> </span><span class="o">*</span><span class="n">usb_dev</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">pipe</span><span class="p">,</span>
+<span class="w">		      </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">len</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">actual_length</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">timeout</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h3>2.3 异步传输函数<a class="headerlink" href="#id3" title="此标题的永久链接">#</a></h3>
+<p>使用URB进行传输时，它是异步方式：需要先分配、构造、提交一个URB(“usb request block”)，当传输完成后，它的回调函数被调用。</p>
+<p>关键就在于需要填充URB：</p>
+<ul class="simple">
+<li><p>dev：跟谁传输数据</p></li>
+<li><p>pipe：跟哪个pipe传输数据</p></li>
+<li><p>buffer：里面存有要发送的数据，或者用来接收要读取的数据</p></li>
+<li><p>数据长度</p></li>
+<li><p>回调函数</p></li>
+</ul>
+<section id="urb">
+<h4>2.3.1 分配和释放URB<a class="headerlink" href="#urb" title="此标题的永久链接">#</a></h4>
+<p>函数原型如下：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm"> * usb_alloc_urb - creates a new urb for a USB driver to use</span>
+<span class="cm"> * @iso_packets: number of iso packets for this urb</span>
+<span class="cm"> * @mem_flags: the type of memory to allocate, see kmalloc() for a list of</span>
+<span class="cm"> *	valid options for this.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Creates an urb for the USB driver to use, initializes a few internal</span>
+<span class="cm"> * structures, increments the usage counter, and returns a pointer to it.</span>
+<span class="cm"> *</span>
+<span class="cm"> * If the driver want to use this urb for interrupt, control, or bulk</span>
+<span class="cm"> * endpoints, pass &#39;0&#39; as the number of iso packets.</span>
+<span class="cm"> *</span>
+<span class="cm"> * The driver must call usb_free_urb() when it is finished with the urb.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Return: A pointer to the new urb, or %NULL if no memory is available.</span>
+<span class="cm"> */</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">urb</span><span class="w"> </span><span class="o">*</span><span class="n">usb_alloc_urb</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">iso_packets</span><span class="p">,</span><span class="w"> </span><span class="n">gfp_t</span><span class="w"> </span><span class="n">mem_flags</span><span class="p">);</span>
+
+
+<span class="cm">/**</span>
+<span class="cm"> * usb_free_urb - frees the memory used by a urb when all users of it are finished</span>
+<span class="cm"> * @urb: pointer to the urb to free, may be NULL</span>
+<span class="cm"> *</span>
+<span class="cm"> * Must be called when a user of a urb is finished with it.  When the last user</span>
+<span class="cm"> * of the urb calls this function, the memory of the urb is freed.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Note: The transfer buffer associated with the urb is not freed unless the</span>
+<span class="cm"> * URB_FREE_BUFFER transfer flag is set.</span>
+<span class="cm"> */</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">usb_free_urb</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">urb</span><span class="w"> </span><span class="o">*</span><span class="n">urb</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="dma-buffer">
+<h4>2.3.2 分配/释放DMA Buffer<a class="headerlink" href="#dma-buffer" title="此标题的永久链接">#</a></h4>
+<p>发起USB传输时，数据保存在buffer里。这个buffer可以是一般的buffer，也可以是DMA Buffer。</p>
+<p>对于一般的buffer，在提交URB时会临时分配一个DMA Buffer：</p>
+<ul class="simple">
+<li><p>发送数据时：函数内部会先从一般buffer中把数据复制到DMA Buffer，在提交给USB控制器</p></li>
+<li><p>读取数据时：USB控制器先把数据传到DMA Buffer，函数内部在把DMA Buffer的数据复制到一般buffer</p></li>
+<li><p>中间增加了一次数据的拷贝，效率低</p></li>
+</ul>
+<p>我们可以直接使用DMA Buffer，函数原型如下：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm"> * usb_alloc_coherent - allocate dma-consistent buffer for URB_NO_xxx_DMA_MAP</span>
+<span class="cm"> * @dev: device the buffer will be used with</span>
+<span class="cm"> * @size: requested buffer size</span>
+<span class="cm"> * @mem_flags: affect whether allocation may block</span>
+<span class="cm"> * @dma: used to return DMA address of buffer</span>
+<span class="cm"> *</span>
+<span class="cm"> * Return: Either null (indicating no buffer could be allocated), or the</span>
+<span class="cm"> * cpu-space pointer to a buffer that may be used to perform DMA to the</span>
+<span class="cm"> * specified device.  Such cpu-space buffers are returned along with the DMA</span>
+<span class="cm"> * address (through the pointer provided).</span>
+<span class="cm"> *</span>
+<span class="cm"> * Note:</span>
+<span class="cm"> * These buffers are used with URB_NO_xxx_DMA_MAP set in urb-&gt;transfer_flags</span>
+<span class="cm"> * to avoid behaviors like using &quot;DMA bounce buffers&quot;, or thrashing IOMMU</span>
+<span class="cm"> * hardware during URB completion/resubmit.  The implementation varies between</span>
+<span class="cm"> * platforms, depending on details of how DMA will work to this device.</span>
+<span class="cm"> * Using these buffers also eliminates cacheline sharing problems on</span>
+<span class="cm"> * architectures where CPU caches are not DMA-coherent.  On systems without</span>
+<span class="cm"> * bus-snooping caches, these buffers are uncached.</span>
+<span class="cm"> *</span>
+<span class="cm"> * When the buffer is no longer used, free it with usb_free_coherent().</span>
+<span class="cm"> */</span>
+<span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="nf">usb_alloc_coherent</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">usb_device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">size</span><span class="p">,</span><span class="w"> </span><span class="n">gfp_t</span><span class="w"> </span><span class="n">mem_flags</span><span class="p">,</span>
+<span class="w">			 </span><span class="n">dma_addr_t</span><span class="w"> </span><span class="o">*</span><span class="n">dma</span><span class="p">);</span>
+
+
+<span class="cm">/**</span>
+<span class="cm"> * usb_free_coherent - free memory allocated with usb_alloc_coherent()</span>
+<span class="cm"> * @dev: device the buffer was used with</span>
+<span class="cm"> * @size: requested buffer size</span>
+<span class="cm"> * @addr: CPU address of buffer</span>
+<span class="cm"> * @dma: DMA address of buffer</span>
+<span class="cm"> *</span>
+<span class="cm"> * This reclaims an I/O buffer, letting it be reused.  The memory must have</span>
+<span class="cm"> * been allocated using usb_alloc_coherent(), and the parameters must match</span>
+<span class="cm"> * those provided in that allocation request.</span>
+<span class="cm"> */</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">usb_free_coherent</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">usb_device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">size</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">addr</span><span class="p">,</span>
+<span class="w">		       </span><span class="n">dma_addr_t</span><span class="w"> </span><span class="n">dma</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="id4">
+<h4>2.3.3 填充URB<a class="headerlink" href="#id4" title="此标题的永久链接">#</a></h4>
+<p>对于控制传输、批量传输、中断传输，分别有如下函数：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm"> * usb_fill_control_urb - initializes a control urb</span>
+<span class="cm"> * @urb: pointer to the urb to initialize.</span>
+<span class="cm"> * @dev: pointer to the struct usb_device for this urb.</span>
+<span class="cm"> * @pipe: the endpoint pipe</span>
+<span class="cm"> * @setup_packet: pointer to the setup_packet buffer</span>
+<span class="cm"> * @transfer_buffer: pointer to the transfer buffer</span>
+<span class="cm"> * @buffer_length: length of the transfer buffer</span>
+<span class="cm"> * @complete_fn: pointer to the usb_complete_t function</span>
+<span class="cm"> * @context: what to set the urb context to.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Initializes a control urb with the proper information needed to submit</span>
+<span class="cm"> * it to a device.</span>
+<span class="cm"> */</span>
+<span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">usb_fill_control_urb</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">urb</span><span class="w"> </span><span class="o">*</span><span class="n">urb</span><span class="p">,</span>
+<span class="w">					</span><span class="k">struct</span><span class="w"> </span><span class="nc">usb_device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span>
+<span class="w">					</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">pipe</span><span class="p">,</span>
+<span class="w">					</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">setup_packet</span><span class="p">,</span>
+<span class="w">					</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">transfer_buffer</span><span class="p">,</span>
+<span class="w">					</span><span class="kt">int</span><span class="w"> </span><span class="n">buffer_length</span><span class="p">,</span>
+<span class="w">					</span><span class="n">usb_complete_t</span><span class="w"> </span><span class="n">complete_fn</span><span class="p">,</span>
+<span class="w">					</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="p">);</span>
+
+
+<span class="cm">/**</span>
+<span class="cm"> * usb_fill_bulk_urb - macro to help initialize a bulk urb</span>
+<span class="cm"> * @urb: pointer to the urb to initialize.</span>
+<span class="cm"> * @dev: pointer to the struct usb_device for this urb.</span>
+<span class="cm"> * @pipe: the endpoint pipe</span>
+<span class="cm"> * @transfer_buffer: pointer to the transfer buffer</span>
+<span class="cm"> * @buffer_length: length of the transfer buffer</span>
+<span class="cm"> * @complete_fn: pointer to the usb_complete_t function</span>
+<span class="cm"> * @context: what to set the urb context to.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Initializes a bulk urb with the proper information needed to submit it</span>
+<span class="cm"> * to a device.</span>
+<span class="cm"> */</span>
+<span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">usb_fill_bulk_urb</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">urb</span><span class="w"> </span><span class="o">*</span><span class="n">urb</span><span class="p">,</span>
+<span class="w">				     </span><span class="k">struct</span><span class="w"> </span><span class="nc">usb_device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span>
+<span class="w">				     </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">pipe</span><span class="p">,</span>
+<span class="w">				     </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">transfer_buffer</span><span class="p">,</span>
+<span class="w">				     </span><span class="kt">int</span><span class="w"> </span><span class="n">buffer_length</span><span class="p">,</span>
+<span class="w">				     </span><span class="n">usb_complete_t</span><span class="w"> </span><span class="n">complete_fn</span><span class="p">,</span>
+<span class="w">				     </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * usb_fill_int_urb - macro to help initialize a interrupt urb</span>
+<span class="cm"> * @urb: pointer to the urb to initialize.</span>
+<span class="cm"> * @dev: pointer to the struct usb_device for this urb.</span>
+<span class="cm"> * @pipe: the endpoint pipe</span>
+<span class="cm"> * @transfer_buffer: pointer to the transfer buffer</span>
+<span class="cm"> * @buffer_length: length of the transfer buffer</span>
+<span class="cm"> * @complete_fn: pointer to the usb_complete_t function</span>
+<span class="cm"> * @context: what to set the urb context to.</span>
+<span class="cm"> * @interval: what to set the urb interval to, encoded like</span>
+<span class="cm"> *	the endpoint descriptor&#39;s bInterval value.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Initializes a interrupt urb with the proper information needed to submit</span>
+<span class="cm"> * it to a device.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Note that High Speed and SuperSpeed(+) interrupt endpoints use a logarithmic</span>
+<span class="cm"> * encoding of the endpoint interval, and express polling intervals in</span>
+<span class="cm"> * microframes (eight per millisecond) rather than in frames (one per</span>
+<span class="cm"> * millisecond).</span>
+<span class="cm"> *</span>
+<span class="cm"> * Wireless USB also uses the logarithmic encoding, but specifies it in units of</span>
+<span class="cm"> * 128us instead of 125us.  For Wireless USB devices, the interval is passed</span>
+<span class="cm"> * through to the host controller, rather than being translated into microframe</span>
+<span class="cm"> * units.</span>
+<span class="cm"> */</span>
+<span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">usb_fill_int_urb</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">urb</span><span class="w"> </span><span class="o">*</span><span class="n">urb</span><span class="p">,</span>
+<span class="w">				    </span><span class="k">struct</span><span class="w"> </span><span class="nc">usb_device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span>
+<span class="w">				    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">pipe</span><span class="p">,</span>
+<span class="w">				    </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">transfer_buffer</span><span class="p">,</span>
+<span class="w">				    </span><span class="kt">int</span><span class="w"> </span><span class="n">buffer_length</span><span class="p">,</span>
+<span class="w">				    </span><span class="n">usb_complete_t</span><span class="w"> </span><span class="n">complete_fn</span><span class="p">,</span>
+<span class="w">				    </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="p">,</span>
+<span class="w">				    </span><span class="kt">int</span><span class="w"> </span><span class="n">interval</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>如果URB使用DMA Buffer，那么还需要设置一个flag表明这点：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">urb</span><span class="o">-&gt;</span><span class="n">transfer_dma</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DMA</span><span class="w"> </span><span class="n">address</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">buffer</span><span class="p">;</span><span class="w"> </span><span class="c1">// usb_alloc_coherent的输出参数</span>
+<span class="n">urb</span><span class="o">-&gt;</span><span class="n">transfer_flags</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">URB_NO_TRANSFER_DMA_MAP</span><span class="p">;</span>
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h4>2.3.4 提交URB<a class="headerlink" href="#id5" title="此标题的永久链接">#</a></h4>
+<p>构造好URB后，需要提交到USB系统里，才能启动传输。</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm"> * usb_submit_urb - issue an asynchronous transfer request for an endpoint</span>
+<span class="cm"> * @urb: pointer to the urb describing the request</span>
+<span class="cm"> * @mem_flags: the type of memory to allocate, see kmalloc() for a list</span>
+<span class="cm"> *	of valid options for this.</span>
+<span class="cm"> *</span>
+<span class="cm"> * This submits a transfer request, and transfers control of the URB</span>
+<span class="cm"> * describing that request to the USB subsystem.  Request completion will</span>
+<span class="cm"> * be indicated later, asynchronously, by calling the completion handler.</span>
+<span class="cm"> * The three types of completion are success, error, and unlink</span>
+<span class="cm"> * (a software-induced fault, also called &quot;request cancellation&quot;).</span>
+<span class="cm"> *</span>
+<span class="cm"> * URBs may be submitted in interrupt context.</span>
+<span class="cm"> *</span>
+<span class="cm"> * The caller must have correctly initialized the URB before submitting</span>
+<span class="cm"> * it.  Functions such as usb_fill_bulk_urb() and usb_fill_control_urb() are</span>
+<span class="cm"> * available to ensure that most fields are correctly initialized, for</span>
+<span class="cm"> * the particular kind of transfer, although they will not initialize</span>
+<span class="cm"> * any transfer flags.</span>
+<span class="cm"> *</span>
+<span class="cm"> * If the submission is successful, the complete() callback from the URB</span>
+<span class="cm"> * will be called exactly once, when the USB core and Host Controller Driver</span>
+<span class="cm"> * (HCD) are finished with the URB.  When the completion function is called,</span>
+<span class="cm"> * control of the URB is returned to the device driver which issued the</span>
+<span class="cm"> * request.  The completion handler may then immediately free or reuse that</span>
+<span class="cm"> * URB.</span>
+<span class="cm"> *</span>
+<span class="cm"> * With few exceptions, USB device drivers should never access URB fields</span>
+<span class="cm"> * provided by usbcore or the HCD until its complete() is called.</span>
+<span class="cm"> * The exceptions relate to periodic transfer scheduling.  For both</span>
+<span class="cm"> * interrupt and isochronous urbs, as part of successful URB submission</span>
+<span class="cm"> * urb-&gt;interval is modified to reflect the actual transfer period used</span>
+<span class="cm"> * (normally some power of two units).  And for isochronous urbs,</span>
+<span class="cm"> * urb-&gt;start_frame is modified to reflect when the URB&#39;s transfers were</span>
+<span class="cm"> * scheduled to start.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Not all isochronous transfer scheduling policies will work, but most</span>
+<span class="cm"> * host controller drivers should easily handle ISO queues going from now</span>
+<span class="cm"> * until 10-200 msec into the future.  Drivers should try to keep at</span>
+<span class="cm"> * least one or two msec of data in the queue; many controllers require</span>
+<span class="cm"> * that new transfers start at least 1 msec in the future when they are</span>
+<span class="cm"> * added.  If the driver is unable to keep up and the queue empties out,</span>
+<span class="cm"> * the behavior for new submissions is governed by the URB_ISO_ASAP flag.</span>
+<span class="cm"> * If the flag is set, or if the queue is idle, then the URB is always</span>
+<span class="cm"> * assigned to the first available (and not yet expired) slot in the</span>
+<span class="cm"> * endpoint&#39;s schedule.  If the flag is not set and the queue is active</span>
+<span class="cm"> * then the URB is always assigned to the next slot in the schedule</span>
+<span class="cm"> * following the end of the endpoint&#39;s previous URB, even if that slot is</span>
+<span class="cm"> * in the past.  When a packet is assigned in this way to a slot that has</span>
+<span class="cm"> * already expired, the packet is not transmitted and the corresponding</span>
+<span class="cm"> * usb_iso_packet_descriptor&#39;s status field will return -EXDEV.  If this</span>
+<span class="cm"> * would happen to all the packets in the URB, submission fails with a</span>
+<span class="cm"> * -EXDEV error code.</span>
+<span class="cm"> *</span>
+<span class="cm"> * For control endpoints, the synchronous usb_control_msg() call is</span>
+<span class="cm"> * often used (in non-interrupt context) instead of this call.</span>
+<span class="cm"> * That is often used through convenience wrappers, for the requests</span>
+<span class="cm"> * that are standardized in the USB 2.0 specification.  For bulk</span>
+<span class="cm"> * endpoints, a synchronous usb_bulk_msg() call is available.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Return:</span>
+<span class="cm"> * 0 on successful submissions. A negative error number otherwise.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Request Queuing:</span>
+<span class="cm"> *</span>
+<span class="cm"> * URBs may be submitted to endpoints before previous ones complete, to</span>
+<span class="cm"> * minimize the impact of interrupt latencies and system overhead on data</span>
+<span class="cm"> * throughput.  With that queuing policy, an endpoint&#39;s queue would never</span>
+<span class="cm"> * be empty.  This is required for continuous isochronous data streams,</span>
+<span class="cm"> * and may also be required for some kinds of interrupt transfers. Such</span>
+<span class="cm"> * queuing also maximizes bandwidth utilization by letting USB controllers</span>
+<span class="cm"> * start work on later requests before driver software has finished the</span>
+<span class="cm"> * completion processing for earlier (successful) requests.</span>
+<span class="cm"> *</span>
+<span class="cm"> * As of Linux 2.6, all USB endpoint transfer queues support depths greater</span>
+<span class="cm"> * than one.  This was previously a HCD-specific behavior, except for ISO</span>
+<span class="cm"> * transfers.  Non-isochronous endpoint queues are inactive during cleanup</span>
+<span class="cm"> * after faults (transfer errors or cancellation).</span>
+<span class="cm"> *</span>
+<span class="cm"> * Reserved Bandwidth Transfers:</span>
+<span class="cm"> *</span>
+<span class="cm"> * Periodic transfers (interrupt or isochronous) are performed repeatedly,</span>
+<span class="cm"> * using the interval specified in the urb.  Submitting the first urb to</span>
+<span class="cm"> * the endpoint reserves the bandwidth necessary to make those transfers.</span>
+<span class="cm"> * If the USB subsystem can&#39;t allocate sufficient bandwidth to perform</span>
+<span class="cm"> * the periodic request, submitting such a periodic request should fail.</span>
+<span class="cm"> *</span>
+<span class="cm"> * For devices under xHCI, the bandwidth is reserved at configuration time, or</span>
+<span class="cm"> * when the alt setting is selected.  If there is not enough bus bandwidth, the</span>
+<span class="cm"> * configuration/alt setting request will fail.  Therefore, submissions to</span>
+<span class="cm"> * periodic endpoints on devices under xHCI should never fail due to bandwidth</span>
+<span class="cm"> * constraints.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Device drivers must explicitly request that repetition, by ensuring that</span>
+<span class="cm"> * some URB is always on the endpoint&#39;s queue (except possibly for short</span>
+<span class="cm"> * periods during completion callbacks).  When there is no longer an urb</span>
+<span class="cm"> * queued, the endpoint&#39;s bandwidth reservation is canceled.  This means</span>
+<span class="cm"> * drivers can use their completion handlers to ensure they keep bandwidth</span>
+<span class="cm"> * they need, by reinitializing and resubmitting the just-completed urb</span>
+<span class="cm"> * until the driver longer needs that periodic bandwidth.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Memory Flags:</span>
+<span class="cm"> *</span>
+<span class="cm"> * The general rules for how to decide which mem_flags to use</span>
+<span class="cm"> * are the same as for kmalloc.  There are four</span>
+<span class="cm"> * different possible values; GFP_KERNEL, GFP_NOFS, GFP_NOIO and</span>
+<span class="cm"> * GFP_ATOMIC.</span>
+<span class="cm"> *</span>
+<span class="cm"> * GFP_NOFS is not ever used, as it has not been implemented yet.</span>
+<span class="cm"> *</span>
+<span class="cm"> * GFP_ATOMIC is used when</span>
+<span class="cm"> *   (a) you are inside a completion handler, an interrupt, bottom half,</span>
+<span class="cm"> *       tasklet or timer, or</span>
+<span class="cm"> *   (b) you are holding a spinlock or rwlock (does not apply to</span>
+<span class="cm"> *       semaphores), or</span>
+<span class="cm"> *   (c) current-&gt;state != TASK_RUNNING, this is the case only after</span>
+<span class="cm"> *       you&#39;ve changed it.</span>
+<span class="cm"> *</span>
+<span class="cm"> * GFP_NOIO is used in the block io path and error handling of storage</span>
+<span class="cm"> * devices.</span>
+<span class="cm"> *</span>
+<span class="cm"> * All other situations use GFP_KERNEL.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Some more specific rules for mem_flags can be inferred, such as</span>
+<span class="cm"> *  (1) start_xmit, timeout, and receive methods of network drivers must</span>
+<span class="cm"> *      use GFP_ATOMIC (they are called with a spinlock held);</span>
+<span class="cm"> *  (2) queuecommand methods of scsi drivers must use GFP_ATOMIC (also</span>
+<span class="cm"> *      called with a spinlock held);</span>
+<span class="cm"> *  (3) If you use a kernel thread with a network driver you must use</span>
+<span class="cm"> *      GFP_NOIO, unless (b) or (c) apply;</span>
+<span class="cm"> *  (4) after you have done a down() you can use GFP_KERNEL, unless (b) or (c)</span>
+<span class="cm"> *      apply or your are in a storage driver&#39;s block io path;</span>
+<span class="cm"> *  (5) USB probe and disconnect can use GFP_KERNEL unless (b) or (c) apply; and</span>
+<span class="cm"> *  (6) changing firmware on a running storage or net device uses</span>
+<span class="cm"> *      GFP_NOIO, unless b) or c) apply</span>
+<span class="cm"> *</span>
+<span class="cm"> */</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">usb_submit_urb</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">urb</span><span class="w"> </span><span class="o">*</span><span class="n">urb</span><span class="p">,</span><span class="w"> </span><span class="n">gfp_t</span><span class="w"> </span><span class="n">mem_flags</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="id6">
+<h4>2.3.5 取消URB<a class="headerlink" href="#id6" title="此标题的永久链接">#</a></h4>
+<p>已经提交的URB，可以取消它，有2个函数：</p>
+<ul class="simple">
+<li><p>usb_kill_urb：这是一个同步函数，它会等待URB结束</p></li>
+<li><p>usb_unlink_urb：这是一个异步函数，它不会等待URB结束，USB控制器驱动会调用它的回调函数</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm"> * usb_kill_urb - cancel a transfer request and wait for it to finish</span>
+<span class="cm"> * @urb: pointer to URB describing a previously submitted request,</span>
+<span class="cm"> *	may be NULL</span>
+<span class="cm"> *</span>
+<span class="cm"> * This routine cancels an in-progress request.  It is guaranteed that</span>
+<span class="cm"> * upon return all completion handlers will have finished and the URB</span>
+<span class="cm"> * will be totally idle and available for reuse.  These features make</span>
+<span class="cm"> * this an ideal way to stop I/O in a disconnect() callback or close()</span>
+<span class="cm"> * function.  If the request has not already finished or been unlinked</span>
+<span class="cm"> * the completion handler will see urb-&gt;status == -ENOENT.</span>
+<span class="cm"> *</span>
+<span class="cm"> * While the routine is running, attempts to resubmit the URB will fail</span>
+<span class="cm"> * with error -EPERM.  Thus even if the URB&#39;s completion handler always</span>
+<span class="cm"> * tries to resubmit, it will not succeed and the URB will become idle.</span>
+<span class="cm"> *</span>
+<span class="cm"> * The URB must not be deallocated while this routine is running.  In</span>
+<span class="cm"> * particular, when a driver calls this routine, it must insure that the</span>
+<span class="cm"> * completion handler cannot deallocate the URB.</span>
+<span class="cm"> *</span>
+<span class="cm"> * This routine may not be used in an interrupt context (such as a bottom</span>
+<span class="cm"> * half or a completion handler), or when holding a spinlock, or in other</span>
+<span class="cm"> * situations where the caller can&#39;t schedule().</span>
+<span class="cm"> *</span>
+<span class="cm"> * This routine should not be called by a driver after its disconnect</span>
+<span class="cm"> * method has returned.</span>
+<span class="cm"> */</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">usb_kill_urb</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">urb</span><span class="w"> </span><span class="o">*</span><span class="n">urb</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * usb_unlink_urb - abort/cancel a transfer request for an endpoint</span>
+<span class="cm"> * @urb: pointer to urb describing a previously submitted request,</span>
+<span class="cm"> *	may be NULL</span>
+<span class="cm"> *</span>
+<span class="cm"> * This routine cancels an in-progress request.  URBs complete only once</span>
+<span class="cm"> * per submission, and may be canceled only once per submission.</span>
+<span class="cm"> * Successful cancellation means termination of @urb will be expedited</span>
+<span class="cm"> * and the completion handler will be called with a status code</span>
+<span class="cm"> * indicating that the request has been canceled (rather than any other</span>
+<span class="cm"> * code).</span>
+<span class="cm"> *</span>
+<span class="cm"> * Drivers should not call this routine or related routines, such as</span>
+<span class="cm"> * usb_kill_urb() or usb_unlink_anchored_urbs(), after their disconnect</span>
+<span class="cm"> * method has returned.  The disconnect function should synchronize with</span>
+<span class="cm"> * a driver&#39;s I/O routines to insure that all URB-related activity has</span>
+<span class="cm"> * completed before it returns.</span>
+<span class="cm"> *</span>
+<span class="cm"> * This request is asynchronous, however the HCD might call the -&gt;complete()</span>
+<span class="cm"> * callback during unlink. Therefore when drivers call usb_unlink_urb(), they</span>
+<span class="cm"> * must not hold any locks that may be taken by the completion function.</span>
+<span class="cm"> * Success is indicated by returning -EINPROGRESS, at which time the URB will</span>
+<span class="cm"> * probably not yet have been given back to the device driver. When it is</span>
+<span class="cm"> * eventually called, the completion function will see @urb-&gt;status ==</span>
+<span class="cm"> * -ECONNRESET.</span>
+<span class="cm"> * Failure is indicated by usb_unlink_urb() returning any other value.</span>
+<span class="cm"> * Unlinking will fail when @urb is not currently &quot;linked&quot; (i.e., it was</span>
+<span class="cm"> * never submitted, or it was unlinked before, or the hardware is already</span>
+<span class="cm"> * finished with it), even if the completion handler has not yet run.</span>
+<span class="cm"> *</span>
+<span class="cm"> * The URB must not be deallocated while this routine is running.  In</span>
+<span class="cm"> * particular, when a driver calls this routine, it must insure that the</span>
+<span class="cm"> * completion handler cannot deallocate the URB.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Return: -EINPROGRESS on success. See description for other values on</span>
+<span class="cm"> * failure.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Unlinking and Endpoint Queues:</span>
+<span class="cm"> *</span>
+<span class="cm"> * [The behaviors and guarantees described below do not apply to virtual</span>
+<span class="cm"> * root hubs but only to endpoint queues for physical USB devices.]</span>
+<span class="cm"> *</span>
+<span class="cm"> * Host Controller Drivers (HCDs) place all the URBs for a particular</span>
+<span class="cm"> * endpoint in a queue.  Normally the queue advances as the controller</span>
+<span class="cm"> * hardware processes each request.  But when an URB terminates with an</span>
+<span class="cm"> * error its queue generally stops (see below), at least until that URB&#39;s</span>
+<span class="cm"> * completion routine returns.  It is guaranteed that a stopped queue</span>
+<span class="cm"> * will not restart until all its unlinked URBs have been fully retired,</span>
+<span class="cm"> * with their completion routines run, even if that&#39;s not until some time</span>
+<span class="cm"> * after the original completion handler returns.  The same behavior and</span>
+<span class="cm"> * guarantee apply when an URB terminates because it was unlinked.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Bulk and interrupt endpoint queues are guaranteed to stop whenever an</span>
+<span class="cm"> * URB terminates with any sort of error, including -ECONNRESET, -ENOENT,</span>
+<span class="cm"> * and -EREMOTEIO.  Control endpoint queues behave the same way except</span>
+<span class="cm"> * that they are not guaranteed to stop for -EREMOTEIO errors.  Queues</span>
+<span class="cm"> * for isochronous endpoints are treated differently, because they must</span>
+<span class="cm"> * advance at fixed rates.  Such queues do not stop when an URB</span>
+<span class="cm"> * encounters an error or is unlinked.  An unlinked isochronous URB may</span>
+<span class="cm"> * leave a gap in the stream of packets; it is undefined whether such</span>
+<span class="cm"> * gaps can be filled in.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Note that early termination of an URB because a short packet was</span>
+<span class="cm"> * received will generate a -EREMOTEIO error if and only if the</span>
+<span class="cm"> * URB_SHORT_NOT_OK flag is set.  By setting this flag, USB device</span>
+<span class="cm"> * drivers can build deep queues for large or complex bulk transfers</span>
+<span class="cm"> * and clean them up reliably after any sort of aborted transfer by</span>
+<span class="cm"> * unlinking all pending URBs at the first fault.</span>
+<span class="cm"> *</span>
+<span class="cm"> * When a control URB terminates with an error other than -EREMOTEIO, it</span>
+<span class="cm"> * is quite likely that the status stage of the transfer will not take</span>
+<span class="cm"> * place.</span>
+<span class="cm"> */</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">usb_unlink_urb</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">urb</span><span class="w"> </span><span class="o">*</span><span class="n">urb</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="07_1.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">上一页</p>
+        <p class="prev-next-title">07_使用libusb读取鼠标数据</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="09_1.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">下一页</p>
+        <p class="prev-next-title">09_编写USB鼠标驱动程序</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 目录
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bus-dev-drv">1. BUS/DEV/DRV模型</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">2. 接口函数</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pipe">2.1 pipe</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">2.2 同步传输函数</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">2.3 异步传输函数</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#urb">2.3.1 分配和释放URB</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dma-buffer">2.3.2 分配/释放DMA Buffer</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">2.3.3 填充URB</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">2.3.4 提交URB</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">2.3.5 取消URB</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+作者： 100ask_Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2019-2024 深圳百问网科技有限公司.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  最后更新于 2024 年 08 月 08 日.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

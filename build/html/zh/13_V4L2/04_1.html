@@ -1,0 +1,1715 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="zh-CN" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>04_USB摄像头驱动程序分析 &#8212; Linux设备驱动开发教程中心</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/topbar.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom-theme.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../../_static/translations.js"></script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'zh/13_V4L2/04_1';</script>
+    <link rel="icon" href="../../_static/favicon.png"/>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="05_MIPI摄像头驱动程序分析" href="05_1.html" />
+    <link rel="prev" title="03_从0编写一个虚拟摄像头驱动" href="03_1.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="zh-CN"/>
+    <meta name="docbuild:last-update" content="2024 年 08 月 08 日"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+
+  <div class="bd-header-announcement container-fluid bd-header-announcement">
+    <div class="bd-header-announcement__content">📢📢📢 欢迎来到百问网Linux设备驱动开发教程中心文档站点！！！技术交流社区：https://forums.100ask.net</div>
+  </div>
+
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Linux设备驱动开发教程中心</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">1.课程介绍</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../03_LCD/index.html">3.LCD显示子系统</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/01_1.html">01_单片机_Linux下不同接口的LCD硬件操作原理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/02_1.html">02_Framebuffer驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/03.html">03_编程_写出框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/04.html">04_最简单的LCD驱动_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/05.html">05_上机实验_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/06_1.html">结合APP分析LCD驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/07_1.html">07_硬件_8080接口LCD时序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/08_1.html">08_硬件_TFT-RGB接口LCD时序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/09_1.html">09_硬件_IMX6ULL的LCD控制器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/10_1.html">10_分析内核自带的LCD驱动程序_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/11_1.html">11_编程_LCD驱动程序框架_使用设备树</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/12_1.html">12_编程_配置引脚_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/13_1.html">13_编程_配置时钟_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/14_1.html">14_编程_ 配置LCD控制器之获得LCD参数_ 基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/15_1.html">15_编程_配置LCD控制器之寄存器操作_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/16.html">16_上机实验_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/17_1.html">17_单Buffer的缺点与改进方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/18.html">18_编写使用多buffer的应用程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../04_I2C/index.html">4.I2C子系统</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/01.html">01_I2C视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/02_1.html">02_I2C协议</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/03.html">03_SMBus协议</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/04.html">04_I2C系统的重要结构体</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/05.html">05_无需编写驱动直接访问设备_I2C-Tools介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/06.html">06_编写APP直接访问EEPROM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/07.html">07_通用驱动i2c-dev分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/08_1.html">08_I2C系统驱动程序模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/09.html">09_编写设备驱动之i2c_driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/10.html">10_编写设备驱动之i2c_client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/11.html">11_I2C_Adapter驱动框架讲解与编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/12_1.html">12_完善虚拟的I2C_Adapter驱动并模拟EEPROM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/13_1.html">13_使用GPIO模拟I2C的驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/14.html">14_使用GPIO操作I2C设备_IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/15_1.html">15_具体芯片的I2C_Adapter驱动分析</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../05_Input/index.html">5.Input输入子系统</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/01.html">01_Input子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/02.html">02_先学习输入系统应用编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_1.html">DRV_01_Input子系统框架详解</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_2.html">DRV_02_编写input_dev驱动框架解</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_3.html">DRV_03_ 编写最简单的触摸屏驱动程序_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_4.html">DRV_04_GPIO按键驱动分析与使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_5.html">DRV_05_I2C接口触摸屏驱动分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_6.html">DRV_06_UInput分析_用户态创建input_dev</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../06_Pinctrl/index.html">6.Pinctrl子系统</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/01.html">01_Pinctrl子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/03_1.html">02_Pinctrl子系统使用示例_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/03_2.html">03_Pinctrl子系统使用示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/04_1.html">04_Pinctrl子系统主要数据结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/05_1.html">05_Pincontroller构造过程情景分析_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/06_1.html">06_client端使用pinctrl过程的情景分析_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/07_1.html">07_编写虚拟的Pinctrl驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/08_1.html">08_调试虚拟的Pinctrl驱动程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../07_GPIO/index.html">7.GPIO子系统</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/01_1.html">01_GPIO子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/05_1.html">02_GPIO子系统层次与数据结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/06_1.html">03_IMX6ULL的GPIO驱动源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/07_1.html">04_编写一个虚拟GPIO控制器的驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/08_1.html">05_调试与使用虚拟的GPIO控制器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/09_1.html">06_GPIO子系统与Pinctrl子系统的交互</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/10_1.html">07_编程_GPIO使用Pinctrl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/11_1.html">08_GPIO子系统的sysfs接口</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../08_Interrupt/index.html">8.Interrupt子系统</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/08_1.html">01_中断相关的其他驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/09_1.html">02_中断的硬件框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/10_1.html">03_GIC介绍与编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/11_1.html">04_异常向量表的安装与调用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/12_1.html">05_GIC驱动程序对中断的处理流程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/13_1.html">06_GIC驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/14_1.html">07_两类中断控制器处理流程_链式和层级</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/15_1.html">08_链式中断控制器驱动程序编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/16_1.html">09_legacy方式代码的上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/17_1.html">10_链式中断控制器驱动程序编写_linear方式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/18_1.html">11_层级中断控制器驱动程序编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/19_1.html">12_层级中断控制器驱动程序上机实验</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../09_UART/index.html">9.UART子系统</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/01_1.html">01_UART子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/02_1.html">02_硬件知识_UART硬件介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/03_1.html">03_TTY体系中设备节点的差别</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/04_1.html">04_TTY驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/05_1.html">05_在STM32MP157上做串口实验的准备工作</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/05_2.html">06_Linux串口应用编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/07_1.html">07_字符设备驱动程序的另一种注册方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/08_1.html">08_UART驱动情景分析_注册</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/09_1.html">09_UART驱动情景分析_open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/10_1.html">10_UART驱动情景分析_read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/11_1.html">11_UART驱动情景分析_write</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/12_1.html">12_UART驱动调试方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/13_1.html">13_编写虚拟UART驱动程序_框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/14_1.html">14_编写虚拟UART驱动程序_实现uart_ops</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/15_1.html">15_编写虚拟UART驱动程序_实现数据传输</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/16_1.html">16_编写虚拟UART驱动程序_调试</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/17_1.html">17_printk执行过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/18_1.html">18_console驱动注册过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/19_1.html">19_编写console驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/20_1.html">20_early_printk和earlycon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/21_1.html">21_RS485简单讲解</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../10_PCI_PCIe/index.html">10.PCI_PCIe子系统</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/01_1.html">01_从软件开发角度看待PCI和PCIe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/02_1.html">02_PCI设备的访问方法_非桥设备(type0)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/03_1.html">03_PCI设备的访问方法_桥设备(type1)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/04_1.html">04_从软件角度看PCIe设备的硬件结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/05_1.html">05_PCIe设备的配置过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/06_1.html">06_PCIe路由方式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/07_1.html">07_PCI驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/08_1.html">08_RK3399_PCIe芯片手册解读</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/09_1.html">09_RK3399_PCIe_Host驱动分析_地址映射</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/10_1.html">10_RK3399_PCIe_Host驱动分析_设备枚举</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/11_1.html">11_INTx_MSI_MSIX三种中断机制分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/12_1.html">12_INTx中断机制源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/13_1.html">13_GICv3_LPI机制</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/14_1.html">14_MSI_MSI-X中断之体验与使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/15_1.html">15_MSI_MSI-X中断之源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_PCI_PCIe/16_1.html">16_怎么编写PCIe设备驱动程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../11_SPI/index.html">11.SPI子系统</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/01_1.html">01_SPI视频概述</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/02_1.html">02_SPI协议介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/03_1.html">03_SPI总线设备驱动模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/04_1.html">04_SPI设备树处理过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/05_1.html">05_spidev的使用(SPI用户态API)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/06_1.html">06_使用spidev操作SPI_DAC模块</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/07_1.html">07_SPI_DAC模块上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/08_1.html">08_SPI_OLED模块操作方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/09_1.html">09_使用spidev操作SPI_OLED模块</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/10_1.html">10_OLED模块上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/11_1.html">11_编写SPI设备驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/12_1.html">12_编写SPI_DAC模块驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/13_1.html">13_编写DAC驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/14_1.html">14_编写SPI_OLED模块驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/15_1.html">15_编写OLED驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/16_1.html">16_使用Framebuffer改造OLED驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/17_1.html">17_OLED_Framebuffer驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/18_1.html">18_SPI_Master驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/19_1.html">19_编写SPI_Master驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/20_1.html">20_使用老方法编写的SPI_Master驱动程序上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/21_1.html">21_编写SPI_Master驱动程序_新方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/22_1.html">22_使用新方法编写的SPI_Master驱动程序上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/23_1.html">23_SPI_Slave_Mode驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/24_1.html">24_SPI_Slave_Mode驱动程序源码解读</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/25_1.html">临时笔记</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../12_USB/index.html">12.USB子系统</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-10"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/01_1.html">01_USB视频介绍及资料下载</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/02_1.html">02_USB系统硬件框架和软件框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/03_1.html">03_软件工程师眼里的USB电气信号</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/04_1.html">04_USB协议层数据格式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/05_1.html">05_USB描述符</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/06_1.html">06_libusb的使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/07_1.html">07_使用libusb读取鼠标数据</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/08_1.html">08_USB设备驱动模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/09_1.html">09_编写USB鼠标驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/10_1.html">10_OTG硬件检测电路</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/11_1.html">11_Gadget驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/12_1.html">12_Gadget应用实例之zero</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/13_1.html">13_Gadget应用实例之serial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/14_1.html">14_configfs的使用与内部机制</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/15_1.html">15_Gadget应用实例之adb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/16_1.html">tmp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/17_1.html">Gadget驱动程序框架</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">13.V4L2子系统</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="01_1.html">01_V4L2应用程序开发</a></li>
+<li class="toctree-l2"><a class="reference internal" href="02_1.html">02_V4L2驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="03_1.html">03_从0编写一个虚拟摄像头驱动</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">04_USB摄像头驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05_1.html">05_MIPI摄像头驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="06_1.html">06_V4L2视频介绍及资料下载/笔记</a></li>
+<li class="toctree-l2"><a class="reference internal" href="07_1.html">tmp_摄像头控制接口</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/100askTeam/LinuxDeviceDriver-Tranning" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="源码库"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="下载此页面">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/zh/13_V4L2/04_1.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="下载源文件"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="列印成 PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="全屏模式"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="搜索" aria-label="搜索" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>04_USB摄像头驱动程序分析</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> 目录 </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">1. 描述符解析</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">1.1 内部逻辑结构</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">1.2 描述符实例解析</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#uvc">2. UVC驱动框架</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">2.1 设备枚举过程</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">2.2 设备控制过程</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#control">2.2.1 驱动初始化control的过程</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#appcontrol">2.2.2 APP设置control的过程</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">2.3 数据传输过程</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">2.3.1 核心结构体</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#buffer">2.3.2 分配buffer</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">2.3.3 把buffer放入队列</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">2.3.4 启动摄像头</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#urb">2.3.5 URB传输完成</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">2.3.6 把buffer从队列取出</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="usb">
+<h1>04_USB摄像头驱动程序分析<a class="headerlink" href="#usb" title="此标题的永久链接">#</a></h1>
+<p>参考资料：</p>
+<ul class="simple">
+<li><p>内核源码: <code class="docutils literal notranslate"><span class="pre">drivers\media\usb\uvc\uvc_driver.c</span></code></p></li>
+</ul>
+<section id="id1">
+<h2>1. 描述符解析<a class="headerlink" href="#id1" title="此标题的永久链接">#</a></h2>
+<section id="id2">
+<h3>1.1 内部逻辑结构<a class="headerlink" href="#id2" title="此标题的永久链接">#</a></h3>
+<p>USB摄像头的内部结构如下：</p>
+<p><img alt="image-20230725082453370" src="../../_images/07_uvc_topology.png" /></p>
+<p>一个USB摄像头必定有一个VideoControl接口，用于控制。有0个或多个VideoStreaming接口，用于传输视频。</p>
+<p>在VideoControl内部，有多个Unit或Terminal，上一个Unit或Terminal的数据，流向下一个Unit或Terminal，多个Unit或Terminal组成一个完整的UVC功能设备。</p>
+</section>
+<section id="id3">
+<h3>1.2 描述符实例解析<a class="headerlink" href="#id3" title="此标题的永久链接">#</a></h3>
+<p>下载安装：https://www.uwe-sieber.de/usbtreeview_e.html</p>
+<p>也可以使用linux工具lsusb。</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>lsusb<span class="w"> </span>-v<span class="w"> </span>-d<span class="w"> </span>038f:0541
+
+Bus<span class="w"> </span><span class="m">001</span><span class="w"> </span>Device<span class="w"> </span><span class="m">004</span>:<span class="w"> </span>ID<span class="w"> </span>038f:0541<span class="w">  </span>
+Device<span class="w"> </span>Descriptor:
+<span class="w">  </span>bLength<span class="w">                </span><span class="m">18</span>
+<span class="w">  </span>bDescriptorType<span class="w">         </span><span class="m">1</span>
+<span class="w">  </span>bcdUSB<span class="w">               </span><span class="m">2</span>.00
+<span class="w">  </span>bDeviceClass<span class="w">          </span><span class="m">239</span><span class="w"> </span>Miscellaneous<span class="w"> </span>Device
+<span class="w">  </span>bDeviceSubClass<span class="w">         </span><span class="m">2</span><span class="w"> </span>?
+<span class="w">  </span>bDeviceProtocol<span class="w">         </span><span class="m">1</span><span class="w"> </span>Interface<span class="w"> </span>Association
+<span class="w">  </span>bMaxPacketSize0<span class="w">        </span><span class="m">64</span>
+<span class="w">  </span>idVendor<span class="w">           </span>0x038f<span class="w"> </span>
+<span class="w">  </span>idProduct<span class="w">          </span>0x0541<span class="w"> </span>
+<span class="w">  </span>bcdDevice<span class="w">            </span><span class="m">0</span>.04
+<span class="w">  </span>iManufacturer<span class="w">           </span><span class="m">1</span><span class="w"> </span>lihappe8<span class="w"> </span>Corp.
+<span class="w">  </span>iProduct<span class="w">                </span><span class="m">2</span><span class="w"> </span>USB<span class="w"> </span><span class="m">2</span>.0<span class="w"> </span>Camera
+<span class="w">  </span>iSerial<span class="w">                 </span><span class="m">0</span><span class="w"> </span>
+<span class="w">  </span>bNumConfigurations<span class="w">      </span><span class="m">1</span>
+<span class="w">  </span>Configuration<span class="w"> </span>Descriptor:
+<span class="w">    </span>bLength<span class="w">                 </span><span class="m">9</span>
+<span class="w">    </span>bDescriptorType<span class="w">         </span><span class="m">2</span>
+<span class="w">    </span>wTotalLength<span class="w">         </span><span class="m">1096</span>
+<span class="w">    </span>bNumInterfaces<span class="w">          </span><span class="m">4</span>
+<span class="w">    </span>bConfigurationValue<span class="w">     </span><span class="m">1</span>
+<span class="w">    </span>iConfiguration<span class="w">          </span><span class="m">0</span><span class="w"> </span>
+<span class="w">    </span>bmAttributes<span class="w">         </span>0x80
+<span class="w">      </span><span class="o">(</span>Bus<span class="w"> </span>Powered<span class="o">)</span>
+<span class="w">    </span>MaxPower<span class="w">              </span>500mA
+<span class="w">    </span>Interface<span class="w"> </span>Association:
+<span class="w">      </span>bLength<span class="w">                 </span><span class="m">8</span>
+<span class="w">      </span>bDescriptorType<span class="w">        </span><span class="m">11</span>
+<span class="w">      </span>bFirstInterface<span class="w">         </span><span class="m">0</span>
+<span class="w">      </span>bInterfaceCount<span class="w">         </span><span class="m">2</span>
+<span class="w">      </span>bFunctionClass<span class="w">         </span><span class="m">14</span><span class="w"> </span>Video
+<span class="w">      </span>bFunctionSubClass<span class="w">       </span><span class="m">3</span><span class="w"> </span>Video<span class="w"> </span>Interface<span class="w"> </span>Collection
+<span class="w">      </span>bFunctionProtocol<span class="w">       </span><span class="m">0</span><span class="w"> </span>
+<span class="w">      </span>iFunction<span class="w">               </span><span class="m">4</span><span class="w"> </span>USB<span class="w"> </span><span class="m">2</span>.0<span class="w"> </span>Camera
+<span class="w">    </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">      </span>bLength<span class="w">                 </span><span class="m">9</span>
+<span class="w">      </span>bDescriptorType<span class="w">         </span><span class="m">4</span>
+<span class="w">      </span>bInterfaceNumber<span class="w">        </span><span class="m">0</span>
+<span class="w">      </span>bAlternateSetting<span class="w">       </span><span class="m">0</span>
+<span class="w">      </span>bNumEndpoints<span class="w">           </span><span class="m">1</span>
+<span class="w">      </span>bInterfaceClass<span class="w">        </span><span class="m">14</span><span class="w"> </span>Video
+<span class="w">      </span>bInterfaceSubClass<span class="w">      </span><span class="m">1</span><span class="w"> </span>Video<span class="w"> </span>Control
+<span class="w">      </span>bInterfaceProtocol<span class="w">      </span><span class="m">0</span><span class="w"> </span>
+<span class="w">      </span>iInterface<span class="w">              </span><span class="m">4</span><span class="w"> </span>USB<span class="w"> </span><span class="m">2</span>.0<span class="w"> </span>Camera
+<span class="w">      </span>VideoControl<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                </span><span class="m">13</span>
+<span class="w">        </span>bDescriptorType<span class="w">        </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">      </span><span class="m">1</span><span class="w"> </span><span class="o">(</span>HEADER<span class="o">)</span>
+<span class="w">        </span>bcdUVC<span class="w">               </span><span class="m">1</span>.00
+<span class="w">        </span>wTotalLength<span class="w">           </span><span class="m">79</span>
+<span class="w">        </span>dwClockFrequency<span class="w">       </span><span class="m">30</span>.000000MHz
+<span class="w">        </span>bInCollection<span class="w">           </span><span class="m">1</span>
+<span class="w">        </span>baInterfaceNr<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">       </span><span class="m">1</span>
+<span class="w">      </span>VideoControl<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                </span><span class="m">28</span>
+<span class="w">        </span>bDescriptorType<span class="w">        </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">      </span><span class="m">6</span><span class="w"> </span><span class="o">(</span>EXTENSION_UNIT<span class="o">)</span>
+<span class="w">        </span>bUnitID<span class="w">                 </span><span class="m">6</span>
+<span class="w">        </span>guidExtensionCode<span class="w">         </span><span class="o">{</span>b0d0bb68-a461-834b-90b7-a6215f3c4f70<span class="o">}</span>
+<span class="w">        </span>bNumControl<span class="w">            </span><span class="m">24</span>
+<span class="w">        </span>bNrPins<span class="w">                 </span><span class="m">1</span>
+<span class="w">        </span>baSourceID<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">          </span><span class="m">2</span>
+<span class="w">        </span>bControlSize<span class="w">            </span><span class="m">3</span>
+<span class="w">        </span>bmControls<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">       </span>0xff
+<span class="w">        </span>bmControls<span class="o">(</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w">       </span>0xff
+<span class="w">        </span>bmControls<span class="o">(</span><span class="w"> </span><span class="m">2</span><span class="o">)</span><span class="w">       </span>0xff
+<span class="w">        </span>iExtension<span class="w">              </span><span class="m">0</span><span class="w"> </span>
+<span class="w">      </span>VideoControl<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                </span><span class="m">18</span>
+<span class="w">        </span>bDescriptorType<span class="w">        </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">      </span><span class="m">2</span><span class="w"> </span><span class="o">(</span>INPUT_TERMINAL<span class="o">)</span>
+<span class="w">        </span>bTerminalID<span class="w">             </span><span class="m">1</span>
+<span class="w">        </span>wTerminalType<span class="w">      </span>0x0201<span class="w"> </span>Camera<span class="w"> </span>Sensor
+<span class="w">        </span>bAssocTerminal<span class="w">          </span><span class="m">0</span>
+<span class="w">        </span>iTerminal<span class="w">               </span><span class="m">0</span><span class="w"> </span>
+<span class="w">        </span>wObjectiveFocalLengthMin<span class="w">      </span><span class="m">0</span>
+<span class="w">        </span>wObjectiveFocalLengthMax<span class="w">      </span><span class="m">0</span>
+<span class="w">        </span>wOcularFocalLength<span class="w">            </span><span class="m">0</span>
+<span class="w">        </span>bControlSize<span class="w">                  </span><span class="m">3</span>
+<span class="w">        </span>bmControls<span class="w">           </span>0x00000000
+<span class="w">      </span>VideoControl<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                </span><span class="m">11</span>
+<span class="w">        </span>bDescriptorType<span class="w">        </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">      </span><span class="m">5</span><span class="w"> </span><span class="o">(</span>PROCESSING_UNIT<span class="o">)</span>
+<span class="w">      </span>Warning:<span class="w"> </span>Descriptor<span class="w"> </span>too<span class="w"> </span>short
+<span class="w">        </span>bUnitID<span class="w">                 </span><span class="m">2</span>
+<span class="w">        </span>bSourceID<span class="w">               </span><span class="m">1</span>
+<span class="w">        </span>wMaxMultiplier<span class="w">          </span><span class="m">0</span>
+<span class="w">        </span>bControlSize<span class="w">            </span><span class="m">2</span>
+<span class="w">        </span>bmControls<span class="w">     </span>0x0000157f
+<span class="w">          </span>Brightness
+<span class="w">          </span>Contrast
+<span class="w">          </span>Hue
+<span class="w">          </span>Saturation
+<span class="w">          </span>Sharpness
+<span class="w">          </span>Gamma
+<span class="w">          </span>White<span class="w"> </span>Balance<span class="w"> </span>Temperature
+<span class="w">          </span>Backlight<span class="w"> </span>Compensation
+<span class="w">          </span>Power<span class="w"> </span>Line<span class="w"> </span>Frequency
+<span class="w">          </span>White<span class="w"> </span>Balance<span class="w"> </span>Temperature,<span class="w"> </span>Auto
+<span class="w">        </span>iProcessing<span class="w">             </span><span class="m">0</span><span class="w"> </span>
+<span class="w">        </span>bmVideoStandards<span class="w">     </span>0x<span class="w"> </span><span class="m">9</span>
+<span class="w">          </span>None
+<span class="w">          </span>SECAM<span class="w"> </span>-<span class="w"> </span><span class="m">625</span>/50
+<span class="w">      </span>VideoControl<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                 </span><span class="m">9</span>
+<span class="w">        </span>bDescriptorType<span class="w">        </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">      </span><span class="m">3</span><span class="w"> </span><span class="o">(</span>OUTPUT_TERMINAL<span class="o">)</span>
+<span class="w">        </span>bTerminalID<span class="w">             </span><span class="m">3</span>
+<span class="w">        </span>wTerminalType<span class="w">      </span>0x0101<span class="w"> </span>USB<span class="w"> </span>Streaming
+<span class="w">        </span>bAssocTerminal<span class="w">          </span><span class="m">0</span>
+<span class="w">        </span>bSourceID<span class="w">               </span><span class="m">2</span>
+<span class="w">        </span>iTerminal<span class="w">               </span><span class="m">0</span><span class="w"> </span>
+<span class="w">      </span>Endpoint<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                 </span><span class="m">7</span>
+<span class="w">        </span>bDescriptorType<span class="w">         </span><span class="m">5</span>
+<span class="w">        </span>bEndpointAddress<span class="w">     </span>0x81<span class="w">  </span>EP<span class="w"> </span><span class="m">1</span><span class="w"> </span>IN
+<span class="w">        </span>bmAttributes<span class="w">            </span><span class="m">3</span>
+<span class="w">          </span>Transfer<span class="w"> </span>Type<span class="w">            </span>Interrupt
+<span class="w">          </span>Synch<span class="w"> </span>Type<span class="w">               </span>None
+<span class="w">          </span>Usage<span class="w"> </span>Type<span class="w">               </span>Data
+<span class="w">        </span>wMaxPacketSize<span class="w">     </span>0x0010<span class="w">  </span>1x<span class="w"> </span><span class="m">16</span><span class="w"> </span>bytes
+<span class="w">        </span>bInterval<span class="w">               </span><span class="m">7</span>
+<span class="w">    </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">      </span>bLength<span class="w">                 </span><span class="m">9</span>
+<span class="w">      </span>bDescriptorType<span class="w">         </span><span class="m">4</span>
+<span class="w">      </span>bInterfaceNumber<span class="w">        </span><span class="m">1</span>
+<span class="w">      </span>bAlternateSetting<span class="w">       </span><span class="m">0</span>
+<span class="w">      </span>bNumEndpoints<span class="w">           </span><span class="m">0</span>
+<span class="w">      </span>bInterfaceClass<span class="w">        </span><span class="m">14</span><span class="w"> </span>Video
+<span class="w">      </span>bInterfaceSubClass<span class="w">      </span><span class="m">2</span><span class="w"> </span>Video<span class="w"> </span>Streaming
+<span class="w">      </span>bInterfaceProtocol<span class="w">      </span><span class="m">0</span><span class="w"> </span>
+<span class="w">      </span>iInterface<span class="w">              </span><span class="m">4</span><span class="w"> </span>USB<span class="w"> </span><span class="m">2</span>.0<span class="w"> </span>Camera
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                            </span><span class="m">15</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                  </span><span class="m">1</span><span class="w"> </span><span class="o">(</span>INPUT_HEADER<span class="o">)</span>
+<span class="w">        </span>bNumFormats<span class="w">                         </span><span class="m">2</span>
+<span class="w">        </span>wTotalLength<span class="w">                      </span><span class="m">773</span>
+<span class="w">        </span>bEndPointAddress<span class="w">                  </span><span class="m">130</span>
+<span class="w">        </span>bmInfo<span class="w">                              </span><span class="m">0</span>
+<span class="w">        </span>bTerminalLink<span class="w">                       </span><span class="m">3</span>
+<span class="w">        </span>bStillCaptureMethod<span class="w">                 </span><span class="m">2</span>
+<span class="w">        </span>bTriggerSupport<span class="w">                     </span><span class="m">1</span>
+<span class="w">        </span>bTriggerUsage<span class="w">                       </span><span class="m">0</span>
+<span class="w">        </span>bControlSize<span class="w">                        </span><span class="m">1</span>
+<span class="w">        </span>bmaControls<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">                    </span><span class="m">27</span>
+<span class="w">        </span>bmaControls<span class="o">(</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w">                    </span><span class="m">27</span>
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                            </span><span class="m">27</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                  </span><span class="m">4</span><span class="w"> </span><span class="o">(</span>FORMAT_UNCOMPRESSED<span class="o">)</span>
+<span class="w">        </span>bFormatIndex<span class="w">                        </span><span class="m">1</span>
+<span class="w">        </span>bNumFrameDescriptors<span class="w">                </span><span class="m">8</span>
+<span class="w">        </span>guidFormat<span class="w">                            </span><span class="o">{</span><span class="m">59555932</span>-0000-1000-8000-00aa00389b71<span class="o">}</span>
+<span class="w">        </span>bBitsPerPixel<span class="w">                      </span><span class="m">16</span>
+<span class="w">        </span>bDefaultFrameIndex<span class="w">                  </span><span class="m">1</span>
+<span class="w">        </span>bAspectRatioX<span class="w">                       </span><span class="m">0</span>
+<span class="w">        </span>bAspectRatioY<span class="w">                       </span><span class="m">0</span>
+<span class="w">        </span>bmInterlaceFlags<span class="w">                 </span>0x00
+<span class="w">          </span>Interlaced<span class="w"> </span>stream<span class="w"> </span>or<span class="w"> </span>variable:<span class="w"> </span>No
+<span class="w">          </span>Fields<span class="w"> </span>per<span class="w"> </span>frame:<span class="w"> </span><span class="m">2</span><span class="w"> </span>fields
+<span class="w">          </span>Field<span class="w"> </span><span class="m">1</span><span class="w"> </span>first:<span class="w"> </span>No
+<span class="w">          </span>Field<span class="w"> </span>pattern:<span class="w"> </span>Field<span class="w"> </span><span class="m">1</span><span class="w"> </span>only
+<span class="w">          </span>bCopyProtect<span class="w">                      </span><span class="m">0</span>
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                            </span><span class="m">50</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                  </span><span class="m">5</span><span class="w"> </span><span class="o">(</span>FRAME_UNCOMPRESSED<span class="o">)</span>
+<span class="w">        </span>bFrameIndex<span class="w">                         </span><span class="m">1</span>
+<span class="w">        </span>bmCapabilities<span class="w">                   </span>0x00
+<span class="w">          </span>Still<span class="w"> </span>image<span class="w"> </span>unsupported
+<span class="w">        </span>wWidth<span class="w">                            </span><span class="m">640</span>
+<span class="w">        </span>wHeight<span class="w">                           </span><span class="m">480</span>
+<span class="w">        </span>dwMinBitRate<span class="w">                 </span><span class="m">24576000</span>
+<span class="w">        </span>dwMaxBitRate<span class="w">                </span><span class="m">147456000</span>
+<span class="w">        </span>dwMaxVideoFrameBufferSize<span class="w">      </span><span class="m">614400</span>
+<span class="w">        </span>dwDefaultFrameInterval<span class="w">         </span><span class="m">333333</span>
+<span class="w">        </span>bFrameIntervalType<span class="w">                  </span><span class="m">6</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">            </span><span class="m">333333</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w">            </span><span class="m">400000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">2</span><span class="o">)</span><span class="w">            </span><span class="m">500000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">3</span><span class="o">)</span><span class="w">            </span><span class="m">666666</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">4</span><span class="o">)</span><span class="w">           </span><span class="m">1000000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">5</span><span class="o">)</span><span class="w">           </span><span class="m">2000000</span>
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                            </span><span class="m">50</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                  </span><span class="m">5</span><span class="w"> </span><span class="o">(</span>FRAME_UNCOMPRESSED<span class="o">)</span>
+<span class="w">        </span>bFrameIndex<span class="w">                         </span><span class="m">2</span>
+<span class="w">        </span>bmCapabilities<span class="w">                   </span>0x00
+<span class="w">          </span>Still<span class="w"> </span>image<span class="w"> </span>unsupported
+<span class="w">        </span>wWidth<span class="w">                            </span><span class="m">160</span>
+<span class="w">        </span>wHeight<span class="w">                           </span><span class="m">120</span>
+<span class="w">        </span>dwMinBitRate<span class="w">                  </span><span class="m">1536000</span>
+<span class="w">        </span>dwMaxBitRate<span class="w">                  </span><span class="m">9216000</span>
+<span class="w">        </span>dwMaxVideoFrameBufferSize<span class="w">       </span><span class="m">38400</span>
+<span class="w">        </span>dwDefaultFrameInterval<span class="w">         </span><span class="m">333333</span>
+<span class="w">        </span>bFrameIntervalType<span class="w">                  </span><span class="m">6</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">            </span><span class="m">333333</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w">            </span><span class="m">400000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">2</span><span class="o">)</span><span class="w">            </span><span class="m">500000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">3</span><span class="o">)</span><span class="w">            </span><span class="m">666666</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">4</span><span class="o">)</span><span class="w">           </span><span class="m">1000000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">5</span><span class="o">)</span><span class="w">           </span><span class="m">2000000</span>
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                            </span><span class="m">50</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                  </span><span class="m">5</span><span class="w"> </span><span class="o">(</span>FRAME_UNCOMPRESSED<span class="o">)</span>
+<span class="w">        </span>bFrameIndex<span class="w">                         </span><span class="m">3</span>
+<span class="w">        </span>bmCapabilities<span class="w">                   </span>0x00
+<span class="w">          </span>Still<span class="w"> </span>image<span class="w"> </span>unsupported
+<span class="w">        </span>wWidth<span class="w">                            </span><span class="m">320</span>
+<span class="w">        </span>wHeight<span class="w">                           </span><span class="m">240</span>
+<span class="w">        </span>dwMinBitRate<span class="w">                  </span><span class="m">6144000</span>
+<span class="w">        </span>dwMaxBitRate<span class="w">                 </span><span class="m">36864000</span>
+<span class="w">        </span>dwMaxVideoFrameBufferSize<span class="w">      </span><span class="m">153600</span>
+<span class="w">        </span>dwDefaultFrameInterval<span class="w">         </span><span class="m">333333</span>
+<span class="w">        </span>bFrameIntervalType<span class="w">                  </span><span class="m">6</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">            </span><span class="m">333333</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w">            </span><span class="m">400000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">2</span><span class="o">)</span><span class="w">            </span><span class="m">500000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">3</span><span class="o">)</span><span class="w">            </span><span class="m">666666</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">4</span><span class="o">)</span><span class="w">           </span><span class="m">1000000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">5</span><span class="o">)</span><span class="w">           </span><span class="m">2000000</span>
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                            </span><span class="m">50</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                  </span><span class="m">5</span><span class="w"> </span><span class="o">(</span>FRAME_UNCOMPRESSED<span class="o">)</span>
+<span class="w">        </span>bFrameIndex<span class="w">                         </span><span class="m">4</span>
+<span class="w">        </span>bmCapabilities<span class="w">                   </span>0x00
+<span class="w">          </span>Still<span class="w"> </span>image<span class="w"> </span>unsupported
+<span class="w">        </span>wWidth<span class="w">                            </span><span class="m">352</span>
+<span class="w">        </span>wHeight<span class="w">                           </span><span class="m">288</span>
+<span class="w">        </span>dwMinBitRate<span class="w">                  </span><span class="m">8110080</span>
+<span class="w">        </span>dwMaxBitRate<span class="w">                 </span><span class="m">48660480</span>
+<span class="w">        </span>dwMaxVideoFrameBufferSize<span class="w">      </span><span class="m">202752</span>
+<span class="w">        </span>dwDefaultFrameInterval<span class="w">         </span><span class="m">333333</span>
+<span class="w">        </span>bFrameIntervalType<span class="w">                  </span><span class="m">6</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">            </span><span class="m">333333</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w">            </span><span class="m">400000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">2</span><span class="o">)</span><span class="w">            </span><span class="m">500000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">3</span><span class="o">)</span><span class="w">            </span><span class="m">666666</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">4</span><span class="o">)</span><span class="w">           </span><span class="m">1000000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">5</span><span class="o">)</span><span class="w">           </span><span class="m">2000000</span>
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                            </span><span class="m">38</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                  </span><span class="m">5</span><span class="w"> </span><span class="o">(</span>FRAME_UNCOMPRESSED<span class="o">)</span>
+<span class="w">        </span>bFrameIndex<span class="w">                         </span><span class="m">5</span>
+<span class="w">        </span>bmCapabilities<span class="w">                   </span>0x00
+<span class="w">          </span>Still<span class="w"> </span>image<span class="w"> </span>unsupported
+<span class="w">        </span>wWidth<span class="w">                            </span><span class="m">800</span>
+<span class="w">        </span>wHeight<span class="w">                           </span><span class="m">600</span>
+<span class="w">        </span>dwMinBitRate<span class="w">                 </span><span class="m">38400000</span>
+<span class="w">        </span>dwMaxBitRate<span class="w">                </span><span class="m">115200000</span>
+<span class="w">        </span>dwMaxVideoFrameBufferSize<span class="w">      </span><span class="m">960000</span>
+<span class="w">        </span>dwDefaultFrameInterval<span class="w">         </span><span class="m">666666</span>
+<span class="w">        </span>bFrameIntervalType<span class="w">                  </span><span class="m">3</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">            </span><span class="m">666666</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w">           </span><span class="m">1000000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">2</span><span class="o">)</span><span class="w">           </span><span class="m">2000000</span>
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                            </span><span class="m">38</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                  </span><span class="m">5</span><span class="w"> </span><span class="o">(</span>FRAME_UNCOMPRESSED<span class="o">)</span>
+<span class="w">        </span>bFrameIndex<span class="w">                         </span><span class="m">6</span>
+<span class="w">        </span>bmCapabilities<span class="w">                   </span>0x00
+<span class="w">          </span>Still<span class="w"> </span>image<span class="w"> </span>unsupported
+<span class="w">        </span>wWidth<span class="w">                           </span><span class="m">1280</span>
+<span class="w">        </span>wHeight<span class="w">                           </span><span class="m">720</span>
+<span class="w">        </span>dwMinBitRate<span class="w">                 </span><span class="m">73728000</span>
+<span class="w">        </span>dwMaxBitRate<span class="w">                </span><span class="m">221184000</span>
+<span class="w">        </span>dwMaxVideoFrameBufferSize<span class="w">     </span><span class="m">1843200</span>
+<span class="w">        </span>dwDefaultFrameInterval<span class="w">         </span><span class="m">666666</span>
+<span class="w">        </span>bFrameIntervalType<span class="w">                  </span><span class="m">3</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">            </span><span class="m">666666</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w">           </span><span class="m">1000000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">2</span><span class="o">)</span><span class="w">           </span><span class="m">2000000</span>
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                            </span><span class="m">38</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                  </span><span class="m">5</span><span class="w"> </span><span class="o">(</span>FRAME_UNCOMPRESSED<span class="o">)</span>
+<span class="w">        </span>bFrameIndex<span class="w">                         </span><span class="m">7</span>
+<span class="w">        </span>bmCapabilities<span class="w">                   </span>0x00
+<span class="w">          </span>Still<span class="w"> </span>image<span class="w"> </span>unsupported
+<span class="w">        </span>wWidth<span class="w">                           </span><span class="m">1280</span>
+<span class="w">        </span>wHeight<span class="w">                          </span><span class="m">1024</span>
+<span class="w">        </span>dwMinBitRate<span class="w">                </span><span class="m">104857600</span>
+<span class="w">        </span>dwMaxBitRate<span class="w">                </span><span class="m">251658240</span>
+<span class="w">        </span>dwMaxVideoFrameBufferSize<span class="w">     </span><span class="m">2621440</span>
+<span class="w">        </span>dwDefaultFrameInterval<span class="w">         </span><span class="m">833333</span>
+<span class="w">        </span>bFrameIntervalType<span class="w">                  </span><span class="m">3</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">            </span><span class="m">833333</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w">           </span><span class="m">1000000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">2</span><span class="o">)</span><span class="w">           </span><span class="m">2000000</span>
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                            </span><span class="m">34</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                  </span><span class="m">5</span><span class="w"> </span><span class="o">(</span>FRAME_UNCOMPRESSED<span class="o">)</span>
+<span class="w">        </span>bFrameIndex<span class="w">                         </span><span class="m">8</span>
+<span class="w">        </span>bmCapabilities<span class="w">                   </span>0x00
+<span class="w">          </span>Still<span class="w"> </span>image<span class="w"> </span>unsupported
+<span class="w">        </span>wWidth<span class="w">                           </span><span class="m">1600</span>
+<span class="w">        </span>wHeight<span class="w">                          </span><span class="m">1200</span>
+<span class="w">        </span>dwMinBitRate<span class="w">                </span><span class="m">153600000</span>
+<span class="w">        </span>dwMaxBitRate<span class="w">                </span><span class="m">276480000</span>
+<span class="w">        </span>dwMaxVideoFrameBufferSize<span class="w">     </span><span class="m">3840000</span>
+<span class="w">        </span>dwDefaultFrameInterval<span class="w">        </span><span class="m">1111111</span>
+<span class="w">        </span>bFrameIntervalType<span class="w">                  </span><span class="m">2</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">           </span><span class="m">1111111</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w">           </span><span class="m">2000000</span>
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                            </span><span class="m">10</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                  </span><span class="m">3</span><span class="w"> </span><span class="o">(</span>STILL_IMAGE_FRAME<span class="o">)</span>
+<span class="w">        </span>bEndpointAddress<span class="w">                    </span><span class="m">0</span>
+<span class="w">        </span>bNumImageSizePatterns<span class="w">               </span><span class="m">1</span>
+<span class="w">        </span>wWidth<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">                       </span><span class="m">1600</span>
+<span class="w">        </span>wHeight<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">                      </span><span class="m">1200</span>
+<span class="w">        </span>bNumCompressionPatterns<span class="w">             </span><span class="m">1</span>
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                             </span><span class="m">6</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                 </span><span class="m">13</span><span class="w"> </span><span class="o">(</span>COLORFORMAT<span class="o">)</span>
+<span class="w">        </span>bColorPrimaries<span class="w">                     </span><span class="m">1</span><span class="w"> </span><span class="o">(</span>BT.709,sRGB<span class="o">)</span>
+<span class="w">        </span>bTransferCharacteristics<span class="w">            </span><span class="m">1</span><span class="w"> </span><span class="o">(</span>BT.709<span class="o">)</span>
+<span class="w">        </span>bMatrixCoefficients<span class="w">                 </span><span class="m">4</span><span class="w"> </span><span class="o">(</span>SMPTE<span class="w"> </span>170M<span class="w"> </span><span class="o">(</span>BT.601<span class="o">))</span>
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                            </span><span class="m">11</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                  </span><span class="m">6</span><span class="w"> </span><span class="o">(</span>FORMAT_MJPEG<span class="o">)</span>
+<span class="w">        </span>bFormatIndex<span class="w">                        </span><span class="m">2</span>
+<span class="w">        </span>bNumFrameDescriptors<span class="w">                </span><span class="m">7</span>
+<span class="w">        </span>bFlags<span class="w">                              </span><span class="m">1</span>
+<span class="w">          </span>Fixed-size<span class="w"> </span>samples:<span class="w"> </span>Yes
+<span class="w">        </span>bDefaultFrameIndex<span class="w">                  </span><span class="m">1</span>
+<span class="w">        </span>bAspectRatioX<span class="w">                       </span><span class="m">0</span>
+<span class="w">        </span>bAspectRatioY<span class="w">                       </span><span class="m">0</span>
+<span class="w">        </span>bmInterlaceFlags<span class="w">                 </span>0x00
+<span class="w">          </span>Interlaced<span class="w"> </span>stream<span class="w"> </span>or<span class="w"> </span>variable:<span class="w"> </span>No
+<span class="w">          </span>Fields<span class="w"> </span>per<span class="w"> </span>frame:<span class="w"> </span><span class="m">1</span><span class="w"> </span>fields
+<span class="w">          </span>Field<span class="w"> </span><span class="m">1</span><span class="w"> </span>first:<span class="w"> </span>No
+<span class="w">          </span>Field<span class="w"> </span>pattern:<span class="w"> </span>Field<span class="w"> </span><span class="m">1</span><span class="w"> </span>only
+<span class="w">          </span>bCopyProtect<span class="w">                      </span><span class="m">0</span>
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                            </span><span class="m">50</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                  </span><span class="m">7</span><span class="w"> </span><span class="o">(</span>FRAME_MJPEG<span class="o">)</span>
+<span class="w">        </span>bFrameIndex<span class="w">                         </span><span class="m">1</span>
+<span class="w">        </span>bmCapabilities<span class="w">                   </span>0x00
+<span class="w">          </span>Still<span class="w"> </span>image<span class="w"> </span>unsupported
+<span class="w">        </span>wWidth<span class="w">                            </span><span class="m">640</span>
+<span class="w">        </span>wHeight<span class="w">                           </span><span class="m">480</span>
+<span class="w">        </span>dwMinBitRate<span class="w">                 </span><span class="m">36864000</span>
+<span class="w">        </span>dwMaxBitRate<span class="w">                </span><span class="m">221184000</span>
+<span class="w">        </span>dwMaxVideoFrameBufferSize<span class="w">      </span><span class="m">921600</span>
+<span class="w">        </span>dwDefaultFrameInterval<span class="w">         </span><span class="m">333333</span>
+<span class="w">        </span>bFrameIntervalType<span class="w">                  </span><span class="m">6</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">            </span><span class="m">333333</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w">            </span><span class="m">400000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">2</span><span class="o">)</span><span class="w">            </span><span class="m">500000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">3</span><span class="o">)</span><span class="w">            </span><span class="m">666666</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">4</span><span class="o">)</span><span class="w">           </span><span class="m">1000000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">5</span><span class="o">)</span><span class="w">           </span><span class="m">2000000</span>
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                            </span><span class="m">50</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                  </span><span class="m">7</span><span class="w"> </span><span class="o">(</span>FRAME_MJPEG<span class="o">)</span>
+<span class="w">        </span>bFrameIndex<span class="w">                         </span><span class="m">2</span>
+<span class="w">        </span>bmCapabilities<span class="w">                   </span>0x00
+<span class="w">          </span>Still<span class="w"> </span>image<span class="w"> </span>unsupported
+<span class="w">        </span>wWidth<span class="w">                            </span><span class="m">160</span>
+<span class="w">        </span>wHeight<span class="w">                           </span><span class="m">120</span>
+<span class="w">        </span>dwMinBitRate<span class="w">                  </span><span class="m">2304000</span>
+<span class="w">        </span>dwMaxBitRate<span class="w">                 </span><span class="m">13824000</span>
+<span class="w">        </span>dwMaxVideoFrameBufferSize<span class="w">       </span><span class="m">57600</span>
+<span class="w">        </span>dwDefaultFrameInterval<span class="w">         </span><span class="m">333333</span>
+<span class="w">        </span>bFrameIntervalType<span class="w">                  </span><span class="m">6</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">            </span><span class="m">333333</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w">            </span><span class="m">400000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">2</span><span class="o">)</span><span class="w">            </span><span class="m">500000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">3</span><span class="o">)</span><span class="w">            </span><span class="m">666666</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">4</span><span class="o">)</span><span class="w">           </span><span class="m">1000000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">5</span><span class="o">)</span><span class="w">           </span><span class="m">2000000</span>
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                            </span><span class="m">50</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                  </span><span class="m">7</span><span class="w"> </span><span class="o">(</span>FRAME_MJPEG<span class="o">)</span>
+<span class="w">        </span>bFrameIndex<span class="w">                         </span><span class="m">3</span>
+<span class="w">        </span>bmCapabilities<span class="w">                   </span>0x00
+<span class="w">          </span>Still<span class="w"> </span>image<span class="w"> </span>unsupported
+<span class="w">        </span>wWidth<span class="w">                            </span><span class="m">320</span>
+<span class="w">        </span>wHeight<span class="w">                           </span><span class="m">240</span>
+<span class="w">        </span>dwMinBitRate<span class="w">                  </span><span class="m">9216000</span>
+<span class="w">        </span>dwMaxBitRate<span class="w">                 </span><span class="m">55296000</span>
+<span class="w">        </span>dwMaxVideoFrameBufferSize<span class="w">      </span><span class="m">230400</span>
+<span class="w">        </span>dwDefaultFrameInterval<span class="w">         </span><span class="m">333333</span>
+<span class="w">        </span>bFrameIntervalType<span class="w">                  </span><span class="m">6</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">            </span><span class="m">333333</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w">            </span><span class="m">400000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">2</span><span class="o">)</span><span class="w">            </span><span class="m">500000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">3</span><span class="o">)</span><span class="w">            </span><span class="m">666666</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">4</span><span class="o">)</span><span class="w">           </span><span class="m">1000000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">5</span><span class="o">)</span><span class="w">           </span><span class="m">2000000</span>
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                            </span><span class="m">50</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                  </span><span class="m">7</span><span class="w"> </span><span class="o">(</span>FRAME_MJPEG<span class="o">)</span>
+<span class="w">        </span>bFrameIndex<span class="w">                         </span><span class="m">4</span>
+<span class="w">        </span>bmCapabilities<span class="w">                   </span>0x00
+<span class="w">          </span>Still<span class="w"> </span>image<span class="w"> </span>unsupported
+<span class="w">        </span>wWidth<span class="w">                            </span><span class="m">352</span>
+<span class="w">        </span>wHeight<span class="w">                           </span><span class="m">288</span>
+<span class="w">        </span>dwMinBitRate<span class="w">                 </span><span class="m">12165120</span>
+<span class="w">        </span>dwMaxBitRate<span class="w">                 </span><span class="m">72990720</span>
+<span class="w">        </span>dwMaxVideoFrameBufferSize<span class="w">      </span><span class="m">304128</span>
+<span class="w">        </span>dwDefaultFrameInterval<span class="w">         </span><span class="m">333333</span>
+<span class="w">        </span>bFrameIntervalType<span class="w">                  </span><span class="m">6</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">            </span><span class="m">333333</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w">            </span><span class="m">400000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">2</span><span class="o">)</span><span class="w">            </span><span class="m">500000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">3</span><span class="o">)</span><span class="w">            </span><span class="m">666666</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">4</span><span class="o">)</span><span class="w">           </span><span class="m">1000000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">5</span><span class="o">)</span><span class="w">           </span><span class="m">2000000</span>
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                            </span><span class="m">50</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                  </span><span class="m">7</span><span class="w"> </span><span class="o">(</span>FRAME_MJPEG<span class="o">)</span>
+<span class="w">        </span>bFrameIndex<span class="w">                         </span><span class="m">5</span>
+<span class="w">        </span>bmCapabilities<span class="w">                   </span>0x00
+<span class="w">          </span>Still<span class="w"> </span>image<span class="w"> </span>unsupported
+<span class="w">        </span>wWidth<span class="w">                            </span><span class="m">800</span>
+<span class="w">        </span>wHeight<span class="w">                           </span><span class="m">600</span>
+<span class="w">        </span>dwMinBitRate<span class="w">                 </span><span class="m">57600000</span>
+<span class="w">        </span>dwMaxBitRate<span class="w">                </span><span class="m">345600000</span>
+<span class="w">        </span>dwMaxVideoFrameBufferSize<span class="w">     </span><span class="m">1440000</span>
+<span class="w">        </span>dwDefaultFrameInterval<span class="w">         </span><span class="m">333333</span>
+<span class="w">        </span>bFrameIntervalType<span class="w">                  </span><span class="m">6</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">            </span><span class="m">333333</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w">            </span><span class="m">400000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">2</span><span class="o">)</span><span class="w">            </span><span class="m">500000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">3</span><span class="o">)</span><span class="w">            </span><span class="m">666666</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">4</span><span class="o">)</span><span class="w">           </span><span class="m">1000000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">5</span><span class="o">)</span><span class="w">           </span><span class="m">2000000</span>
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                            </span><span class="m">50</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                  </span><span class="m">7</span><span class="w"> </span><span class="o">(</span>FRAME_MJPEG<span class="o">)</span>
+<span class="w">        </span>bFrameIndex<span class="w">                         </span><span class="m">6</span>
+<span class="w">        </span>bmCapabilities<span class="w">                   </span>0x00
+<span class="w">          </span>Still<span class="w"> </span>image<span class="w"> </span>unsupported
+<span class="w">        </span>wWidth<span class="w">                           </span><span class="m">1280</span>
+<span class="w">        </span>wHeight<span class="w">                           </span><span class="m">720</span>
+<span class="w">        </span>dwMinBitRate<span class="w">                </span><span class="m">110592000</span>
+<span class="w">        </span>dwMaxBitRate<span class="w">                </span><span class="m">663552000</span>
+<span class="w">        </span>dwMaxVideoFrameBufferSize<span class="w">     </span><span class="m">2764800</span>
+<span class="w">        </span>dwDefaultFrameInterval<span class="w">         </span><span class="m">333333</span>
+<span class="w">        </span>bFrameIntervalType<span class="w">                  </span><span class="m">6</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">            </span><span class="m">333333</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w">            </span><span class="m">400000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">2</span><span class="o">)</span><span class="w">            </span><span class="m">500000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">3</span><span class="o">)</span><span class="w">            </span><span class="m">666666</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">4</span><span class="o">)</span><span class="w">           </span><span class="m">1000000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">5</span><span class="o">)</span><span class="w">           </span><span class="m">2000000</span>
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                            </span><span class="m">50</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                  </span><span class="m">7</span><span class="w"> </span><span class="o">(</span>FRAME_MJPEG<span class="o">)</span>
+<span class="w">        </span>bFrameIndex<span class="w">                         </span><span class="m">7</span>
+<span class="w">        </span>bmCapabilities<span class="w">                   </span>0x00
+<span class="w">          </span>Still<span class="w"> </span>image<span class="w"> </span>unsupported
+<span class="w">        </span>wWidth<span class="w">                           </span><span class="m">1280</span>
+<span class="w">        </span>wHeight<span class="w">                          </span><span class="m">1024</span>
+<span class="w">        </span>dwMinBitRate<span class="w">                </span><span class="m">157286400</span>
+<span class="w">        </span>dwMaxBitRate<span class="w">                </span><span class="m">943718400</span>
+<span class="w">        </span>dwMaxVideoFrameBufferSize<span class="w">     </span><span class="m">3932160</span>
+<span class="w">        </span>dwDefaultFrameInterval<span class="w">         </span><span class="m">333333</span>
+<span class="w">        </span>bFrameIntervalType<span class="w">                  </span><span class="m">6</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">            </span><span class="m">333333</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w">            </span><span class="m">400000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">2</span><span class="o">)</span><span class="w">            </span><span class="m">500000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">3</span><span class="o">)</span><span class="w">            </span><span class="m">666666</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">4</span><span class="o">)</span><span class="w">           </span><span class="m">1000000</span>
+<span class="w">        </span>dwFrameInterval<span class="o">(</span><span class="w"> </span><span class="m">5</span><span class="o">)</span><span class="w">           </span><span class="m">2000000</span>
+<span class="w">      </span>VideoStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                             </span><span class="m">6</span>
+<span class="w">        </span>bDescriptorType<span class="w">                    </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">                 </span><span class="m">13</span><span class="w"> </span><span class="o">(</span>COLORFORMAT<span class="o">)</span>
+<span class="w">        </span>bColorPrimaries<span class="w">                     </span><span class="m">1</span><span class="w"> </span><span class="o">(</span>BT.709,sRGB<span class="o">)</span>
+<span class="w">        </span>bTransferCharacteristics<span class="w">            </span><span class="m">1</span><span class="w"> </span><span class="o">(</span>BT.709<span class="o">)</span>
+<span class="w">        </span>bMatrixCoefficients<span class="w">                 </span><span class="m">4</span><span class="w"> </span><span class="o">(</span>SMPTE<span class="w"> </span>170M<span class="w"> </span><span class="o">(</span>BT.601<span class="o">))</span>
+<span class="w">    </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">      </span>bLength<span class="w">                 </span><span class="m">9</span>
+<span class="w">      </span>bDescriptorType<span class="w">         </span><span class="m">4</span>
+<span class="w">      </span>bInterfaceNumber<span class="w">        </span><span class="m">1</span>
+<span class="w">      </span>bAlternateSetting<span class="w">       </span><span class="m">1</span>
+<span class="w">      </span>bNumEndpoints<span class="w">           </span><span class="m">1</span>
+<span class="w">      </span>bInterfaceClass<span class="w">        </span><span class="m">14</span><span class="w"> </span>Video
+<span class="w">      </span>bInterfaceSubClass<span class="w">      </span><span class="m">2</span><span class="w"> </span>Video<span class="w"> </span>Streaming
+<span class="w">      </span>bInterfaceProtocol<span class="w">      </span><span class="m">0</span><span class="w"> </span>
+<span class="w">      </span>iInterface<span class="w">              </span><span class="m">4</span><span class="w"> </span>USB<span class="w"> </span><span class="m">2</span>.0<span class="w"> </span>Camera
+<span class="w">      </span>Endpoint<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                 </span><span class="m">7</span>
+<span class="w">        </span>bDescriptorType<span class="w">         </span><span class="m">5</span>
+<span class="w">        </span>bEndpointAddress<span class="w">     </span>0x82<span class="w">  </span>EP<span class="w"> </span><span class="m">2</span><span class="w"> </span>IN
+<span class="w">        </span>bmAttributes<span class="w">            </span><span class="m">5</span>
+<span class="w">          </span>Transfer<span class="w"> </span>Type<span class="w">            </span>Isochronous
+<span class="w">          </span>Synch<span class="w"> </span>Type<span class="w">               </span>Asynchronous
+<span class="w">          </span>Usage<span class="w"> </span>Type<span class="w">               </span>Data
+<span class="w">        </span>wMaxPacketSize<span class="w">     </span>0x1400<span class="w">  </span>3x<span class="w"> </span><span class="m">1024</span><span class="w"> </span>bytes
+<span class="w">        </span>bInterval<span class="w">               </span><span class="m">1</span>
+<span class="w">    </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">      </span>bLength<span class="w">                 </span><span class="m">9</span>
+<span class="w">      </span>bDescriptorType<span class="w">         </span><span class="m">4</span>
+<span class="w">      </span>bInterfaceNumber<span class="w">        </span><span class="m">1</span>
+<span class="w">      </span>bAlternateSetting<span class="w">       </span><span class="m">2</span>
+<span class="w">      </span>bNumEndpoints<span class="w">           </span><span class="m">1</span>
+<span class="w">      </span>bInterfaceClass<span class="w">        </span><span class="m">14</span><span class="w"> </span>Video
+<span class="w">      </span>bInterfaceSubClass<span class="w">      </span><span class="m">2</span><span class="w"> </span>Video<span class="w"> </span>Streaming
+<span class="w">      </span>bInterfaceProtocol<span class="w">      </span><span class="m">0</span><span class="w"> </span>
+<span class="w">      </span>iInterface<span class="w">              </span><span class="m">4</span><span class="w"> </span>USB<span class="w"> </span><span class="m">2</span>.0<span class="w"> </span>Camera
+<span class="w">      </span>Endpoint<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                 </span><span class="m">7</span>
+<span class="w">        </span>bDescriptorType<span class="w">         </span><span class="m">5</span>
+<span class="w">        </span>bEndpointAddress<span class="w">     </span>0x82<span class="w">  </span>EP<span class="w"> </span><span class="m">2</span><span class="w"> </span>IN
+<span class="w">        </span>bmAttributes<span class="w">            </span><span class="m">5</span>
+<span class="w">          </span>Transfer<span class="w"> </span>Type<span class="w">            </span>Isochronous
+<span class="w">          </span>Synch<span class="w"> </span>Type<span class="w">               </span>Asynchronous
+<span class="w">          </span>Usage<span class="w"> </span>Type<span class="w">               </span>Data
+<span class="w">        </span>wMaxPacketSize<span class="w">     </span>0x0c00<span class="w">  </span>2x<span class="w"> </span><span class="m">1024</span><span class="w"> </span>bytes
+<span class="w">        </span>bInterval<span class="w">               </span><span class="m">1</span>
+<span class="w">    </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">      </span>bLength<span class="w">                 </span><span class="m">9</span>
+<span class="w">      </span>bDescriptorType<span class="w">         </span><span class="m">4</span>
+<span class="w">      </span>bInterfaceNumber<span class="w">        </span><span class="m">1</span>
+<span class="w">      </span>bAlternateSetting<span class="w">       </span><span class="m">3</span>
+<span class="w">      </span>bNumEndpoints<span class="w">           </span><span class="m">1</span>
+<span class="w">      </span>bInterfaceClass<span class="w">        </span><span class="m">14</span><span class="w"> </span>Video
+<span class="w">      </span>bInterfaceSubClass<span class="w">      </span><span class="m">2</span><span class="w"> </span>Video<span class="w"> </span>Streaming
+<span class="w">      </span>bInterfaceProtocol<span class="w">      </span><span class="m">0</span><span class="w"> </span>
+<span class="w">      </span>iInterface<span class="w">              </span><span class="m">4</span><span class="w"> </span>USB<span class="w"> </span><span class="m">2</span>.0<span class="w"> </span>Camera
+<span class="w">      </span>Endpoint<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                 </span><span class="m">7</span>
+<span class="w">        </span>bDescriptorType<span class="w">         </span><span class="m">5</span>
+<span class="w">        </span>bEndpointAddress<span class="w">     </span>0x82<span class="w">  </span>EP<span class="w"> </span><span class="m">2</span><span class="w"> </span>IN
+<span class="w">        </span>bmAttributes<span class="w">            </span><span class="m">5</span>
+<span class="w">          </span>Transfer<span class="w"> </span>Type<span class="w">            </span>Isochronous
+<span class="w">          </span>Synch<span class="w"> </span>Type<span class="w">               </span>Asynchronous
+<span class="w">          </span>Usage<span class="w"> </span>Type<span class="w">               </span>Data
+<span class="w">        </span>wMaxPacketSize<span class="w">     </span>0x0400<span class="w">  </span>1x<span class="w"> </span><span class="m">1024</span><span class="w"> </span>bytes
+<span class="w">        </span>bInterval<span class="w">               </span><span class="m">1</span>
+<span class="w">    </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">      </span>bLength<span class="w">                 </span><span class="m">9</span>
+<span class="w">      </span>bDescriptorType<span class="w">         </span><span class="m">4</span>
+<span class="w">      </span>bInterfaceNumber<span class="w">        </span><span class="m">1</span>
+<span class="w">      </span>bAlternateSetting<span class="w">       </span><span class="m">4</span>
+<span class="w">      </span>bNumEndpoints<span class="w">           </span><span class="m">1</span>
+<span class="w">      </span>bInterfaceClass<span class="w">        </span><span class="m">14</span><span class="w"> </span>Video
+<span class="w">      </span>bInterfaceSubClass<span class="w">      </span><span class="m">2</span><span class="w"> </span>Video<span class="w"> </span>Streaming
+<span class="w">      </span>bInterfaceProtocol<span class="w">      </span><span class="m">0</span><span class="w"> </span>
+<span class="w">      </span>iInterface<span class="w">              </span><span class="m">4</span><span class="w"> </span>USB<span class="w"> </span><span class="m">2</span>.0<span class="w"> </span>Camera
+<span class="w">      </span>Endpoint<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                 </span><span class="m">7</span>
+<span class="w">        </span>bDescriptorType<span class="w">         </span><span class="m">5</span>
+<span class="w">        </span>bEndpointAddress<span class="w">     </span>0x82<span class="w">  </span>EP<span class="w"> </span><span class="m">2</span><span class="w"> </span>IN
+<span class="w">        </span>bmAttributes<span class="w">            </span><span class="m">5</span>
+<span class="w">          </span>Transfer<span class="w"> </span>Type<span class="w">            </span>Isochronous
+<span class="w">          </span>Synch<span class="w"> </span>Type<span class="w">               </span>Asynchronous
+<span class="w">          </span>Usage<span class="w"> </span>Type<span class="w">               </span>Data
+<span class="w">        </span>wMaxPacketSize<span class="w">     </span>0x0200<span class="w">  </span>1x<span class="w"> </span><span class="m">512</span><span class="w"> </span>bytes
+<span class="w">        </span>bInterval<span class="w">               </span><span class="m">1</span>
+<span class="w">    </span>Interface<span class="w"> </span>Association:
+<span class="w">      </span>bLength<span class="w">                 </span><span class="m">8</span>
+<span class="w">      </span>bDescriptorType<span class="w">        </span><span class="m">11</span>
+<span class="w">      </span>bFirstInterface<span class="w">         </span><span class="m">2</span>
+<span class="w">      </span>bInterfaceCount<span class="w">         </span><span class="m">2</span>
+<span class="w">      </span>bFunctionClass<span class="w">          </span><span class="m">1</span><span class="w"> </span>Audio
+<span class="w">      </span>bFunctionSubClass<span class="w">       </span><span class="m">0</span><span class="w"> </span>
+<span class="w">      </span>bFunctionProtocol<span class="w">       </span><span class="m">0</span><span class="w"> </span>
+<span class="w">      </span>iFunction<span class="w">               </span><span class="m">5</span><span class="w"> </span>USB<span class="w"> </span>Digital<span class="w"> </span>Audio
+<span class="w">    </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">      </span>bLength<span class="w">                 </span><span class="m">9</span>
+<span class="w">      </span>bDescriptorType<span class="w">         </span><span class="m">4</span>
+<span class="w">      </span>bInterfaceNumber<span class="w">        </span><span class="m">2</span>
+<span class="w">      </span>bAlternateSetting<span class="w">       </span><span class="m">0</span>
+<span class="w">      </span>bNumEndpoints<span class="w">           </span><span class="m">0</span>
+<span class="w">      </span>bInterfaceClass<span class="w">         </span><span class="m">1</span><span class="w"> </span>Audio
+<span class="w">      </span>bInterfaceSubClass<span class="w">      </span><span class="m">1</span><span class="w"> </span>Control<span class="w"> </span>Device
+<span class="w">      </span>bInterfaceProtocol<span class="w">      </span><span class="m">0</span><span class="w"> </span>
+<span class="w">      </span>iInterface<span class="w">              </span><span class="m">5</span><span class="w"> </span>USB<span class="w"> </span>Digital<span class="w"> </span>Audio
+<span class="w">      </span>AudioControl<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                 </span><span class="m">9</span>
+<span class="w">        </span>bDescriptorType<span class="w">        </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">      </span><span class="m">1</span><span class="w"> </span><span class="o">(</span>HEADER<span class="o">)</span>
+<span class="w">        </span>bcdADC<span class="w">               </span><span class="m">1</span>.00
+<span class="w">        </span>wTotalLength<span class="w">           </span><span class="m">43</span>
+<span class="w">        </span>bInCollection<span class="w">           </span><span class="m">1</span>
+<span class="w">        </span>baInterfaceNr<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">       </span><span class="m">3</span>
+<span class="w">      </span>AudioControl<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                </span><span class="m">12</span>
+<span class="w">        </span>bDescriptorType<span class="w">        </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">      </span><span class="m">2</span><span class="w"> </span><span class="o">(</span>INPUT_TERMINAL<span class="o">)</span>
+<span class="w">        </span>bTerminalID<span class="w">             </span><span class="m">1</span>
+<span class="w">        </span>wTerminalType<span class="w">      </span>0x0201<span class="w"> </span>Microphone
+<span class="w">        </span>bAssocTerminal<span class="w">          </span><span class="m">0</span>
+<span class="w">        </span>bNrChannels<span class="w">             </span><span class="m">2</span>
+<span class="w">        </span>wChannelConfig<span class="w">     </span>0x0003
+<span class="w">          </span>Left<span class="w"> </span>Front<span class="w"> </span><span class="o">(</span>L<span class="o">)</span>
+<span class="w">          </span>Right<span class="w"> </span>Front<span class="w"> </span><span class="o">(</span>R<span class="o">)</span>
+<span class="w">        </span>iChannelNames<span class="w">           </span><span class="m">0</span><span class="w"> </span>
+<span class="w">        </span>iTerminal<span class="w">               </span><span class="m">0</span><span class="w"> </span>
+<span class="w">      </span>AudioControl<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                </span><span class="m">13</span>
+<span class="w">        </span>bDescriptorType<span class="w">        </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">      </span><span class="m">6</span><span class="w"> </span><span class="o">(</span>FEATURE_UNIT<span class="o">)</span>
+<span class="w">        </span>bUnitID<span class="w">                 </span><span class="m">5</span>
+<span class="w">        </span>bSourceID<span class="w">               </span><span class="m">1</span>
+<span class="w">        </span>bControlSize<span class="w">            </span><span class="m">2</span>
+<span class="w">        </span>bmaControls<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">      </span>0x01
+<span class="w">        </span>bmaControls<span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w">      </span>0x00
+<span class="w">          </span>Mute<span class="w"> </span>Control
+<span class="w">        </span>bmaControls<span class="o">(</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w">      </span>0x03
+<span class="w">        </span>bmaControls<span class="o">(</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w">      </span>0x00
+<span class="w">          </span>Mute<span class="w"> </span>Control
+<span class="w">          </span>Volume<span class="w"> </span>Control
+<span class="w">        </span>bmaControls<span class="o">(</span><span class="w"> </span><span class="m">2</span><span class="o">)</span><span class="w">      </span>0x03
+<span class="w">        </span>bmaControls<span class="o">(</span><span class="w"> </span><span class="m">2</span><span class="o">)</span><span class="w">      </span>0x00
+<span class="w">          </span>Mute<span class="w"> </span>Control
+<span class="w">          </span>Volume<span class="w"> </span>Control
+<span class="w">        </span>iFeature<span class="w">                </span><span class="m">0</span><span class="w"> </span>
+<span class="w">      </span>AudioControl<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                 </span><span class="m">9</span>
+<span class="w">        </span>bDescriptorType<span class="w">        </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">      </span><span class="m">3</span><span class="w"> </span><span class="o">(</span>OUTPUT_TERMINAL<span class="o">)</span>
+<span class="w">        </span>bTerminalID<span class="w">             </span><span class="m">3</span>
+<span class="w">        </span>wTerminalType<span class="w">      </span>0x0101<span class="w"> </span>USB<span class="w"> </span>Streaming
+<span class="w">        </span>bAssocTerminal<span class="w">          </span><span class="m">0</span>
+<span class="w">        </span>bSourceID<span class="w">               </span><span class="m">5</span>
+<span class="w">        </span>iTerminal<span class="w">               </span><span class="m">0</span><span class="w"> </span>
+<span class="w">    </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">      </span>bLength<span class="w">                 </span><span class="m">9</span>
+<span class="w">      </span>bDescriptorType<span class="w">         </span><span class="m">4</span>
+<span class="w">      </span>bInterfaceNumber<span class="w">        </span><span class="m">3</span>
+<span class="w">      </span>bAlternateSetting<span class="w">       </span><span class="m">0</span>
+<span class="w">      </span>bNumEndpoints<span class="w">           </span><span class="m">0</span>
+<span class="w">      </span>bInterfaceClass<span class="w">         </span><span class="m">1</span><span class="w"> </span>Audio
+<span class="w">      </span>bInterfaceSubClass<span class="w">      </span><span class="m">2</span><span class="w"> </span>Streaming
+<span class="w">      </span>bInterfaceProtocol<span class="w">      </span><span class="m">0</span><span class="w"> </span>
+<span class="w">      </span>iInterface<span class="w">              </span><span class="m">5</span><span class="w"> </span>USB<span class="w"> </span>Digital<span class="w"> </span>Audio
+<span class="w">    </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">      </span>bLength<span class="w">                 </span><span class="m">9</span>
+<span class="w">      </span>bDescriptorType<span class="w">         </span><span class="m">4</span>
+<span class="w">      </span>bInterfaceNumber<span class="w">        </span><span class="m">3</span>
+<span class="w">      </span>bAlternateSetting<span class="w">       </span><span class="m">1</span>
+<span class="w">      </span>bNumEndpoints<span class="w">           </span><span class="m">1</span>
+<span class="w">      </span>bInterfaceClass<span class="w">         </span><span class="m">1</span><span class="w"> </span>Audio
+<span class="w">      </span>bInterfaceSubClass<span class="w">      </span><span class="m">2</span><span class="w"> </span>Streaming
+<span class="w">      </span>bInterfaceProtocol<span class="w">      </span><span class="m">0</span><span class="w"> </span>
+<span class="w">      </span>iInterface<span class="w">              </span><span class="m">5</span><span class="w"> </span>USB<span class="w"> </span>Digital<span class="w"> </span>Audio
+<span class="w">      </span>AudioStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                 </span><span class="m">7</span>
+<span class="w">        </span>bDescriptorType<span class="w">        </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">      </span><span class="m">1</span><span class="w"> </span><span class="o">(</span>AS_GENERAL<span class="o">)</span>
+<span class="w">        </span>bTerminalLink<span class="w">           </span><span class="m">3</span>
+<span class="w">        </span>bDelay<span class="w">                  </span><span class="m">1</span><span class="w"> </span>frames
+<span class="w">        </span>wFormatTag<span class="w">              </span><span class="m">1</span><span class="w"> </span>PCM
+<span class="w">      </span>AudioStreaming<span class="w"> </span>Interface<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                </span><span class="m">32</span>
+<span class="w">        </span>bDescriptorType<span class="w">        </span><span class="m">36</span>
+<span class="w">        </span>bDescriptorSubtype<span class="w">      </span><span class="m">2</span><span class="w"> </span><span class="o">(</span>FORMAT_TYPE<span class="o">)</span>
+<span class="w">        </span>bFormatType<span class="w">             </span><span class="m">1</span><span class="w"> </span><span class="o">(</span>FORMAT_TYPE_I<span class="o">)</span>
+<span class="w">        </span>bNrChannels<span class="w">             </span><span class="m">2</span>
+<span class="w">        </span>bSubframeSize<span class="w">           </span><span class="m">2</span>
+<span class="w">        </span>bBitResolution<span class="w">         </span><span class="m">16</span>
+<span class="w">        </span>bSamFreqType<span class="w">            </span><span class="m">8</span><span class="w"> </span>Discrete
+<span class="w">        </span>tSamFreq<span class="o">[</span><span class="w"> </span><span class="m">0</span><span class="o">]</span><span class="w">        </span><span class="m">48000</span>
+<span class="w">        </span>tSamFreq<span class="o">[</span><span class="w"> </span><span class="m">1</span><span class="o">]</span><span class="w">        </span><span class="m">44100</span>
+<span class="w">        </span>tSamFreq<span class="o">[</span><span class="w"> </span><span class="m">2</span><span class="o">]</span><span class="w">        </span><span class="m">24000</span>
+<span class="w">        </span>tSamFreq<span class="o">[</span><span class="w"> </span><span class="m">3</span><span class="o">]</span><span class="w">        </span><span class="m">22050</span>
+<span class="w">        </span>tSamFreq<span class="o">[</span><span class="w"> </span><span class="m">4</span><span class="o">]</span><span class="w">        </span><span class="m">16000</span>
+<span class="w">        </span>tSamFreq<span class="o">[</span><span class="w"> </span><span class="m">5</span><span class="o">]</span><span class="w">        </span><span class="m">12000</span>
+<span class="w">        </span>tSamFreq<span class="o">[</span><span class="w"> </span><span class="m">6</span><span class="o">]</span><span class="w">        </span><span class="m">11025</span>
+<span class="w">        </span>tSamFreq<span class="o">[</span><span class="w"> </span><span class="m">7</span><span class="o">]</span><span class="w">         </span><span class="m">8000</span>
+<span class="w">      </span>Endpoint<span class="w"> </span>Descriptor:
+<span class="w">        </span>bLength<span class="w">                 </span><span class="m">9</span>
+<span class="w">        </span>bDescriptorType<span class="w">         </span><span class="m">5</span>
+<span class="w">        </span>bEndpointAddress<span class="w">     </span>0x83<span class="w">  </span>EP<span class="w"> </span><span class="m">3</span><span class="w"> </span>IN
+<span class="w">        </span>bmAttributes<span class="w">           </span><span class="m">13</span>
+<span class="w">          </span>Transfer<span class="w"> </span>Type<span class="w">            </span>Isochronous
+<span class="w">          </span>Synch<span class="w"> </span>Type<span class="w">               </span>Synchronous
+<span class="w">          </span>Usage<span class="w"> </span>Type<span class="w">               </span>Data
+<span class="w">        </span>wMaxPacketSize<span class="w">     </span>0x00c8<span class="w">  </span>1x<span class="w"> </span><span class="m">200</span><span class="w"> </span>bytes
+<span class="w">        </span>bInterval<span class="w">               </span><span class="m">4</span>
+<span class="w">        </span>bRefresh<span class="w">                </span><span class="m">0</span>
+<span class="w">        </span>bSynchAddress<span class="w">           </span><span class="m">0</span>
+<span class="w">        </span>AudioControl<span class="w"> </span>Endpoint<span class="w"> </span>Descriptor:
+<span class="w">          </span>bLength<span class="w">                 </span><span class="m">7</span>
+<span class="w">          </span>bDescriptorType<span class="w">        </span><span class="m">37</span>
+<span class="w">          </span>bDescriptorSubtype<span class="w">      </span><span class="m">1</span><span class="w"> </span><span class="o">(</span>EP_GENERAL<span class="o">)</span>
+<span class="w">          </span>bmAttributes<span class="w">         </span>0x01
+<span class="w">            </span>Sampling<span class="w"> </span>Frequency
+<span class="w">          </span>bLockDelayUnits<span class="w">         </span><span class="m">1</span><span class="w"> </span>Milliseconds
+<span class="w">          </span>wLockDelay<span class="w">              </span><span class="m">0</span><span class="w"> </span>Milliseconds
+Device<span class="w"> </span>Qualifier<span class="w"> </span><span class="o">(</span><span class="k">for</span><span class="w"> </span>other<span class="w"> </span>device<span class="w"> </span>speed<span class="o">)</span>:
+<span class="w">  </span>bLength<span class="w">                </span><span class="m">10</span>
+<span class="w">  </span>bDescriptorType<span class="w">         </span><span class="m">6</span>
+<span class="w">  </span>bcdUSB<span class="w">               </span><span class="m">2</span>.00
+<span class="w">  </span>bDeviceClass<span class="w">          </span><span class="m">239</span><span class="w"> </span>Miscellaneous<span class="w"> </span>Device
+<span class="w">  </span>bDeviceSubClass<span class="w">         </span><span class="m">2</span><span class="w"> </span>?
+<span class="w">  </span>bDeviceProtocol<span class="w">         </span><span class="m">1</span><span class="w"> </span>Interface<span class="w"> </span>Association
+<span class="w">  </span>bMaxPacketSize0<span class="w">        </span><span class="m">64</span>
+<span class="w">  </span>bNumConfigurations<span class="w">      </span><span class="m">1</span>
+Device<span class="w"> </span>Status:<span class="w">     </span>0x0000
+<span class="w">  </span><span class="o">(</span>Bus<span class="w"> </span>Powered<span class="o">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="uvc">
+<h2>2. UVC驱动框架<a class="headerlink" href="#uvc" title="此标题的永久链接">#</a></h2>
+<p>内核源码: <code class="docutils literal notranslate"><span class="pre">drivers\media\usb\uvc\uvc_driver.c</span></code>，注册了一个usb_driver，它的id_table表示：它是VideoControl Interface的驱动。在uvc_probe里，再针对VideoStreaming Interface进行处理。</p>
+<p><img alt="image-20231014161009233" src="../../_images/38_uvc_idtable.png" /></p>
+<section id="id4">
+<h3>2.1 设备枚举过程<a class="headerlink" href="#id4" title="此标题的永久链接">#</a></h3>
+<p>分析代码：<code class="docutils literal notranslate"><span class="pre">drivers\media\usb\uvc\uvc_driver.c</span></code></p>
+<p>代码调用过程如下：</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>uvc_probe
+<span class="w">	</span>struct<span class="w"> </span>uvc_device<span class="w"> </span>*dev<span class="p">;</span>
+<span class="w">	</span>
+<span class="w">	</span>//<span class="w"> </span>创建一个uvc_devcie
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="o">((</span><span class="nv">dev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>kzalloc<span class="o">(</span>sizeof<span class="w"> </span>*dev,<span class="w"> </span>GFP_KERNEL<span class="o">))</span><span class="w"> </span><span class="o">==</span><span class="w"> </span>NULL<span class="o">)</span><span class="w"> </span>
+<span class="w">	</span>
+<span class="w">	</span>/*<span class="w"> </span>Parse<span class="w"> </span>the<span class="w"> </span>Video<span class="w"> </span>Class<span class="w"> </span>control<span class="w"> </span>descriptor.<span class="w"> </span>*/
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="o">(</span>uvc_parse_control<span class="o">(</span>dev<span class="o">)</span><span class="w"> </span>&lt;<span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w"> </span>
+<span class="w">			</span><span class="k">if</span><span class="w"> </span><span class="o">((</span><span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>uvc_parse_standard_control<span class="o">(</span>dev,<span class="w"> </span>buffer,<span class="w"> </span>buflen<span class="o">))</span><span class="w"> </span>&lt;<span class="w"> </span><span class="m">0</span><span class="o">)</span>
+<span class="w">				</span>//<span class="w"> </span><span class="m">1</span>.<span class="w"> </span>解析VideoStreaming<span class="w"> </span>Interface
+<span class="w">				</span>//<span class="w"> </span><span class="m">1</span>.1<span class="w"> </span>分配对应的uvc_streaming结构体
+<span class="w">				</span>//<span class="w"> </span><span class="m">1</span>.2<span class="w"> </span>接续format、format下的frame
+<span class="w">				</span>//<span class="w"> </span><span class="m">1</span>.3<span class="w"> </span>加入uvc_device的streams链表：
+<span class="w">				</span>list_add_tail<span class="o">(</span><span class="p">&amp;</span>streaming-&gt;list,<span class="w"> </span><span class="p">&amp;</span>dev-&gt;streams<span class="o">)</span><span class="p">;</span>
+<span class="w">				</span>
+<span class="w">				</span>//<span class="w"> </span><span class="m">2</span>.1<span class="w"> </span>解析VideoControl<span class="w"> </span>Interface里的每一个entity
+<span class="w">				</span>//<span class="w"> </span><span class="m">2</span>.2<span class="w"> </span>分配对应的uvc_entity结构体
+<span class="w">				</span>//<span class="w"> </span><span class="m">2</span>.3<span class="w"> </span>加入uvc_device的entities链表
+
+<span class="w">	</span>//<span class="w"> </span>初始化v4l2_dev结构体
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="o">(</span>v4l2_device_register<span class="o">(</span><span class="p">&amp;</span>intf-&gt;dev,<span class="w"> </span><span class="p">&amp;</span>dev-&gt;vdev<span class="o">)</span><span class="w"> </span>&lt;<span class="w"> </span><span class="m">0</span><span class="o">)</span>
+<span class="w">	</span>
+<span class="w">	</span>//<span class="w"> </span>Initialize<span class="w"> </span>controls.
+<span class="w">	</span>//<span class="w"> </span>对于每个entity，初始化它们的control
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="o">(</span>uvc_ctrl_init_device<span class="o">(</span>dev<span class="o">)</span><span class="w"> </span>&lt;<span class="w"> </span><span class="m">0</span><span class="o">)</span>
+<span class="w">	</span>
+<span class="w">	</span>//<span class="w"> </span>Scan<span class="w"> </span>the<span class="w"> </span>device<span class="w"> </span><span class="k">for</span><span class="w"> </span>video<span class="w"> </span>chains.
+<span class="w">	</span>//<span class="w"> </span>从每一个output<span class="w"> </span>terminal往回遍历，找到chain上的每个entity
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="o">(</span>uvc_scan_device<span class="o">(</span>dev<span class="o">)</span><span class="w"> </span>&lt;<span class="w"> </span><span class="m">0</span><span class="o">)</span>
+<span class="w">			</span>//<span class="w"> </span><span class="m">1</span>.<span class="w"> </span>分配uvc_video_chain结构体:<span class="w"> </span><span class="nv">chain</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>uvc_alloc_chain<span class="o">(</span>dev<span class="o">)</span><span class="p">;</span>
+<span class="w">			</span>//<span class="w"> </span><span class="m">2</span>.<span class="w"> </span>list_add_tail<span class="o">(</span><span class="p">&amp;</span>chain-&gt;list,<span class="w"> </span><span class="p">&amp;</span>dev-&gt;chains<span class="o">)</span><span class="p">;</span>
+
+<span class="w">	</span>//<span class="w"> </span>Register<span class="w"> </span>video<span class="w"> </span>device<span class="w"> </span>nodes.
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="o">(</span>uvc_register_chains<span class="o">(</span>dev<span class="o">)</span><span class="w"> </span>&lt;<span class="w"> </span><span class="m">0</span><span class="o">)</span>
+<span class="w">		</span>//<span class="w"> </span><span class="m">1</span>.<span class="w"> </span>对于类型为UVC_TT_STREAMING的OT
+<span class="w">		</span>//<span class="w"> </span><span class="m">2</span>.<span class="w"> </span>找到对应的uvc_streaming
+<span class="w">		</span>//<span class="w"> </span><span class="m">3</span>.<span class="w"> </span><span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>uvc_register_video<span class="o">(</span>dev,<span class="w"> </span>stream<span class="o">)</span><span class="p">;</span>
+<span class="w">		 				</span>//<span class="w"> </span>就是video设备那一套了
+</pre></div>
+</div>
+<p>UVC跟video的对接：</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>
+static int uvc_register_video(struct uvc_device *dev,
+		struct uvc_streaming *stream)
+{
+	struct video_device *vdev = &amp;stream-&gt;vdev;
+	int ret;
+
+	/* Initialize the video buffers queue. */
+	ret = uvc_queue_init(&amp;stream-&gt;queue, stream-&gt;type, !uvc_no_drop_param);
+	if (ret)
+		return ret;
+
+	/* Initialize the streaming interface with default streaming
+	 * parameters.
+	 */
+	ret = uvc_video_init(stream);
+	if (ret &lt; 0) {
+		uvc_printk(KERN_ERR, &quot;Failed to initialize the device &quot;
+			&quot;(%d).\n&quot;, ret);
+		return ret;
+	}
+
+	uvc_debugfs_init_stream(stream);
+
+	/* Register the device with V4L. */
+
+	/* We already hold a reference to dev-&gt;udev. The video device will be
+	 * unregistered before the reference is released, so we don&#39;t need to
+	 * get another one.
+	 */
+	vdev-&gt;v4l2_dev = &amp;dev-&gt;vdev;
+	vdev-&gt;fops = &amp;uvc_fops;
+	vdev-&gt;ioctl_ops = &amp;uvc_ioctl_ops;
+	vdev-&gt;release = uvc_release;
+	vdev-&gt;prio = &amp;stream-&gt;chain-&gt;prio;
+	if (stream-&gt;type == V4L2_BUF_TYPE_VIDEO_OUTPUT)
+		vdev-&gt;vfl_dir = VFL_DIR_TX;
+	strlcpy(vdev-&gt;name, dev-&gt;name, sizeof vdev-&gt;name);
+
+	/* Set the driver data before calling video_register_device, otherwise
+	 * uvc_v4l2_open might race us.
+	 */
+	video_set_drvdata(vdev, stream);
+
+	ret = video_register_device(vdev, VFL_TYPE_GRABBER, -1);
+	if (ret &lt; 0) {
+		uvc_printk(KERN_ERR, &quot;Failed to register video device (%d).\n&quot;,
+			   ret);
+		return ret;
+	}
+
+	if (stream-&gt;type == V4L2_BUF_TYPE_VIDEO_CAPTURE)
+		stream-&gt;chain-&gt;caps |= V4L2_CAP_VIDEO_CAPTURE;
+	else
+		stream-&gt;chain-&gt;caps |= V4L2_CAP_VIDEO_OUTPUT;
+
+	atomic_inc(&amp;dev-&gt;nstreams);
+	return 0;
+}
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h3>2.2 设备控制过程<a class="headerlink" href="#id5" title="此标题的永久链接">#</a></h3>
+<p>以调节亮度为例。</p>
+<p>APP：参考GIT仓库</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>doc_and_source_for_drivers<span class="se">\I</span>MX6ULL<span class="se">\s</span>ource<span class="se">\1</span>3_V4L2<span class="se">\</span>
+<span class="w">    </span>05_video_brightness<span class="se">\</span>
+<span class="w">        </span>video_test.c
+</pre></div>
+</div>
+<p>核心代码为：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">v4l2_control</span><span class="w"> </span><span class="n">ctl</span><span class="p">;</span>
+<span class="n">ctl</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V4L2_CID_BRIGHTNESS</span><span class="p">;</span><span class="w"> </span><span class="c1">// V4L2_CID_BASE+0;</span>
+<span class="n">ctl</span><span class="p">.</span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">;</span>
+<span class="n">ioctl</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="n">VIDIOC_S_CTRL</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ctl</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>上述代码时如何触发驱动程序设置&lt;entity, selector&gt;里寄存器的某些位的？</p>
+<section id="control">
+<h4>2.2.1 驱动初始化control的过程<a class="headerlink" href="#control" title="此标题的永久链接">#</a></h4>
+<p>分析代码：<code class="docutils literal notranslate"><span class="pre">drivers\media\usb\uvc\uvc_driver.c</span></code></p>
+<p>调用关系：</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>uvc_probe
+<span class="w">	</span>uvc_parse_control<span class="w"> </span>//<span class="w"> </span>得到PU的entity
+<span class="w">	</span>uvc_ctrl_init_device<span class="w">  </span>//<span class="w"> </span>初始化PU的control
+<span class="w">		</span>//<span class="w"> </span>从描述符里得到关键数据
+<span class="w">		</span><span class="nv">bmControls</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>entity-&gt;processing.bmControls<span class="p">;</span><span class="w"> </span>//<span class="w"> </span>比如0x7F,<span class="w"> </span>0x15
+<span class="w">		</span><span class="nv">bControlSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>entity-&gt;processing.bControlSize<span class="p">;</span>
+<span class="w">	</span>
+<span class="w">		</span>//<span class="w"> </span>根据bmControls分配多个uvc_control结构体
+<span class="w">	 	</span>entity-&gt;controls<span class="w"> </span><span class="o">=</span><span class="w"> </span>kcalloc<span class="o">(</span>ncontrols,<span class="w"> </span>sizeof<span class="o">(</span>*ctrl<span class="o">)</span>,
+<span class="w">					   </span>GFP_KERNEL<span class="o">)</span><span class="p">;</span>
+<span class="w">					   </span>
+<span class="w">		</span>//<span class="w"> </span>对于每个control
+<span class="w">		</span><span class="k">for</span><span class="w"> </span><span class="o">(</span><span class="nv">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">;</span><span class="w"> </span>i<span class="w"> </span>&lt;<span class="w"> </span>bControlSize<span class="w"> </span>*<span class="w"> </span><span class="m">8</span><span class="p">;</span><span class="w"> </span>++i<span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">			</span>ctrl-&gt;entity<span class="w"> </span><span class="o">=</span><span class="w"> </span>entity<span class="p">;</span>
+<span class="w">			</span>ctrl-&gt;index<span class="w"> </span><span class="o">=</span><span class="w"> </span>i<span class="p">;</span>
+<span class="w">			</span>uvc_ctrl_init_ctrl<span class="o">(</span>dev,<span class="w"> </span>ctrl<span class="o">)</span><span class="p">;</span>
+<span class="w">		</span><span class="o">}</span>
+</pre></div>
+</div>
+<p>uvc_ctrl_init_ctrl就是关键函数：</p>
+<p><img alt="image-20231023165205413" src="../../_images/39_uvc_ctrl_init_ctrl.png" /></p>
+<p>它的结果如下图所示：</p>
+<p><img alt="image-20231023172137672" src="../../_images/42_ctrl_init.png" /></p>
+</section>
+<section id="appcontrol">
+<h4>2.2.2 APP设置control的过程<a class="headerlink" href="#appcontrol" title="此标题的永久链接">#</a></h4>
+<p>APP调用<code class="docutils literal notranslate"><span class="pre">ioctl(fd,</span> <span class="pre">VIDIOC_S_CTRL,</span> <span class="pre">&amp;ctl);</span></code>，会进入驱动。</p>
+<p>进入驱动后，对应函数为：</p>
+<p><img alt="image-20231023171508487" src="../../_images/40_uvc_ioctl.png" /></p>
+<p>内部流程为：</p>
+<p><img alt="image-20231023171802255" src="../../_images/41_uvc_ioctl_s_ctrl.png" /></p>
+</section>
+</section>
+<section id="id6">
+<h3>2.3 数据传输过程<a class="headerlink" href="#id6" title="此标题的永久链接">#</a></h3>
+<p>对于摄像头，数据传输时，硬件操作部分由<code class="docutils literal notranslate"><span class="pre">vb2_ops</span></code>结构体完成。UVC驱动的vb2_ops结构体设置流程如下：</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>uvc_probe
+<span class="w">	</span>uvc_register_chains
+<span class="w">		</span>uvc_register_terms
+<span class="w">			</span>uvc_register_video
+<span class="w">				</span>uvc_queue_init<span class="w">					</span>
+</pre></div>
+</div>
+<p><img alt="image-20231024095638173" src="../../_images/43_uvc_queue_init.png" /></p>
+<p>硬件相关的uvc_queue_qops内容在<code class="docutils literal notranslate"><span class="pre">drivers\media\usb\uvc\uvc_queue.c</span></code>中定义，如下：</p>
+<p><img alt="image-20231024095745186" src="../../_images/44_uvc_queue_qops.png" /></p>
+<p>各成员的作用为：</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>vb2_ops结构体成员</p></th>
+<th class="head"><p>作用</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>queue_setup</p></td>
+<td><p>APP调用ioctl VIDIOC_REQBUFS或VIDIOC_CREATE_BUFS时，<br />驱动程序在分配内存之前，会调用此函数。<br />作用：通过它来询问硬件驱动”你需要多少个buffer？每个buffer需要多少个plane？”<br />这个函数被调用2次：第1次用来表明驱动程序对buffer的需求，但是不一定能全部分配这些buffer，当分配出buffer后，再调用第2次以验证”这些buffer是否足够”。</p></td>
+</tr>
+<tr class="row-odd"><td><p>wait_prepare</p></td>
+<td><p>释放驱动自己的互斥锁</p></td>
+</tr>
+<tr class="row-even"><td><p>wait_finish</p></td>
+<td><p>申请驱动自己的互斥锁</p></td>
+</tr>
+<tr class="row-odd"><td><p>buf_init</p></td>
+<td><p>分配vb2_buffer及它内部存储数据的buffer后，使用buf_init进行驱动相关的初始化</p></td>
+</tr>
+<tr class="row-even"><td><p>buf_prepare</p></td>
+<td><p>APP调用ioctl VIDIOC_QBUF或VIDIOC_PREPARE_BUF时，驱动程序会在执行硬件操作前，调用此函数进行必要的初始化。</p></td>
+</tr>
+<tr class="row-odd"><td><p>buf_finish</p></td>
+<td><p>APP调用ioctl VIDIOC_DQBUF后，在驱动程序返回用户空间之前，会调用此函数，可以在这个函数里修改buffer。或者驱动程序内部停止或暂停streaming时，也会调用此函数。</p></td>
+</tr>
+<tr class="row-even"><td><p>buf_cleanup</p></td>
+<td><p>在buffer被释放前调用，驱动程序在这个函数里执行额外的清除工作。</p></td>
+</tr>
+<tr class="row-odd"><td><p>start_streaming</p></td>
+<td><p>驱动相关的”启动streaming”函数</p></td>
+</tr>
+<tr class="row-even"><td><p>stop_streaming</p></td>
+<td><p>驱动相关的”停止streaming”函数</p></td>
+</tr>
+<tr class="row-odd"><td><p>buf_queue</p></td>
+<td><p>把buffer传送给驱动，驱动获得数据、填充好buffer后会调用vb2_buffer_done函数返还buffer。</p></td>
+</tr>
+</tbody>
+</table>
+<section id="id7">
+<h4>2.3.1 核心结构体<a class="headerlink" href="#id7" title="此标题的永久链接">#</a></h4>
+<p>在UVC驱动里，每一个buffer的核心仍然是vb2_v4l2_buffer.vb2_buffer，为了便于硬件驱动管理，扩展为uvc_buffer：</p>
+<p><img alt="image-20231024104206330" src="../../_images/47_uvc_buffer.png" /></p>
+<p>管理buffer的核心仍然是vb2_queue，为例便于硬件驱动管理，扩展为uvc_video_queue：</p>
+<p><img alt="image-20231024104942756" src="../../_images/48_uvc_video_queue.png" /></p>
+<p>buffer入队列流程：</p>
+<ul class="simple">
+<li><p>APP调用ioctl VIDIOC_QBUF</p></li>
+<li><p>驱动程序根据其index找到vb2_buffer</p></li>
+<li><p>把这个vb2_buffer放入链表vb2_queue.queued_list</p></li>
+<li><p>把对应的uvc_buffer放入irqqueue</p></li>
+</ul>
+<p>硬件驱动接收到数据后，比如URB传输完成后：</p>
+<ul class="simple">
+<li><p>从链表irqqueue得到、移除uvc_buffer</p></li>
+<li><p>把硬件数据存入uvc_buffer.vb2_v4l2_buffer.vb2_buffer</p></li>
+<li><p>把vb2_buffer放入链表vb2_queue.done_list</p></li>
+</ul>
+<p>出队列流程：</p>
+<ul class="simple">
+<li><p>APP调用ioctl VIDIOC_DQBUF</p></li>
+<li><p>驱动程序从链表vb2_queue.done_list取出并移除第1个vb2_buffer</p></li>
+<li><p>驱动程序也把这个vb2_buffer从链表vb2_queue.queued_list移除</p></li>
+</ul>
+</section>
+<section id="buffer">
+<h4>2.3.2 分配buffer<a class="headerlink" href="#buffer" title="此标题的永久链接">#</a></h4>
+<p>分配buffer时，queue_setup函数会进行参数判断、调整。</p>
+</section>
+<section id="id8">
+<h4>2.3.3 把buffer放入队列<a class="headerlink" href="#id8" title="此标题的永久链接">#</a></h4>
+<p>APP把buffer放入队列时，驱动程序里<code class="docutils literal notranslate"><span class="pre">uvc_buffer_queue</span></code>被调用，它把buffer放在queue-&gt;irqqueue链表里：</p>
+<p><img alt="image-20231024102122311" src="../../_images/45_uvc_buffer_queue.png" /></p>
+</section>
+<section id="id9">
+<h4>2.3.4 启动摄像头<a class="headerlink" href="#id9" title="此标题的永久链接">#</a></h4>
+<p>提交URB，提交URB的complete函数为uvc_video_complete。调用关系如下：</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>uvc_start_streaming
+<span class="w">	</span><span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>uvc_video_enable<span class="o">(</span>stream,<span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="p">;</span>
+<span class="w">		</span><span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>uvc_init_video<span class="o">(</span>stream,<span class="w"> </span>GFP_KERNEL<span class="o">)</span><span class="p">;</span>
+<span class="w">			</span><span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>uvc_init_video_isoc<span class="o">(</span>stream,<span class="w"> </span>best_ep,<span class="w"> </span>gfp_flags<span class="o">)</span><span class="p">;</span>
+<span class="w">				</span><span class="nv">urb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>usb_alloc_urb<span class="o">(</span>npackets,<span class="w"> </span>gfp_flags<span class="o">)</span><span class="p">;</span>
+<span class="w">				</span>urb-&gt;complete<span class="w"> </span><span class="o">=</span><span class="w"> </span>uvc_video_complete<span class="p">;</span>
+<span class="w">			</span><span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>usb_submit_urb<span class="o">(</span>stream-&gt;urb<span class="o">[</span>i<span class="o">]</span>,<span class="w"> </span>gfp_flags<span class="o">)</span><span class="p">;</span><span class="w">	</span>
+</pre></div>
+</div>
+</section>
+<section id="urb">
+<h4>2.3.5 URB传输完成<a class="headerlink" href="#urb" title="此标题的永久链接">#</a></h4>
+<p>URB完成后，它的complete函数uvc_video_complete被调用，调用关系为：</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>uvc_video_complete
+<span class="w">	</span>stream-&gt;decode<span class="o">(</span>urb,<span class="w"> </span>stream,<span class="w"> </span>buf<span class="o">)</span><span class="p">;</span><span class="w"> </span>//<span class="w"> </span>在uvc_register_video中被设置
+<span class="w">		</span>uvc_video_decode_isoc<span class="w">		</span>
+<span class="w">        	</span>uvc_queue_next_buffer
+<span class="w">        		</span>//<span class="w"> </span>解析数据存入buffer
+<span class="w">        		</span>
+<span class="w">        		</span>//<span class="w"> </span>取出下一个buffer
+<span class="w">        		</span><span class="nv">nextbuf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>list_first_entry<span class="o">(</span><span class="p">&amp;</span>queue-&gt;irqqueue,<span class="w"> </span>struct<span class="w"> </span>uvc_buffer,<span class="w"> </span>queue<span class="o">)</span><span class="p">;</span>
+<span class="w">        		</span>
+<span class="w">        		</span>//<span class="w"> </span>把当前buffer放入done_list
+<span class="w">        		</span>vb2_buffer_done<span class="o">(</span><span class="p">&amp;</span>buf-&gt;buf.vb2_buf,<span class="w"> </span>VB2_BUF_STATE_DONE<span class="o">)</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>函数uvc_video_complete在<code class="docutils literal notranslate"><span class="pre">drivers\media\usb\uvc\uvc_video.c</span></code>中定义，代码如下：</p>
+<p><img alt="image-20231024102657839" src="../../_images/46_uvc_video_complete.png" /></p>
+</section>
+<section id="id10">
+<h4>2.3.6 把buffer从队列取出<a class="headerlink" href="#id10" title="此标题的永久链接">#</a></h4>
+<p>常规流程，没什么特殊的：从done_list取出、移除buffer，从queued_list移除buffer。</p>
+</section>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="03_1.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">上一页</p>
+        <p class="prev-next-title">03_从0编写一个虚拟摄像头驱动</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="05_1.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">下一页</p>
+        <p class="prev-next-title">05_MIPI摄像头驱动程序分析</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 目录
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">1. 描述符解析</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">1.1 内部逻辑结构</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">1.2 描述符实例解析</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#uvc">2. UVC驱动框架</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">2.1 设备枚举过程</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">2.2 设备控制过程</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#control">2.2.1 驱动初始化control的过程</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#appcontrol">2.2.2 APP设置control的过程</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">2.3 数据传输过程</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">2.3.1 核心结构体</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#buffer">2.3.2 分配buffer</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">2.3.3 把buffer放入队列</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">2.3.4 启动摄像头</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#urb">2.3.5 URB传输完成</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">2.3.6 把buffer从队列取出</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+作者： 100ask_Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2019-2024 深圳百问网科技有限公司.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  最后更新于 2024 年 08 月 08 日.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

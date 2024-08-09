@@ -1,0 +1,988 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="zh-CN" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>10_RK3399_PCIe_Host驱动分析_设备枚举 &#8212; Linux设备驱动开发教程中心</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/topbar.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom-theme.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../../_static/translations.js"></script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'zh/10_PCI_PCIe/10_1';</script>
+    <link rel="icon" href="../../_static/favicon.png"/>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="11_INTx_MSI_MSIX三种中断机制分析" href="11_1.html" />
+    <link rel="prev" title="09_RK3399_PCIe_Host驱动分析_地址映射" href="09_1.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="zh-CN"/>
+    <meta name="docbuild:last-update" content="2024 年 08 月 08 日"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+
+  <div class="bd-header-announcement container-fluid bd-header-announcement">
+    <div class="bd-header-announcement__content">📢📢📢 欢迎来到百问网Linux设备驱动开发教程中心文档站点！！！技术交流社区：https://forums.100ask.net</div>
+  </div>
+
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Linux设备驱动开发教程中心</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">1.课程介绍</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../03_LCD/index.html">3.LCD显示子系统</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/01_1.html">01_单片机_Linux下不同接口的LCD硬件操作原理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/02_1.html">02_Framebuffer驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/03.html">03_编程_写出框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/04.html">04_最简单的LCD驱动_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/05.html">05_上机实验_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/06_1.html">结合APP分析LCD驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/07_1.html">07_硬件_8080接口LCD时序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/08_1.html">08_硬件_TFT-RGB接口LCD时序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/09_1.html">09_硬件_IMX6ULL的LCD控制器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/10_1.html">10_分析内核自带的LCD驱动程序_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/11_1.html">11_编程_LCD驱动程序框架_使用设备树</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/12_1.html">12_编程_配置引脚_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/13_1.html">13_编程_配置时钟_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/14_1.html">14_编程_ 配置LCD控制器之获得LCD参数_ 基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/15_1.html">15_编程_配置LCD控制器之寄存器操作_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/16.html">16_上机实验_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/17_1.html">17_单Buffer的缺点与改进方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../03_LCD/18.html">18_编写使用多buffer的应用程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../04_I2C/index.html">4.I2C子系统</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/01.html">01_I2C视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/02_1.html">02_I2C协议</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/03.html">03_SMBus协议</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/04.html">04_I2C系统的重要结构体</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/05.html">05_无需编写驱动直接访问设备_I2C-Tools介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/06.html">06_编写APP直接访问EEPROM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/07.html">07_通用驱动i2c-dev分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/08_1.html">08_I2C系统驱动程序模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/09.html">09_编写设备驱动之i2c_driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/10.html">10_编写设备驱动之i2c_client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/11.html">11_I2C_Adapter驱动框架讲解与编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/12_1.html">12_完善虚拟的I2C_Adapter驱动并模拟EEPROM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/13_1.html">13_使用GPIO模拟I2C的驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/14.html">14_使用GPIO操作I2C设备_IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../04_I2C/15_1.html">15_具体芯片的I2C_Adapter驱动分析</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../05_Input/index.html">5.Input输入子系统</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/01.html">01_Input子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/02.html">02_先学习输入系统应用编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_1.html">DRV_01_Input子系统框架详解</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_2.html">DRV_02_编写input_dev驱动框架解</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_3.html">DRV_03_ 编写最简单的触摸屏驱动程序_基于QEMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_4.html">DRV_04_GPIO按键驱动分析与使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_5.html">DRV_05_I2C接口触摸屏驱动分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../05_Input/04_6.html">DRV_06_UInput分析_用户态创建input_dev</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../06_Pinctrl/index.html">6.Pinctrl子系统</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/01.html">01_Pinctrl子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/03_1.html">02_Pinctrl子系统使用示例_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/03_2.html">03_Pinctrl子系统使用示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/04_1.html">04_Pinctrl子系统主要数据结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/05_1.html">05_Pincontroller构造过程情景分析_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/06_1.html">06_client端使用pinctrl过程的情景分析_基于IMX6ULL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/07_1.html">07_编写虚拟的Pinctrl驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../06_Pinctrl/08_1.html">08_调试虚拟的Pinctrl驱动程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../07_GPIO/index.html">7.GPIO子系统</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/01_1.html">01_GPIO子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/05_1.html">02_GPIO子系统层次与数据结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/06_1.html">03_IMX6ULL的GPIO驱动源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/07_1.html">04_编写一个虚拟GPIO控制器的驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/08_1.html">05_调试与使用虚拟的GPIO控制器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/09_1.html">06_GPIO子系统与Pinctrl子系统的交互</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/10_1.html">07_编程_GPIO使用Pinctrl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../07_GPIO/11_1.html">08_GPIO子系统的sysfs接口</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../08_Interrupt/index.html">8.Interrupt子系统</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/08_1.html">01_中断相关的其他驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/09_1.html">02_中断的硬件框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/10_1.html">03_GIC介绍与编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/11_1.html">04_异常向量表的安装与调用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/12_1.html">05_GIC驱动程序对中断的处理流程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/13_1.html">06_GIC驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/14_1.html">07_两类中断控制器处理流程_链式和层级</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/15_1.html">08_链式中断控制器驱动程序编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/16_1.html">09_legacy方式代码的上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/17_1.html">10_链式中断控制器驱动程序编写_linear方式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/18_1.html">11_层级中断控制器驱动程序编写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../08_Interrupt/19_1.html">12_层级中断控制器驱动程序上机实验</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../09_UART/index.html">9.UART子系统</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/01_1.html">01_UART子系统视频介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/02_1.html">02_硬件知识_UART硬件介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/03_1.html">03_TTY体系中设备节点的差别</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/04_1.html">04_TTY驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/05_1.html">05_在STM32MP157上做串口实验的准备工作</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/05_2.html">06_Linux串口应用编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/07_1.html">07_字符设备驱动程序的另一种注册方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/08_1.html">08_UART驱动情景分析_注册</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/09_1.html">09_UART驱动情景分析_open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/10_1.html">10_UART驱动情景分析_read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/11_1.html">11_UART驱动情景分析_write</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/12_1.html">12_UART驱动调试方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/13_1.html">13_编写虚拟UART驱动程序_框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/14_1.html">14_编写虚拟UART驱动程序_实现uart_ops</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/15_1.html">15_编写虚拟UART驱动程序_实现数据传输</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/16_1.html">16_编写虚拟UART驱动程序_调试</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/17_1.html">17_printk执行过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/18_1.html">18_console驱动注册过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/19_1.html">19_编写console驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/20_1.html">20_early_printk和earlycon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../09_UART/21_1.html">21_RS485简单讲解</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">10.PCI_PCIe子系统</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="01_1.html">01_从软件开发角度看待PCI和PCIe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="02_1.html">02_PCI设备的访问方法_非桥设备(type0)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="03_1.html">03_PCI设备的访问方法_桥设备(type1)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="04_1.html">04_从软件角度看PCIe设备的硬件结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05_1.html">05_PCIe设备的配置过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="06_1.html">06_PCIe路由方式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="07_1.html">07_PCI驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="08_1.html">08_RK3399_PCIe芯片手册解读</a></li>
+<li class="toctree-l2"><a class="reference internal" href="09_1.html">09_RK3399_PCIe_Host驱动分析_地址映射</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">10_RK3399_PCIe_Host驱动分析_设备枚举</a></li>
+<li class="toctree-l2"><a class="reference internal" href="11_1.html">11_INTx_MSI_MSIX三种中断机制分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="12_1.html">12_INTx中断机制源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="13_1.html">13_GICv3_LPI机制</a></li>
+<li class="toctree-l2"><a class="reference internal" href="14_1.html">14_MSI_MSI-X中断之体验与使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="15_1.html">15_MSI_MSI-X中断之源码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="16_1.html">16_怎么编写PCIe设备驱动程序</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../11_SPI/index.html">11.SPI子系统</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/01_1.html">01_SPI视频概述</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/02_1.html">02_SPI协议介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/03_1.html">03_SPI总线设备驱动模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/04_1.html">04_SPI设备树处理过程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/05_1.html">05_spidev的使用(SPI用户态API)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/06_1.html">06_使用spidev操作SPI_DAC模块</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/07_1.html">07_SPI_DAC模块上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/08_1.html">08_SPI_OLED模块操作方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/09_1.html">09_使用spidev操作SPI_OLED模块</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/10_1.html">10_OLED模块上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/11_1.html">11_编写SPI设备驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/12_1.html">12_编写SPI_DAC模块驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/13_1.html">13_编写DAC驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/14_1.html">14_编写SPI_OLED模块驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/15_1.html">15_编写OLED驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/16_1.html">16_使用Framebuffer改造OLED驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/17_1.html">17_OLED_Framebuffer驱动_上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/18_1.html">18_SPI_Master驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/19_1.html">19_编写SPI_Master驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/20_1.html">20_使用老方法编写的SPI_Master驱动程序上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/21_1.html">21_编写SPI_Master驱动程序_新方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/22_1.html">22_使用新方法编写的SPI_Master驱动程序上机实验</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/23_1.html">23_SPI_Slave_Mode驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/24_1.html">24_SPI_Slave_Mode驱动程序源码解读</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_SPI/25_1.html">临时笔记</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../12_USB/index.html">12.USB子系统</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-10"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/01_1.html">01_USB视频介绍及资料下载</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/02_1.html">02_USB系统硬件框架和软件框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/03_1.html">03_软件工程师眼里的USB电气信号</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/04_1.html">04_USB协议层数据格式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/05_1.html">05_USB描述符</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/06_1.html">06_libusb的使用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/07_1.html">07_使用libusb读取鼠标数据</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/08_1.html">08_USB设备驱动模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/09_1.html">09_编写USB鼠标驱动程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/10_1.html">10_OTG硬件检测电路</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/11_1.html">11_Gadget驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/12_1.html">12_Gadget应用实例之zero</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/13_1.html">13_Gadget应用实例之serial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/14_1.html">14_configfs的使用与内部机制</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/15_1.html">15_Gadget应用实例之adb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/16_1.html">tmp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_USB/17_1.html">Gadget驱动程序框架</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../13_V4L2/index.html">13.V4L2子系统</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/01_1.html">01_V4L2应用程序开发</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/02_1.html">02_V4L2驱动程序框架</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/03_1.html">03_从0编写一个虚拟摄像头驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/04_1.html">04_USB摄像头驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/05_1.html">05_MIPI摄像头驱动程序分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/06_1.html">06_V4L2视频介绍及资料下载/笔记</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_V4L2/07_1.html">tmp_摄像头控制接口</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/100askTeam/LinuxDeviceDriver-Tranning" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="源码库"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="下载此页面">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/zh/10_PCI_PCIe/10_1.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="下载源文件"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="列印成 PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="全屏模式"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="搜索" aria-label="搜索" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>10_RK3399_PCIe_Host驱动分析_设备枚举</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> 目录 </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">RK3399_PCIe_Host驱动分析_设备枚举</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pcie">1. PCIe控制器的资源</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">2. 设备配置空间</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">2.1 设备信息</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#base-address">2.2 基地址(Base Address)</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">3. 扫描设备的过程</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pci-dev">3.1 核心: 构造pci_dev</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">3.2 代码分析</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">3.2.1 分配pci_dev结构</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">3.2.2 读取设备信息</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#bar">3.2.3 读BAR</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">3.2.4 分配地址空间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="rk3399-pcie-host">
+<h1>10_RK3399_PCIe_Host驱动分析_设备枚举<a class="headerlink" href="#rk3399-pcie-host" title="此标题的永久链接">#</a></h1>
+<section id="id1">
+<h2>RK3399_PCIe_Host驱动分析_设备枚举<a class="headerlink" href="#id1" title="此标题的永久链接">#</a></h2>
+<p>参考资料：</p>
+<ul class="simple">
+<li><p>《PCI Express Technology 3.0》，Mike Jackson, Ravi Budruk; MindShare, Inc.</p></li>
+<li><p><a class="reference external" href="http://blog.chinaaet.com/justlxy/p/5100053251">《PCIe扫盲系列博文》</a>，作者Felix，这是对《PCI Express Technology》的理解与翻译</p></li>
+<li><p>《PCI EXPRESS体系结构导读 (王齐)》</p></li>
+<li><p>《PCI Express_ Base Specification Revision 4.0 Version 0.3 ( PDFDrive )》</p></li>
+<li><p>《NCB-PCI_Express_Base_5.0r1.0-2019-05-22》</p></li>
+<li><p><a class="reference external" href="https://zhuanlan.zhihu.com/p/157137488">SOC中AXI总线是如何连接的</a></p></li>
+<li><p><a class="reference external" href="https://blog.csdn.net/tristan_tian/article/details/89393045">AXI总线整理总结</a></p></li>
+<li><p><a class="reference external" href="https://blog.csdn.net/pieces_thinking/article/details/119431791">PCIe中MSI和MSI-X中断机制</a></p></li>
+</ul>
+<p>开发板资料：</p>
+<ul class="simple">
+<li><p>https://wiki.t-firefly.com/zh_CN/ROC-RK3399-PC-PLUS/</p></li>
+</ul>
+<p>本课程分析的文件：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">linux-4.4_rk3399\drivers\pci\host\pcie-rockchip.c</span></code></p></li>
+</ul>
+<section id="pcie">
+<h3>1. PCIe控制器的资源<a class="headerlink" href="#pcie" title="此标题的永久链接">#</a></h3>
+<p>上节视频我们分析了PCIe控制器驱动程序<code class="docutils literal notranslate"><span class="pre">pcie-rockchip.c</span></code>，它解析了设备树，得到了如下资源：</p>
+<ul class="simple">
+<li><p>总线资源：就是总线号，从0到0x1f</p></li>
+<li><p>内存资源：CPU地址基地址为0xfa000000，PCI地址基地址为0xfa000000，大小为0x1e00000</p></li>
+<li><p>IO资源：CPU地址基地址为0xfbe00000，PCI地址基地址为0xfbe00000，大小为0x100000</p></li>
+</ul>
+<p>这3类资源记录在链表中：</p>
+<p><img alt="image-20220106102119348" src="../../_images/79_res.png" /></p>
+<p>解析设备树时，把资源记录在这个链表里：</p>
+<p><img alt="image-20220106102303015" src="../../_images/80_get_res.png" /></p>
+<p>res链表中记录的资源最终会放到pci_bus-&gt;bridge-&gt;windows链表里，如下图记录：</p>
+<p><img alt="image-20220106162022018" src="../../_images/81_rk3399_pci_res.png" /></p>
+</section>
+<section id="id2">
+<h3>2. 设备配置空间<a class="headerlink" href="#id2" title="此标题的永久链接">#</a></h3>
+<p>本节内容参考：<code class="docutils literal notranslate"><span class="pre">PCI_SPEV_V3_0.pdf</span></code></p>
+<p>使用PCI/PCIe的目的，就是为了简单地访问它：像读写内存一样读写PCI/PCIe设备。</p>
+<p>提问：</p>
+<ul class="simple">
+<li><p>使用哪些地址读写设备？</p></li>
+<li><p>这些地址的范围有多大？</p></li>
+<li><p>是像内存一样访问它，还是像IO一样访问它？</p></li>
+</ul>
+<p>每个PCI/PCIe设备都有配置空间，就是一系列的寄存器，对于普通的设备，它的配置空间格式如下。</p>
+<p>里面有：</p>
+<ul class="simple">
+<li><p>设备ID</p></li>
+<li><p>厂家ID</p></li>
+<li><p>Class Code：哪类设备？存储设备？显示设备？等待</p></li>
+<li><p>6个Base Address Register：</p></li>
+</ul>
+<p><img alt="image-20211117140817516" src="../../_images/28_typ0_configuration_space.png" /></p>
+<section id="id3">
+<h4>2.1 设备信息<a class="headerlink" href="#id3" title="此标题的永久链接">#</a></h4>
+<ul class="simple">
+<li><p>Vendor ID：厂家ID，PCI SIG组织给每个厂家都分配了一个独一的ID</p></li>
+<li><p>Device ID：厂家给自己的某类产品分配一个Device ID</p></li>
+<li><p>Revision ID：厂家自定义的版本号，可以认为是Device ID的延伸</p></li>
+<li><p>Header Type：</p>
+<ul>
+<li><p>b[7]: 1-它是一个多功能设备(“multi-function”)，0-它是单功能设备(“single-function”)</p></li>
+<li><p>b[6:0]: 00h-普通设备, 01h-桥设备，这个取值也决定了配置空间中偏移地址10h开始处的含义
+<img alt="image-20220106092929107" src="../../_images/74_config_space_two_types.png" /></p></li>
+</ul>
+</li>
+<li><p>Class Code：这是只读的寄存器，它含有3个字节，用来表明设备的功能，它分为3部分</p>
+<ul>
+<li><p>最高字节：表示”base class”，用来表示它属于内存卡、显卡等待</p></li>
+<li><p>中间字节：表示”sub-class”，再细分一下类别</p></li>
+<li><p>最低字节：用来表示寄存器级别的编程接口”Interface”</p></li>
+<li><p>示例如下：Base Class为01h时，表示它是一个存储设备，但是还可以继续使用sub-class、Interface细分
+<img alt="image-20220106094233596" src="../../_images/75_base_class_01h.png" /></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="base-address">
+<h4>2.2 基地址(Base Address)<a class="headerlink" href="#base-address" title="此标题的永久链接">#</a></h4>
+<p>普通的PCI/PCIe设备有6个基地址寄存器，简称为BAR：</p>
+<p><img alt="image-20220106094822299" src="../../_images/76_base_register_reg.png" /></p>
+<p>BAR用于：</p>
+<ul class="simple">
+<li><p>声明需要什么类型的空间：内存、IO、32位地址、64位地址？</p></li>
+<li><p>声明需要的空间有多大</p></li>
+<li><p>保存主控分配给它的PCI空间基地址</p></li>
+</ul>
+<p>地址空间可以分为两类：内存(Memory)、IO：</p>
+<ul class="simple">
+<li><p>对于内存，写入什么值读出就是什么值，可以提前读取</p></li>
+<li><p>对于IO，它反应的是硬件当前的状态，每个时刻读到的值不一定相同</p></li>
+</ul>
+<p>BAR的格式如下：</p>
+<ul class="simple">
+<li><p>用于内存空间</p></li>
+</ul>
+<p><img alt="image-20220106100241585" src="../../_images/77_bar_for_mem.png" /></p>
+<ul class="simple">
+<li><p>用于IO空间：</p></li>
+</ul>
+<p><img alt="image-20220106100318426" src="../../_images/78_bar_for_io.png" /></p>
+<p>BAR怎么表示它想申请多大的空间？以32位地址为例：</p>
+<ul class="simple">
+<li><p>软件往BAR写入0xFFFFFFFF</p></li>
+<li><p>软件读BAR</p></li>
+<li><p>读出的数值假设为0xFFF0,000?，忽略最低的4位，就得到：0xFFF0,0000</p>
+<ul>
+<li><p>这表示BAR中可以写入的”Base Address”只有最高的12位</p></li>
+<li><p>也就表示了最低的20位是可以变化的范围，所以这个空间大小为2^20=1M Byte</p></li>
+</ul>
+</li>
+</ul>
+<p>如果BAR表示它使用32位的地址，那么BAR0~BAR5可以分别表示6个地址空间。</p>
+<p>如果BAR表示它使用64位的地址，那么BAR0和BAR1、BAR2和BAR3、BAR4和BAR5分别表示3个地址空间：</p>
+<ul class="simple">
+<li><p>低序号的BAR表示64位地址的低32位</p></li>
+<li><p>高序号的地址表示64位地址的高32位。</p></li>
+</ul>
+</section>
+</section>
+<section id="id4">
+<h3>3. 扫描设备的过程<a class="headerlink" href="#id4" title="此标题的永久链接">#</a></h3>
+<section id="pci-dev">
+<h4>3.1 核心: 构造pci_dev<a class="headerlink" href="#pci-dev" title="此标题的永久链接">#</a></h4>
+<p>扫描PCIe总线，对每一个PCIe桥、PCIe设备，都构造出对应的pci_dev：</p>
+<ul class="simple">
+<li><p>填充pci_dev的各项成员，比如VID、PID、Class等</p></li>
+<li><p>分配地址空间、写入PCIe设备</p></li>
+</ul>
+<p>pci_dev结构体如下：</p>
+<p><img alt="image-20220106112538571" src="../../_images/82_pci_dev.png" /></p>
+<p>对应pci_dev结构体里的设备信息：读取PCI设备的配置空间即可获得。</p>
+<p>对应pci_dev结构体里的资源，本节课程先不分析irq。对于resource结构体，每个成员对应一个BAR。</p>
+<p>resource结构体如下，要注意的是：里面记录的start、end等，是基于CPU角度看待的。也就是说，如果记录的是内存地址、IO地址，那么是CPU地址，不是PCI地址。并且这些地址是物理地址，要在软件中使用它们要先执行ioremap。</p>
+<p><img alt="image-20220106112818930" src="../../_images/83_resource.png" /></p>
+</section>
+<section id="id5">
+<h4>3.2 代码分析<a class="headerlink" href="#id5" title="此标题的永久链接">#</a></h4>
+<p>我们要找到这4个核心代码：</p>
+<ul class="simple">
+<li><p>分配pci_dev</p></li>
+<li><p>读取PCIe设备的配置空间，填充pci_dev中的设备信息</p></li>
+<li><p>根据PCIe设备的BAR，得知它想申请什么类型的地址、多大？</p></li>
+<li><p>分配地址，写入BAR</p></li>
+</ul>
+<p>关键代码分为两部分：</p>
+<ul>
+<li><p>读信息、得知PCIe设备想申请多大的空间</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rockchip_pcie_probe
+<span class="w">    </span><span class="nv">bus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>pci_scan_root_bus<span class="o">(</span><span class="p">&amp;</span>pdev-&gt;dev,<span class="w"> </span><span class="m">0</span>,<span class="w"> </span><span class="p">&amp;</span>rockchip_pcie_ops,<span class="w"> </span>rockchip,<span class="w"> </span><span class="p">&amp;</span>res<span class="o">)</span><span class="p">;</span>
+<span class="w">		</span>pci_scan_root_bus_msi
+<span class="w">            </span>pci_scan_child_bus
+<span class="w">            	</span>pci_scan_slot
+<span class="w">            		</span><span class="nv">dev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>pci_scan_single_device<span class="o">(</span>bus,<span class="w"> </span>devfn<span class="o">)</span><span class="p">;</span>
+<span class="w">						</span><span class="nv">dev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>pci_scan_device<span class="o">(</span>bus,<span class="w"> </span>devfn<span class="o">)</span><span class="p">;</span>
+<span class="w">							</span>struct<span class="w"> </span>pci_dev<span class="w"> </span>*dev<span class="p">;</span>
+<span class="w">							</span><span class="nv">dev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>pci_alloc_dev<span class="o">(</span>bus<span class="o">)</span><span class="p">;</span>
+<span class="w">							</span>pci_setup_device
+<span class="w">                                </span>pci_read_bases<span class="o">(</span>dev,<span class="w"> </span><span class="m">6</span>,<span class="w"> </span>PCI_ROM_ADDRESS<span class="o">)</span><span class="p">;</span><span class="w">	</span>
+<span class="w">                        </span>pci_device_add<span class="o">(</span>dev,<span class="w"> </span>bus<span class="o">)</span><span class="p">;</span>
+</pre></div>
+</div>
+</li>
+<li><p>分配空间</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">rockchip_pcie_probe</span>
+<span class="w">	</span><span class="nf">pci_bus_size_bridges</span><span class="p">(</span><span class="n">bus</span><span class="p">);</span>
+<span class="w">	</span><span class="n">pci_bus_assign_resources</span><span class="p">(</span><span class="n">bus</span><span class="p">);</span>
+<span class="w">		</span><span class="n">__pci_bus_assign_resources</span>
+<span class="w">            </span><span class="n">pbus_assign_resources_sorted</span>
+<span class="w">            	</span><span class="cm">/* pci_dev-&gt;resource[]里记录有想申请的资源的大小, </span>
+<span class="cm">            	 * 把这些资源按对齐的要求排序</span>
+<span class="cm">            	 * 比如资源A要求1K地址对齐，资源B要求32地址对齐</span>
+<span class="cm">            	 * 那么资源A排在资源B前面, 优先分配资源A</span>
+<span class="cm">            	 */</span>
+<span class="w">                </span><span class="n">list_for_each_entry</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">bus</span><span class="o">-&gt;</span><span class="n">devices</span><span class="p">,</span><span class="w"> </span><span class="n">bus_list</span><span class="p">)</span>
+<span class="w">                    </span><span class="n">__dev_sort_resources</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">head</span><span class="p">);</span>
+<span class="w">				</span><span class="c1">// 分配资源</span>
+<span class="w">				</span><span class="n">__assign_resources_sorted</span>
+<span class="w">                    </span><span class="nf">assign_requested_resources_sorted</span><span class="p">(</span><span class="n">head</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">local_fail_head</span><span class="p">);</span>
+</pre></div>
+</div>
+<section id="id6">
+<h5>3.2.1 分配pci_dev结构<a class="headerlink" href="#id6" title="此标题的永久链接">#</a></h5>
+<p><img alt="image-20220106113805402" src="../../_images/84_alloc_pci_dev.png" /></p>
+</section>
+<section id="id7">
+<h5>3.2.2 读取设备信息<a class="headerlink" href="#id7" title="此标题的永久链接">#</a></h5>
+<p><img alt="image-20220106114243209" src="../../_images/85_pci_setup_device.png" /></p>
+<p>在<code class="docutils literal notranslate"><span class="pre">pci_scan_device</span></code>函数中，会先尝试读取VID、PID，成功的话才会继续调用<code class="docutils literal notranslate"><span class="pre">pci_setup_device</span></code>：</p>
+<p><img alt="image-20220106114505761" src="../../_images/86_pci_scan_device.png" /></p>
+<p>在<code class="docutils literal notranslate"><span class="pre">pci_setup_device</span></code>内部，会继续读取其他信息：</p>
+<p><img alt="image-20220106114658658" src="../../_images/87_pci_setup_device_code.png" /></p>
+</section>
+<section id="bar">
+<h5>3.2.3 读BAR<a class="headerlink" href="#bar" title="此标题的永久链接">#</a></h5>
+<p><img alt="image-20220106115246161" src="../../_images/88_pci_read_bar.png" /></p>
+<p><img alt="image-20220106115501793" src="../../_images/89_pci_read_bar_code1.png" /></p>
+<p><code class="docutils literal notranslate"><span class="pre">pci_read_bases</span></code>函数代码分析：</p>
+<p><img alt="image-20220106115858880" src="../../_images/90_pci_read_bases.png" /></p>
+<p><code class="docutils literal notranslate"><span class="pre">pci_read_bases</span></code>函数又会调用<code class="docutils literal notranslate"><span class="pre">__pci_read_base</span></code>，<code class="docutils literal notranslate"><span class="pre">__pci_read_base</span></code>只是读BAR，算出想申请的空间的大小：</p>
+<ul class="simple">
+<li><p>读BAR，保留原值</p></li>
+<li><p>写0xFFFFFFFF到BAR</p></li>
+<li><p>在读出来，解析出所需要的地址空间大小，记录在pci_dev-&gt;resource[ ]里</p>
+<ul>
+<li><p>pci_dev-&gt;resource[ ].start = 0;</p></li>
+<li><p>pci_dev-&gt;resource[ ].end = size - 1;</p></li>
+</ul>
+</li>
+</ul>
+<p>把前面讲过的贴出来，有助于理解代码：</p>
+<p>BAR怎么表示它想申请多大的空间？以32位地址为例：</p>
+<ul class="simple">
+<li><p>软件往BAR写入0xFFFFFFFF</p></li>
+<li><p>软件读BAR</p></li>
+<li><p>读出的数值假设为0xFFF0,000?，忽略最低的4位，就得到：0xFFF0,0000</p>
+<ul>
+<li><p>这表示BAR中可以写入的”Base Address”只有最高的12位</p></li>
+<li><p>也就表示了最低的20位是可以变化的范围，所以这个空间大小为2^20=1M Byte</p></li>
+</ul>
+</li>
+</ul>
+<p>以下是<code class="docutils literal notranslate"><span class="pre">__pci_read_bases</span></code>函数的代码分析。</p>
+<ul class="simple">
+<li><p>得到大小(原始数据，需要进一步解析)：比如下列代码中sz被赋值为0xFFF0,000?，需要进一步解析</p></li>
+</ul>
+<p><img alt="image-20220106151603798" src="../../_images/91_get_size.png" /></p>
+</section>
+<section id="id8">
+<h5>3.2.4 分配地址空间<a class="headerlink" href="#id8" title="此标题的永久链接">#</a></h5>
+<p>这部分代码的函数调用非常深，我们抓住2个问题即可：</p>
+<ul class="simple">
+<li><p>从哪里分配得到地址空间？</p>
+<ul>
+<li><p>在设备树里指明了CPU地址、PCI地址的对应关系，这些作为”资源”记录在pci_bus里</p></li>
+<li><p>读BAR时，在pci_dev-&gt;resource[]里记录了它想申请空间的大小</p></li>
+</ul>
+</li>
+<li><p>分配得到的基地址，要写入BAR</p></li>
+</ul>
+<p>代码调用关系如下：</p>
+<ul>
+<li><p>把要申请的资源, 按照对齐要求排序，然后调用assign_requested_resources_sorted，代码如下：</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>/*<span class="w"> </span>把要申请的资源,<span class="w"> </span>按照对齐要求排序
+<span class="w"> </span>*<span class="w"> </span>然后调用assign_requested_resources_sorted
+<span class="w"> </span>*/
+
+rockchip_pcie_probe
+<span class="w">	</span>pci_bus_size_bridges<span class="o">(</span>bus<span class="o">)</span><span class="p">;</span>
+<span class="w">	</span>pci_bus_assign_resources<span class="o">(</span>bus<span class="o">)</span><span class="p">;</span>
+<span class="w">		</span>__pci_bus_assign_resources
+<span class="w">            </span>pbus_assign_resources_sorted
+<span class="w">            	</span>/*<span class="w"> </span>pci_dev-&gt;resource<span class="o">[]</span>里记录有想申请的资源的大小,<span class="w"> </span>
+<span class="w">            	 </span>*<span class="w"> </span>把这些资源按对齐的要求排序
+<span class="w">            	 </span>*<span class="w"> </span>比如资源A要求1K地址对齐，资源B要求32地址对齐
+<span class="w">            	 </span>*<span class="w"> </span>那么资源A排在资源B前面,<span class="w"> </span>优先分配资源A
+<span class="w">            	 </span>*/
+<span class="w">                </span>list_for_each_entry<span class="o">(</span>dev,<span class="w"> </span><span class="p">&amp;</span>bus-&gt;devices,<span class="w"> </span>bus_list<span class="o">)</span>
+<span class="w">                    </span>__dev_sort_resources<span class="o">(</span>dev,<span class="w"> </span><span class="p">&amp;</span>head<span class="o">)</span><span class="p">;</span>
+<span class="w">				</span>//<span class="w"> </span>分配资源
+<span class="w">				</span>__assign_resources_sorted
+<span class="w">                    </span>assign_requested_resources_sorted<span class="o">(</span>head,<span class="w"> </span><span class="p">&amp;</span>local_fail_head<span class="o">)</span><span class="p">;</span>
+</pre></div>
+</div>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">assign_requested_resources_sorted</span></code>函数做两件事</p>
+<ul>
+<li><p>分配地址空间</p></li>
+<li><p>把这块空间对应的PCI地址写入PCIe设备的BAR</p></li>
+<li><p>代码如下：</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>assign_requested_resources_sorted<span class="o">(</span>head,<span class="w"> </span><span class="p">&amp;</span>local_fail_head<span class="o">)</span><span class="p">;</span>
+<span class="w">    </span>pci_assign_resource
+<span class="w">        </span><span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>_pci_assign_resource<span class="o">(</span>dev,<span class="w"> </span>resno,<span class="w"> </span>size,<span class="w"> </span>align<span class="o">)</span><span class="p">;</span>
+<span class="w">        	</span>//<span class="w"> </span>分配地址空间
+<span class="w">            </span>__pci_assign_resource
+<span class="w">                </span>pci_bus_alloc_resource
+<span class="w">                    </span>pci_bus_alloc_from_region
+<span class="w">                        </span>/*<span class="w"> </span>Ok,<span class="w"> </span>try<span class="w"> </span>it<span class="w"> </span>out..<span class="w"> </span>*/
+<span class="w">                        </span><span class="nv">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>allocate_resource<span class="o">(</span>r,<span class="w"> </span>res,<span class="w"> </span>size,<span class="w"> </span>...<span class="o">)</span><span class="p">;</span>
+<span class="w">                            </span><span class="nv">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>find_resource<span class="o">(</span>root,<span class="w"> </span>new,<span class="w"> </span>size,...<span class="o">)</span><span class="p">;</span>
+<span class="w">                                </span>__find_resource
+<span class="w">                                    </span>
+<span class="w">                                    </span>//<span class="w"> </span>从资源链表中分配地址空间
+<span class="w">                                    </span>//<span class="w"> </span>设置pci_dev-&gt;resource<span class="o">[]</span>
+<span class="w">                                    </span>new-&gt;start<span class="w"> </span><span class="o">=</span><span class="w"> </span>alloc.start<span class="p">;</span>
+<span class="w">                                    </span>new-&gt;end<span class="w"> </span><span class="o">=</span><span class="w"> </span>alloc.end<span class="p">;</span>
+<span class="w">            </span>//<span class="w"> </span>把对应的PCI地址写入BAR
+<span class="w">            </span>pci_update_resource<span class="o">(</span>dev,<span class="w"> </span>resno<span class="o">)</span><span class="p">;</span>
+<span class="w">                </span>pci_std_update_resource
+<span class="w">                    </span>/*<span class="w"> </span>把CPU地址转换为PCI地址:<span class="w"> </span><span class="nv">PCI地址</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>CPU地址<span class="w"> </span>-<span class="w"> </span>offset<span class="w"> </span>
+<span class="w">                     </span>*<span class="w"> </span>写入BAR
+<span class="w">                     </span>*/
+<span class="w">                    </span>pcibios_resource_to_bus<span class="o">(</span>dev-&gt;bus,<span class="w"> </span><span class="p">&amp;</span>region,<span class="w"> </span>res<span class="o">)</span><span class="p">;</span>
+<span class="w">                    </span><span class="nv">new</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>region.start<span class="p">;</span>
+<span class="w">                    </span><span class="nv">reg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>PCI_BASE_ADDRESS_0<span class="w"> </span>+<span class="w"> </span><span class="m">4</span><span class="w"> </span>*<span class="w"> </span>resno<span class="p">;</span>
+<span class="w">                    </span>pci_write_config_dword<span class="o">(</span>dev,<span class="w"> </span>reg,<span class="w"> </span>new<span class="o">)</span><span class="p">;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="09_1.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">上一页</p>
+        <p class="prev-next-title">09_RK3399_PCIe_Host驱动分析_地址映射</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="11_1.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">下一页</p>
+        <p class="prev-next-title">11_INTx_MSI_MSIX三种中断机制分析</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 目录
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">RK3399_PCIe_Host驱动分析_设备枚举</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pcie">1. PCIe控制器的资源</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">2. 设备配置空间</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">2.1 设备信息</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#base-address">2.2 基地址(Base Address)</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">3. 扫描设备的过程</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pci-dev">3.1 核心: 构造pci_dev</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">3.2 代码分析</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">3.2.1 分配pci_dev结构</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">3.2.2 读取设备信息</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#bar">3.2.3 读BAR</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">3.2.4 分配地址空间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+作者： 100ask_Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2019-2024 深圳百问网科技有限公司.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  最后更新于 2024 年 08 月 08 日.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
